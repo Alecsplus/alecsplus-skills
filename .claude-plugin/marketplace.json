@@ -9,7 +9,7 @@
     {
       "name": "alecsplus-skills",
       "source": "./",
-      "description": "Keep a project's principles in one file, THE-WAY.md, and have Claude compare its choices against them (the-way-setup, the-way-self-answer, the-way-discover).",
+      "description": "Keep a project's principles in one file, THE-WAY.md, and have Claude compare its choices against them (the-way-setup, the-way-self-answer, the-way-discover, the-way-new).",
       "category": "productivity",
       "keywords": ["principles", "decisions", "claude-md", "skills"]
     }

@@ -1,21 +1,23 @@
-# Principi
+# Principles
 
-Valgono per tutto quello che si fa in questo progetto, anche quello che non è ancora nominato. Quando un principio guida una scelta, lo si cita col suo nome.
+These apply to everything done in this project, including what is not yet named. When a principle guides a choice, cite it by name.
 
-## Primari
+## Primary
 
-Sono il senso del lavoro. In conflitto vincono loro.
+They are the point of the work. In a conflict they win.
 
-**SEMPLICE** — Le cose si fanno nel modo più semplice e lineare possibile: meno è meglio. La semplicità è una complessità risolta, non una complessità evitata.
+**SIMPLE** — Things are done in the simplest and most linear way possible: less is better. Simplicity is a complexity solved, not a complexity avoided.
 
-**GENERICO** — Il plugin funziona allo stesso modo in ogni progetto e in ogni contesto. Una forma, un nome o una regola che regge solo su un progetto non entra.
+**GENERIC** — The plugin works the same way in every project and in every context. A form, a name or a rule that holds in only one project does not enter.
 
-**SENZA_PLUGIN** — I principi di un progetto vivono nel suo `THE-WAY.md` e nel suo `CLAUDE.md`: chi apre il progetto senza il plugin li legge e li applica lo stesso.
+**NO_PLUGIN_NEEDED** — A project's principles live in its `THE-WAY.md` and its `CLAUDE.md`: whoever opens the project without the plugin reads and applies them all the same.
 
-**VISIBILE** — Quando qualcosa non funziona, chi usa il progetto lo vede: un file che manca, un controllo che salta, un passo andato storto si dicono, non falliscono in silenzio.
+**VISIBLE** — When something does not work, whoever uses the project sees it: a missing file, a failed check, a step gone wrong are said out loud, they do not fail in silence.
 
-**CITATO** — Ogni scelta che un principio decide porta il nome di quel principio: chi legge sa sempre da dove viene una scelta, e nessuna passa in silenzio.
+**CITED** — Every choice that a principle decides carries the name of that principle: whoever reads always knows where a choice comes from, and none passes in silence.
 
-**OVVIO** — Quello che ha una sola risposta sensata si fa senza chiedere; si chiede solo dove chi guida potrebbe davvero scegliere in due modi.
+**OBVIOUS** — What has only one sensible answer is done without asking; ask only where whoever leads could really choose in two ways.
 
-**OGNI_PORTA** — Si può cominciare da qualunque skill: quella che trova mancare qualcosa lo dice, chiede un solo sì, lo prepara e poi fa quello che le era chiesto.
+**ANY_DOOR** — You can begin with any skill: the one that finds something missing says so, asks one yes, prepares it, and then does what it was asked.
+
+**LIGHT** — What is written for a reader is short and makes them smile.

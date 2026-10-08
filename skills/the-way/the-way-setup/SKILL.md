@@ -25,11 +25,11 @@ In the repo root of the project you are in:
 - Is there a file that holds principles in another form or under another name (`PRINCIPI.md`, `PRINCIPLES.md`, a constitution file imported by `CLAUDE.md`)? If unsure which file it is, ask.
 - Does `CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`? Does it have an old block between `<!-- the-way:start` and `<!-- the-way:end -->` (written by setup 0.1.1)?
 - Which language does the project use? Read the existing `CLAUDE.md`, README and docs. The fixed texts are in English: translate them faithfully into the project's language, English included as is.
-- The version of this plugin is **0.1.4**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **0.1.5**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
-**A. The project has no principles.** Ask permission to create `THE-WAY.md` (empty: opening line and the primary section, nothing else), to create `THE-WAY-USAGE.md`, and to put the two import lines at the top of `CLAUDE.md` (creating the file if needed). Name the language you will use. After the yes, write all. Then tell the user: the file has no principles yet, and `/alecsplus-skills:the-way-discover` finds the ones the project already follows.
+**A. The project has no principles.** Ask permission to create `THE-WAY.md` (empty: opening line and the primary section, nothing else), to create `THE-WAY-USAGE.md`, and to put the two import lines at the top of `CLAUDE.md` (creating the file if needed). Name the language you will use. After the yes, write all.
 
 **B. The project has principles in another form or file.** Ask permission to: rename the file to `THE-WAY.md` (`git mv` if it is tracked); bring it to the single form; update every `@old-name` import in `CLAUDE.md` files; create `THE-WAY-USAGE.md` and add its import line. The single form:
 - opening: the fixed title and line of the fixed texts below;
@@ -49,7 +49,7 @@ If all is right, say so in one line ("in order", in the project's language). For
 
 ## 3. Close
 
-Say in two lines what was written and where. Nothing more.
+Say in two lines what was written and where. Then, in every case, if `THE-WAY.md` has no principle yet, add one line: `/alecsplus-skills:the-way-discover` finds the principles the project already follows, `/alecsplus-skills:the-way-new` writes one. Nothing more.
 
 ## Fixed texts
 
