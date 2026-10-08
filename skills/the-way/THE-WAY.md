@@ -17,3 +17,5 @@ Sono il senso del lavoro. In conflitto vincono loro.
 **CITATO** — Ogni scelta che un principio decide porta il nome di quel principio: chi legge sa sempre da dove viene una scelta, e nessuna passa in silenzio.
 
 **OVVIO** — Quello che ha una sola risposta sensata si fa senza chiedere; si chiede solo dove chi guida potrebbe davvero scegliere in due modi.
+
+**OGNI_PORTA** — Si può cominciare da qualunque skill: quella che trova mancare qualcosa lo dice, chiede un solo sì, lo prepara e poi fa quello che le era chiesto.
