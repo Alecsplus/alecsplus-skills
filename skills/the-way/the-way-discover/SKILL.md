@@ -9,7 +9,7 @@ Principles live in `THE-WAY.md` in the repo root. This skill finds the ones that
 
 ## Before anything
 
-Read `THE-WAY.md`. If it does not exist, say so, explain that the project has no principles yet, ask permission to run `the-way-setup`, and continue after it. **Ask permission before writing to any file**, every time; a yes to one principle is not a yes to the next.
+**Check the setup.** In the repo root, check three things: `THE-WAY.md` exists, `THE-WAY-USAGE.md` exists, and `CLAUDE.md` has the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`. If all three are there, go on. If any is missing, say which, in plain words, and ask one yes to run `the-way-setup` (call the `Skill` tool with `alecsplus-skills:the-way-setup`). After the yes, run it and tell it the yes is already given for the files you named, then go on with what you were asked. Without the yes, stop and say why: the work needs the project's principles in place. Then read `THE-WAY.md`. **Ask permission before writing to any file**, every time; a yes to one principle is not a yes to the next.
 
 ## Finding principles
 

@@ -41,7 +41,7 @@ Commands: `/alecsplus-skills:the-way-setup`, `/alecsplus-skills:the-way-self-ans
 
 They are four separate skills, not one skill with arguments, because a skill with arguments does not offer its gestures when you type its name.
 
-Every skill asks permission before it writes a file, always, even `setup` on a new project. If you run a `the-way-` skill before `setup`, it says that setup is missing, asks permission to run it, and then goes on (VISIBILE).
+Every skill asks permission before it writes a file, always, even `setup` on a new project. You can begin with any `the-way-` skill (OGNI_PORTA). `the-way-self-answer`, `the-way-discover` and `the-way-new` first check three things in the project: `THE-WAY.md`, `THE-WAY-USAGE.md`, and the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md` in `CLAUDE.md`. If one is missing, they say which, ask for one yes, run `the-way-setup` and then do what was asked; without the yes they stop and say why (VISIBILE).
 
 There is no "verify" gesture: it would have no purpose of its own (SEMPLICE).
 
@@ -72,7 +72,7 @@ It passes the rule through the criterion (section 5), proposes the name, the sen
 
 ## 4. What `setup` writes in the project
 
-The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.3: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SEMPLICE). The file holds these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.4: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SEMPLICE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
@@ -115,7 +115,7 @@ The criterion lives only in the `the-way-new` skill and is not copied into each 
 
 ## 8. Versioning
 
-The plugin version lives in `plugin.json` and starts at `0.1.0`. Every change to the skills published on GitHub must bump the version; otherwise people who already installed the plugin do not receive the update. The version moves to `1.0.0` once the getting-started README for newcomers is written and tested.
+The plugin version lives in `plugin.json` and starts at `0.1.0`. Every change to the skills published on GitHub must bump the version; otherwise people who already installed the plugin do not receive the update. The version moves to `1.0.0` only after the project lead has checked by hand all the published files and after the getting-started README for newcomers is written and tested.
 
 The version number is also written in `skills/the-way/the-way-setup/SKILL.md`, because `setup` puts it on the first line of `THE-WAY-USAGE.md` and reading the plugin's own files can be refused; the two numbers change together at every release (SEMPLICE).
 

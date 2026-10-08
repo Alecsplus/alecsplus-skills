@@ -11,7 +11,7 @@ The fixed texts to write are at the end of this file, under "Fixed texts". They 
 
 ## Rules for every step
 
-- **Ask before writing.** Say exactly which files you will create or change, then wait for a yes. Always, also on a new project.
+- **Ask before writing.** Say exactly which files you will create or change, then wait for a yes. Always, also on a new project. Exception: when another `the-way-` skill called you and already got the yes for the files it named, do not ask again for those; ask only for what it did not name (for example renaming a file of principles).
 - **Never invent principles.** The file you create has no principle in it. Finding them is `the-way-discover`.
 - **Say what is wrong.** If something is missing or off, say it in plain words; never skip it silently.
 - Do not commit. Do not touch anything but `THE-WAY.md`, `THE-WAY-USAGE.md`, `CLAUDE.md`, and the file you are renaming.
@@ -25,7 +25,7 @@ In the repo root of the project you are in:
 - Is there a file that holds principles in another form or under another name (`PRINCIPI.md`, `PRINCIPLES.md`, a constitution file imported by `CLAUDE.md`)? If unsure which file it is, ask.
 - Does `CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`? Does it have an old block between `<!-- the-way:start` and `<!-- the-way:end -->` (written by setup 0.1.1)?
 - Which language does the project use? Read the existing `CLAUDE.md`, README and docs. The fixed texts are in English: translate them faithfully into the project's language, English included as is.
-- The version of this plugin is **0.1.3**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **0.1.4**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
