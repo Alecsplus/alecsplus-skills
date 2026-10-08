@@ -1,0 +1,17 @@
+{
+  "name": "alecsplus-skills",
+  "owner": {
+    "name": "Alessandro Molteni",
+    "url": "https://github.com/Alecsplus"
+  },
+  "description": "Alessandro Molteni's public skills for Claude Code.",
+  "plugins": [
+    {
+      "name": "alecsplus-skills",
+      "source": "./",
+      "description": "Keep a project's principles in one file, THE-WAY.md, and have Claude compare its choices against them (the-way-setup, the-way-self-answer, the-way-discover).",
+      "category": "productivity",
+      "keywords": ["principles", "decisions", "claude-md", "skills"]
+    }
+  ]
+}
