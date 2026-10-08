@@ -1,6 +1,6 @@
 # alecsplus-skills
 
-A public collection of Claude Code skills by Alessandro Molteni, modeled on Matt Pocock's collection; today it holds one skill, `the-way`, in three gestures.
+A public collection of Claude Code skills by Alessandro Molteni, modeled on Matt Pocock's collection; today it holds one skill, `the-way`, in four gestures.
 
 This README is currently the specification; a getting-started section will come later.
 
@@ -35,11 +35,11 @@ The project carries everything (SENZA_PLUGIN):
 - `Explore` and `Plan` do not read `CLAUDE.md`. This is accepted; Claude compares with the principles the choices that come back from them.
 - When the instructions change, rerunning `the-way-setup` updates the project.
 
-## 3. The three skills
+## 3. The four skills
 
-Commands: `/alecsplus-skills:the-way-setup`, `/alecsplus-skills:the-way-self-answer`, `/alecsplus-skills:the-way-discover`.
+Commands: `/alecsplus-skills:the-way-setup`, `/alecsplus-skills:the-way-self-answer`, `/alecsplus-skills:the-way-discover`, `/alecsplus-skills:the-way-new`.
 
-They are three separate skills, not one skill with arguments, because a skill with arguments does not offer its gestures when you type its name.
+They are four separate skills, not one skill with arguments, because a skill with arguments does not offer its gestures when you type its name.
 
 Every skill asks permission before it writes a file, always, even `setup` on a new project. If you run a `the-way-` skill before `setup`, it says that setup is missing, asks permission to run it, and then goes on (VISIBILE).
 
@@ -62,13 +62,17 @@ The skill is a convenience, not the rule: the instructions in `CLAUDE.md` alread
 
 ### the-way-discover
 
-Run when you want. It searches the conversation, `CLAUDE.md`, the documents and the recorded decisions for principles the project follows without having written them. It proposes them one at a time, each with the "yes" of whoever leads the project. If a principle is already written in another file, it offers to move it into `THE-WAY.md`.
+Run when you want. It searches the conversation, `CLAUDE.md`, the documents and the recorded decisions for principles the project follows without having written them. It passes each one, one at a time, to `the-way-new` (with the Skill tool), which asks the "yes"; `the-way-discover` does not ask it. If a principle is already written in another file, it passes it as a candidate to move into `THE-WAY.md`.
 
-It holds the criterion for writing a principle (section 5) and starts by itself when a principle is added or changed.
+### the-way-new
+
+Writes a principle in `THE-WAY.md`. Run it when you have a rule of the project in mind. It also starts by itself, in any language, when whoever works says a sentence that sets a rule for the whole project ("from now on we always do X here", "in this project we never do Y", "this is a rule"), and when a principle is about to be added or changed; it does not start for a choice that holds only for the task at hand.
+
+It passes the rule through the criterion (section 5), proposes the name, the sentence, and whether it is primary or secondary, and writes only after the "yes". One "yes" covers everything. There is no skill to remove a principle. Its description explains what a principle is, because whoever reads it for the first time does not know the word.
 
 ## 4. What `setup` writes in the project
 
-The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.2: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SEMPLICE). The file holds these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.3: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SEMPLICE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
@@ -76,7 +80,7 @@ The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, al
 - Ask only when no principle decides, or when two pull in opposite directions. Under the question, write the comparison, starting with "the principles do not decide".
 - The same holds for a "to decide" that comes back in a subagent report: if a principle decides, answer it and cite it.
 - Every task given to a subagent ends with the line "In the report, next to each choice, write the project principle that decided it". The task does not copy any principle, and nothing checks the report automatically. Claude reads it in the session.
-- A new or changed principle goes through the criterion of the `the-way-discover` skill and the yes of whoever leads the project. Without the plugin, at least the yes remains.
+- A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project. Without the plugin, at least the yes remains.
 
 ## 5. The criterion for writing a principle
 
@@ -96,7 +100,7 @@ It is one list, the same in every project (GENERICO). A principle:
 
 A principle may talk about how the project is worked on, not only about the product.
 
-The criterion lives only in the `the-way-discover` skill and is not copied into each project, so it is not read again at every session (SEMPLICE). Because starting by itself is not guaranteed, `setup` puts the fixed line about it in `THE-WAY-USAGE.md` (VISIBILE).
+The criterion lives only in the `the-way-new` skill and is not copied into each project, so it is not read again at every session (SEMPLICE). Because starting by itself is not guaranteed, `setup` puts the fixed line about it in `THE-WAY-USAGE.md` (VISIBILE).
 
 ## 6. Language
 

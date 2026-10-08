@@ -1,6 +1,6 @@
 {
   "name": "alecsplus-skills",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Alessandro Molteni's public skills for Claude Code. First skill: the way, a project's principles in THE-WAY.md and the habit of comparing every choice against them.",
   "author": {
     "name": "Alessandro Molteni",
@@ -13,6 +13,7 @@
   "skills": [
     "./skills/the-way/the-way-setup",
     "./skills/the-way/the-way-self-answer",
-    "./skills/the-way/the-way-discover"
+    "./skills/the-way/the-way-discover",
+    "./skills/the-way/the-way-new"
   ]
 }
