@@ -39,4 +39,4 @@ When a principle fails a rule, say which one and propose a fixed wording; the le
 
 ## Writing it
 
-One line: `**NAME** — sentence`, NAME in uppercase letters and `_`. Under `## Primary`, or under `## Secondary` (create the section with its fixed line from the `the-way-setup` TEXTS.md if it is not there, in the file's language) when rule 11 holds. Write in the language of the file. After writing, say in one line what you added.
+One line: `**NAME** — sentence`, NAME in uppercase letters and `_`. Under `## Primary`, or under `## Secondary` (create the section, with its fixed line, if it is not there: English "## Secondary" then "They give substance to the primary ones: read them in their light; they do not contradict them."; Italian "## Secondari" then "Danno corpo ai primari: si leggono alla loro luce e non li contraddicono."; for other languages translate faithfully) when rule 11 holds. Write in the language of the file. After writing, say in one line what you added.
