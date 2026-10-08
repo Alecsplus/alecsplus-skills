@@ -113,6 +113,8 @@ The criterion lives only in the `the-way-discover` skill and is not copied into 
 
 The plugin version lives in `plugin.json` and starts at `0.1.0`. Every change to the skills published on GitHub must bump the version; otherwise people who already installed the plugin do not receive the update. The version moves to `1.0.0` once the getting-started README for newcomers is written and tested.
 
+The version number is also written in `skills/the-way/the-way-setup/SKILL.md`, because `setup` puts it on the first line of `THE-WAY-USAGE.md` and reading the plugin's own files can be refused; the two numbers change together at every release (SEMPLICE).
+
 ## 9. License
 
 MIT.
