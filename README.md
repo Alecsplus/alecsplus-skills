@@ -30,7 +30,7 @@ There are no hooks and no stop check, neither in the plugin nor in the project (
 
 The project carries everything (SENZA_PLUGIN):
 
-- The project's `CLAUDE.md` pulls the file in with `@THE-WAY.md`, together with the instructions for comparing choices to principles. Someone who opens the project without the plugin reads and applies the principles all the same.
+- The project's `CLAUDE.md` pulls in the file with `@THE-WAY.md` and the instructions for comparing choices to principles with `@THE-WAY-USAGE.md`. Someone who opens the project without the plugin reads and applies the principles all the same.
 - Subagents receive both, because they read the project's `CLAUDE.md`. Nothing is copied into the task given to them (SENZA_PLUGIN, SEMPLICE).
 - `Explore` and `Plan` do not read `CLAUDE.md`. This is accepted; Claude compares with the principles the choices that come back from them.
 - When the instructions change, rerunning `the-way-setup` updates the project.
@@ -47,15 +47,15 @@ There is no "verify" gesture: it would have no purpose of its own (SEMPLICE).
 
 ### the-way-setup
 
-- On a project with no principles: creates an empty `THE-WAY.md` (title, opening line and `## Primary`) and writes the block in `CLAUDE.md` (see section 4). It does not invent principles; `the-way-discover` finds them.
-- On a project with principles in another form: asks permission, renames the file to `THE-WAY.md`, brings it to the single form (no numbers, no dates of origin) and updates the `@` import. The words of a principle change only with the "yes" of whoever leads the project.
-- Rerun: checks that everything is in place (file, `@` import, up-to-date block in `CLAUDE.md`). It says what is not in place and offers to fix it, with permission (VISIBILE).
+- On a project with no principles: creates an empty `THE-WAY.md` (title, opening line and `## Primary`) and `THE-WAY-USAGE.md`, and puts the two import lines at the top of `CLAUDE.md` (see section 4). It does not invent principles; `the-way-discover` finds them.
+- On a project with principles in another form: asks permission, renames the file to `THE-WAY.md`, brings it to the single form (no numbers, no dates of origin) and updates the `@` import, then adds `THE-WAY-USAGE.md` and its import. The words of a principle change only with the "yes" of whoever leads the project.
+- Rerun: checks that everything is in place (`THE-WAY.md`, the two `@` imports, `THE-WAY-USAGE.md` written by the current plugin version). It compares only the version number on the first line of `THE-WAY-USAGE.md`: same is fine; older or missing, it offers to rewrite the file. It also recognizes the old marker block of setup 0.1.1 and offers to remove it and switch to the file. It says what is not in place and offers to fix it, with permission (VISIBILE).
 
 ### the-way-self-answer
 
 Run when Claude asks "do I put A or B?". It looks only at the principles, nothing else. There are two outcomes:
 
-- A principle decides: Claude writes "I do A (NAME)" and goes on.
+- A principle decides: Claude writes "I do A (NAME)" and closes with the decision and the principle, without asking "shall I proceed?".
 - No principle decides: Claude says which two principles pull in opposite directions ("the principles do not decide: X pulls toward B, Y toward A"), and the question stays with whoever reads (CITATO).
 
 The skill is a convenience, not the rule: the instructions in `CLAUDE.md` already tell Claude not to ask what the principles answer, and the reader can always write "answer with the principles when you can" (SENZA_PLUGIN).
@@ -66,9 +66,9 @@ Run when you want. It searches the conversation, `CLAUDE.md`, the documents and 
 
 It holds the criterion for writing a principle (section 5) and starts by itself when a principle is added or changed.
 
-## 4. What `setup` writes in `CLAUDE.md`
+## 4. What `setup` writes in the project
 
-A block at the top of the file, between two marker lines. The markers let a rerun find the block and update it. The block holds the `@THE-WAY.md` import and these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.2: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SEMPLICE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
@@ -96,12 +96,12 @@ It is one list, the same in every project (GENERICO). A principle:
 
 A principle may talk about how the project is worked on, not only about the product.
 
-The criterion lives only in the `the-way-discover` skill and is not copied into each project, so it is not read again at every session (SEMPLICE). Because starting by itself is not guaranteed, `setup` puts the fixed line about it in `CLAUDE.md` (VISIBILE).
+The criterion lives only in the `the-way-discover` skill and is not copied into each project, so it is not read again at every session (SEMPLICE). Because starting by itself is not guaranteed, `setup` puts the fixed line about it in `THE-WAY-USAGE.md` (VISIBILE).
 
 ## 6. Language
 
 - The text of the skills and the names of the commands are in English, because the plugin is distributed.
-- The texts a skill writes into a project are in the language of that project: the opening of `THE-WAY.md`, the section titles and fixed lines, the name of a single rule, and the instructions in `CLAUDE.md`. The fixed texts exist in Italian and English; for other languages they are translated.
+- The texts a skill writes into a project are in the language of that project: the opening of `THE-WAY.md`, the section titles and fixed lines, the name of a single rule, and the instructions in `THE-WAY-USAGE.md`. The fixed texts exist in one version only, in English; the skill translates them into the language of the project, Italian included.
 
 ## 7. Out of scope for now
 

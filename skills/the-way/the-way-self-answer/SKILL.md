@@ -15,7 +15,7 @@ You asked a question, or a subagent's report left something "to decide". Before 
 
 ## Outcomes
 
-- **A principle decides.** Write "I do A (NAME)" (in the project's language, e.g. "faccio A (NAME)") with a short reason if it helps, and go on with the work. Do not ask again.
+- **A principle decides.** Write "I do A (NAME)" (in the project's language) with a short reason if it helps, and go on with the work. The decision is final: do not close with a question such as "shall I proceed?" or "tell me if I go on", and do not hand the choice back to the person. Close with the decision and the principle that made it.
 - **No principle decides.** Write "the principles do not decide:" (project's language), then which two principles pull in opposite directions: X toward B, Y toward A. The question stays with the person; ask it, with that comparison right under it.
 
 Never present a choice as decided by a principle that does not really decide it. This skill writes no file, so it needs no permission to write.
