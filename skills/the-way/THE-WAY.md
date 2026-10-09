@@ -23,3 +23,5 @@ They are the point of the work. In a conflict they win.
 **LIGHT** — What is written for a reader is short and makes them smile.
 
 **ONE_PLACE** — Every principle is written in one place, `THE-WAY.md`: wherever else it was written, it is taken out.
+
+**PRINCIPLE_NOT_RULE** — A principle says what the project wants, so whoever meets a case nobody wrote down can decide it alone; a rule only says what not to do.

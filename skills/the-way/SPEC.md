@@ -6,9 +6,10 @@ This is the specification of the plugin: the decisions already taken. You do not
 
 The principles of a project live in one file, `THE-WAY.md`, in the root of the repository. The file has the same name and the same form in every project (GENERIC).
 
-- "The way" names the whole set of principles. A single rule is called "principle", in the language of the project (for example "principio" in an Italian project).
+- "The way" names the whole set of principles. A single one is called "principle", in the language of the project (for example "principio" in an Italian project).
+- A principle is not a rule, and the documents never call it one: a rule says what not to do and stops there; a principle says what the project wants, so whoever meets a case nobody wrote down can decide it alone (PRINCIPLE_NOT_RULE).
 - The principles are those of the project the session runs in. Inside this plugin's repository they guide the plugin; inside another project they guide only that project.
-- The plugin applies to itself: its own file is `skills/the-way/THE-WAY.md`. It sits inside the skill folder so it does not guide the other skills that will join the collection.
+- The plugin applies to itself: its own file is `skills/the-way/THE-WAY.md`. It sits inside the skill folder so it does not guide the other skills that will join the collection; `THE-WAY-USAGE.md` sits next to it, and `CLAUDE.md` imports both from there.
 
 The form of the file is fixed (GENERIC, SIMPLE):
 
@@ -31,7 +32,7 @@ The project carries everything (NO_PLUGIN_NEEDED):
 - The project's `CLAUDE.md` pulls in the file with `@THE-WAY.md` and the instructions for comparing choices to principles with `@THE-WAY-USAGE.md`. Someone who opens the project without the plugin reads and applies the principles all the same.
 - Subagents receive both, because they read the project's `CLAUDE.md`. Nothing is copied into the task given to them (NO_PLUGIN_NEEDED, SIMPLE).
 - `Explore` and `Plan` do not read `CLAUDE.md`. This is accepted; Claude compares with the principles the choices that come back from them.
-- When the instructions change, rerunning `the-way-setup` updates the project.
+- When the instructions change, rerunning `the-way-setup` updates the project; the other three skills run it first, so the update is offered the next time any of them starts.
 
 ## 3. The four skills
 
@@ -39,7 +40,7 @@ Commands: `/alecsplus-skills:the-way-setup`, `/alecsplus-skills:the-way-self-ans
 
 They are four separate skills, not one skill with arguments, because a skill with arguments does not offer its gestures when you type its name.
 
-Every skill asks permission before it writes a file, always, even `setup` on a new project. You can begin with any `the-way-` skill (ANY_DOOR). `the-way-self-answer`, `the-way-discover` and `the-way-new` first check three things in the project: `THE-WAY.md`, `THE-WAY-USAGE.md`, and the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md` in `CLAUDE.md`. If one is missing, they say which, ask for one yes, run `the-way-setup` and then do what was asked; without the yes they stop and say why (VISIBLE).
+Every skill asks permission before it writes a file, always, even `setup` on a new project. You can begin with any `the-way-` skill (ANY_DOOR). `the-way-self-answer`, `the-way-discover` and `the-way-new` first run `the-way-setup`, which checks that `THE-WAY.md`, `THE-WAY-USAGE.md` and the two import lines in `CLAUDE.md` are in place and written by the current plugin version. If all is in order, setup says nothing; if something is missing or out of date, it says which, asks for one yes and fixes it, then the skill does what was asked; without the yes the skill stops and says why (VISIBLE). The check and the version number live only in `the-way-setup` (ONE_PLACE).
 
 There is no "verify" gesture: it would have no purpose of its own (SIMPLE).
 
@@ -61,17 +62,17 @@ The skill is a convenience, not the rule: the instructions in `CLAUDE.md` alread
 
 ### the-way-discover
 
-Run when you want. It searches the conversation, `CLAUDE.md`, the documents and the recorded decisions for principles the project follows without having written them. It passes each one, one at a time, to `the-way-new` (with the Skill tool), which asks the "yes"; `the-way-discover` does not ask it. When a principle comes from a sentence written in a file, it passes that sentence along: once the principle is in `THE-WAY.md` the sentence is a copy, and `the-way-new` proposes removing it, in the same "yes". A sentence that repeats a principle already in `THE-WAY.md` is a copy too: `the-way-discover` proposes removing it (ONE_PLACE).
+Run when you want. It searches the conversation, `CLAUDE.md`, the documents and the recorded decisions for principles the project follows without having written them. Rules are the clue: several rules that come from the same want point to one principle, and the skill hands over the want (PRINCIPLE_NOT_RULE). It passes each one, one at a time, to `the-way-new` (with the Skill tool), which asks the "yes"; `the-way-discover` does not ask it. When a sentence written in a file says the principle itself, it passes that sentence along: once the principle is in `THE-WAY.md` the sentence is a copy, and `the-way-new` proposes removing it, in the same "yes". A rule that follows from the principle is not a copy and stays. A sentence that repeats a principle already in `THE-WAY.md` is a copy too: `the-way-discover` proposes removing it (ONE_PLACE).
 
 ### the-way-new
 
-Writes a principle in `THE-WAY.md`. Run it when you have a rule of the project in mind. It also starts by itself, in any language, when whoever works says a sentence that sets a rule for the whole project ("from now on we always do X here", "in this project we never do Y", "this is a rule"), and when a principle is about to be added or changed; it does not start for a choice that holds only for the task at hand.
+Writes a principle in `THE-WAY.md`. Run it when you have a principle of the project in mind. It also starts by itself, in any language, when whoever works states a rule for the whole project ("from now on we always do X here", "in this project we never do Y", "this is a rule"), and when a principle is about to be added or changed; it does not start for a choice that holds only for the task at hand.
 
-It passes the rule through the criterion (section 5), proposes the name, the sentence, and whether it is primary or secondary, and writes only after the "yes". One "yes" covers everything. There is no skill to remove a principle. Its description explains what a principle is, because whoever reads it for the first time does not know the word.
+What the person says is usually a rule (what not to do, or what to do in one case): the skill finds what the project wants behind it and proposes that as the principle, with the rule as one of its consequences, so the principle also decides the cases not yet met (PRINCIPLE_NOT_RULE). It passes the sentence through the criterion (section 5), proposes the name, the sentence, and whether it is primary or secondary, and writes only after the "yes". One "yes" covers everything. There is no skill to remove a principle. Its description explains what a principle is, because whoever reads it for the first time does not know the word.
 
 ## 4. What `setup` writes in the project
 
-The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.6: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.7: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
@@ -80,7 +81,7 @@ The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, al
 - Never go against a principle in silence. If a choice goes against one, say which one and why, before doing it.
 - The same holds for a "to decide" that comes back in a subagent report: if a principle decides, answer it and cite it.
 - Every task given to a subagent ends with the line "In the report, next to each choice, write the project principle that decided it". The task does not copy any principle, and nothing checks the report automatically. Claude reads it in the session.
-- A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project. Without the plugin, at least the yes remains.
+- A rule said for the whole project is a principle waiting to be named: find what the project wants behind it and propose that, not the rule. A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project. Without the plugin, at least the yes remains.
 
 ## 5. The criterion for writing a principle
 
@@ -88,8 +89,8 @@ It is one list, the same in every project (GENERIC). A principle:
 
 1. has a name of one word, or two joined by `_`, that alone calls back the whole sentence;
 2. is as short as possible, usually one sentence; a second one enters only if the first is misunderstood without it;
-3. says the general thing from which many rules come: no cases, examples or history, and no repeating another principle;
-4. says in positive terms what you want to obtain: not a motto good for everything, not a prohibition;
+3. says the general thing from which many choices come: no cases, examples or history, and no repeating another principle;
+4. says in positive terms what you want to obtain: not a motto good for everything, not a prohibition. A rule says what not to do and stops there; a principle says what the project wants, so it also decides the case nobody wrote down (PRINCIPLE_NOT_RULE);
 5. makes clear at once who and what it talks about;
 6. uses every word for exactly what it says, and the word the project already uses for that thing;
 7. is true as written: if a real case contradicts it, the sentence is corrected before it enters;
@@ -105,7 +106,7 @@ The criterion lives only in the `the-way-new` skill and is not copied into each 
 ## 6. Language
 
 - The text of the skills and the names of the commands are in English, because the plugin is distributed.
-- The texts a skill writes into a project are in the language of that project: the opening of `THE-WAY.md`, the section titles and fixed lines, the name of a single rule, and the instructions in `THE-WAY-USAGE.md`. The fixed texts exist in one version only, in English; the skill translates them into the language of the project, Italian included.
+- The texts a skill writes into a project are in the language of that project: the opening of `THE-WAY.md`, the section titles and fixed lines, the name of a single principle, and the instructions in `THE-WAY-USAGE.md`. The fixed texts exist in one version only, in English; the skill translates them into the language of the project, Italian included.
 
 ## 7. Out of scope for now
 

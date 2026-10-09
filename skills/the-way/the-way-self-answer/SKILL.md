@@ -9,7 +9,7 @@ You asked a question, or a subagent's report left something "to decide". Before 
 
 ## Steps
 
-1. **Check the setup.** In the repo root, check three things: `THE-WAY.md` exists, `THE-WAY-USAGE.md` exists, and `CLAUDE.md` has the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`. If all three are there, go on. If any is missing, say which, in plain words, and ask one yes to run `the-way-setup` (call the `Skill` tool with `alecsplus-skills:the-way-setup`). After the yes, run it and tell it the yes is already given for the files you named, then go on with what you were asked. Without the yes, stop and say why: the work needs the project's principles in place. Then read `THE-WAY.md`.
+1. **Check the setup.** Run `the-way-setup` (call the `Skill` tool with `alecsplus-skills:the-way-setup`): it checks that `THE-WAY.md`, `THE-WAY-USAGE.md` and the two import lines in `CLAUDE.md` are in place and written by the current plugin version; if something is missing or out of date, it says which and asks one yes; if all is in order, it says nothing. If it stopped without the yes, stop and say why: the work needs the project's principles in place. Then read `THE-WAY.md`.
 2. Take the question: the last one you asked, or the one the user names. If it has several choices or several numbered questions, do each one.
 3. For each choice, read every principle, primaries first. A primary wins over a secondary; when two primaries pull in opposite directions, none decides. A principle decides when it makes one option clearly better than the others. Try first: if you already know what the person would answer, a principle decided. The answer that looks too obvious is the answer.
 

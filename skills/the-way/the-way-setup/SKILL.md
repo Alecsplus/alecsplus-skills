@@ -9,9 +9,9 @@ Give the project one file of principles, `THE-WAY.md` in the repo root, and one 
 
 The fixed texts to write are at the end of this file, under "Fixed texts". They exist only in English: write them in the language of the project (see step 1).
 
-## Rules for every step
+## For every step
 
-- **Ask before writing.** Say exactly which files you will create or change, then wait for a yes. Always, also on a new project. Exception: when another `the-way-` skill called you and already got the yes for the files it named, do not ask again for those; ask only for what it did not name (for example renaming a file of principles).
+- **Ask before writing.** Say exactly which files you will create or change, then wait for a yes. Always, also on a new project. When another `the-way-` skill called you, do the same: it did not ask anything, it leaves the check and the yes to you. If everything is in order, say nothing and hand back.
 - **Never invent principles.** The file you create has no principle in it. Finding them is `the-way-discover`.
 - **Say what is wrong.** If something is missing or off, say it in plain words; never skip it silently.
 - Do not commit. Do not touch anything but `THE-WAY.md`, `THE-WAY-USAGE.md`, `CLAUDE.md`, and the file you are renaming.
@@ -25,7 +25,7 @@ In the repo root of the project you are in:
 - Is there a file that holds principles in another form or under another name (`PRINCIPI.md`, `PRINCIPLES.md`, a constitution file imported by `CLAUDE.md`)? If unsure which file it is, ask.
 - Does `CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`? Does it have an old block between `<!-- the-way:start` and `<!-- the-way:end -->` (written by setup 0.1.1)?
 - Which language does the project use? Read the existing `CLAUDE.md`, README and docs. The fixed texts are in English: translate them faithfully into the project's language, English included as is.
-- The version of this plugin is **0.1.6**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **0.1.7**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
@@ -45,7 +45,7 @@ The words of a principle change only with the yes of whoever leads the project. 
 3. `THE-WAY-USAGE.md` exists and its first line carries the version of this plugin. Compare only that number: same version → ok; older version, or no version line → not ok, propose rewriting the whole file with the current text; do not compare the rest of the text;
 4. `CLAUDE.md` has no old block between `<!-- the-way:start` and `<!-- the-way:end -->`. If it has one (setup 0.1.1), say so and propose: take the whole block out, from the start marker to the end marker included, put in its place the two import lines (keep `@THE-WAY.md`, which was inside the block), and write `THE-WAY-USAGE.md`.
 
-If all is right, say so in one line ("in order", in the project's language). For whatever is not, say what differs and propose the fix; apply it only after a yes. Do not touch the principles themselves.
+If all is right, say so in one line ("in order", in the project's language); if another `the-way-` skill called you, say nothing and hand back. For whatever is not, say what differs and propose the fix; apply it only after a yes. Do not touch the principles themselves.
 
 ## 3. Close
 
@@ -53,7 +53,7 @@ Say in two lines what was written and where. Then, in every case, if `THE-WAY.md
 
 ## Fixed texts
 
-These texts are the only ones the skill writes into a project. They are written here once, in English. Write them in the language of the project: same meaning, same order, same shape (`**NAME** — sentence`, the import lines). Never add or remove a rule when translating. Names of files, commands and the `NAME` of a principle stay as they are.
+These texts are the only ones the skill writes into a project. They are written here once, in English. Write them in the language of the project: same meaning, same order, same shape (`**NAME** — sentence`, the import lines). Never add or remove a line when translating. Names of files, commands and the `NAME` of a principle stay as they are.
 
 ### THE-WAY.md, empty
 
@@ -104,5 +104,5 @@ How to use them:
 - Never go against a principle in silence: if a choice goes against one, say which one and why before doing it.
 - The same holds for a "to decide" coming back from a subagent's report: compare first, then ask only if needed.
 - End every task you give to a subagent with this line: "In the report, next to each choice, write the project principle that decided it." Do not copy any principle into the task.
-- A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project.
+- A rule said for the whole project is a principle waiting to be named: find what the project wants behind it and propose that, not the rule. A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project.
 ```
