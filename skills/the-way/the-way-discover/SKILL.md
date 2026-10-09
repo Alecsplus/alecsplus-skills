@@ -1,6 +1,6 @@
 ---
 name: the-way-discover
-description: Find the principles a project follows without having written them (a principle is a rule that decides many choices of the project), and hand each one to the-way-new, which writes it into THE-WAY.md with the yes of whoever leads the project. Use when the user wants to find the project's unwritten principles.
+description: Find the principles a project follows without having written them (a principle is what the project cares about, said in one sentence with a name, that decides many of its choices), and hand each one to the-way-new, which writes it into THE-WAY.md with the yes of whoever leads the project. Use when the user wants to find the project's unwritten principles.
 ---
 
 # The way: discover
@@ -15,6 +15,7 @@ Principles live in `THE-WAY.md` in the repo root. This skill finds the ones that
 
 Look for principles the project follows without having written them, in: the conversation, `CLAUDE.md`, the docs, the recorded decisions, the README. A principle is a thing that decides many choices, not one choice.
 
-- If a principle is already written in another file, it is a candidate to move into `THE-WAY.md` (removal from the old place only after a yes).
-- Take **one principle at a time**. Call the `Skill` tool with `alecsplus-skills:the-way-new` and hand it the candidate: the name, the sentence, where you found it, which choices it would decide, and the old file if it is to be moved. `the-way-new` checks it, proposes it and asks the yes of whoever leads the project; you ask nothing yourself. Do not hand over the next before the answer.
+- Whenever the principle comes from a sentence written in a file (`CLAUDE.md`, a doc, a decision, the README), that sentence is a copy once the principle is in `THE-WAY.md`: hand over the file and the sentence so they are removed (only after a yes). A principle found only in the conversation has nothing to remove.
+- Take **one principle at a time**. Call the `Skill` tool with `alecsplus-skills:the-way-new` and hand it the candidate: the name, the sentence, where you found it, which choices it would decide, and the file and sentence to remove, if any. `the-way-new` checks it, proposes it and asks the yes of whoever leads the project; you ask nothing yourself. Do not hand over the next before the answer.
+- A sentence that repeats a principle already in `THE-WAY.md` is a copy: quote it with its file and propose removing it, one yes per sentence. This is the only thing you ask yourself.
 - Words come from the person leading the project or from their yes to the proposal. Never put in a principle on your own.

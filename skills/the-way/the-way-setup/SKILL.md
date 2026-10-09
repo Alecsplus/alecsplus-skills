@@ -25,7 +25,7 @@ In the repo root of the project you are in:
 - Is there a file that holds principles in another form or under another name (`PRINCIPI.md`, `PRINCIPLES.md`, a constitution file imported by `CLAUDE.md`)? If unsure which file it is, ask.
 - Does `CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`? Does it have an old block between `<!-- the-way:start` and `<!-- the-way:end -->` (written by setup 0.1.1)?
 - Which language does the project use? Read the existing `CLAUDE.md`, README and docs. The fixed texts are in English: translate them faithfully into the project's language, English included as is.
-- The version of this plugin is **0.1.5**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **0.1.6**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
@@ -37,7 +37,7 @@ In the repo root of the project you are in:
 - each principle on one line: `**NAME** — sentence`, NAME in uppercase letters, with `_` for spaces; no number, no origin sentence or date;
 - other free paragraphs may stay.
 
-The words of a principle change only with the yes of whoever leads the project. Removing numbers and origin sentences is allowed; if bringing a principle to the form would change its words, show the change and ask. Then list, without editing them, the other places that still mention the old file name (grep the repo): the user decides.
+The words of a principle change only with the yes of whoever leads the project. Removing numbers and origin sentences is allowed; if bringing a principle to the form would change its words, show the change and ask. Then list the other places that still mention the old file name (grep the repo). For each, propose one of two fixes: a line that only tells the reader to read the principles file (or repeats what `THE-WAY.md` already says) is now a copy of the import, so propose removing it; any other line, propose updating the name. Apply only after a yes: the user decides.
 
 **C. The setup already exists.** Check, and report each point as ok or not ok:
 1. `THE-WAY.md` exists and has the opening, the sections and the one-line form;
@@ -49,7 +49,7 @@ If all is right, say so in one line ("in order", in the project's language). For
 
 ## 3. Close
 
-Say in two lines what was written and where. Then, in every case, if `THE-WAY.md` has no principle yet, add one line: `/alecsplus-skills:the-way-discover` finds the principles the project already follows, `/alecsplus-skills:the-way-new` writes one. Nothing more.
+Say in two lines what was written and where. Then, in every case, if `THE-WAY.md` has no principle yet, add one line suggesting the next step. If the project already has some substance (a `CLAUDE.md` with more than the import lines, docs, or a git history beyond a few commits), suggest first `/alecsplus-skills:the-way-discover`, which finds the principles the project already follows, and as the alternative `/alecsplus-skills:the-way-new`, which writes one. If the project is practically empty, suggest them the other way round: `the-way-new` first, `the-way-discover` as the alternative. Nothing more.
 
 ## Fixed texts
 
@@ -101,6 +101,7 @@ How to use them:
 - Before asking the person leading the project to choose, compare the choice with the principles. If one decides, do not ask: write "I do A (NAME)" and go on. Never ask what the principles already answer.
 - Try first: if you already know what the person would answer, a principle has decided. The answer that looks too obvious is the answer.
 - Ask only when no principle decides or two pull in opposite directions. Then the question carries its comparison right under it, starting with the words "the principles do not decide:" and saying which two principles pull in opposite directions (X toward B, Y toward A).
+- Never go against a principle in silence: if a choice goes against one, say which one and why before doing it.
 - The same holds for a "to decide" coming back from a subagent's report: compare first, then ask only if needed.
 - End every task you give to a subagent with this line: "In the report, next to each choice, write the project principle that decided it." Do not copy any principle into the task.
 - A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project.

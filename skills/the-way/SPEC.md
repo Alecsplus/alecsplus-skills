@@ -20,16 +20,7 @@ The form of the file is fixed (GENERIC, SIMPLE):
 - Free paragraphs are allowed. Only lines that start with `**NAME**` are principles.
 - No candidates: a principle is either in the file or not.
 
-The principles of this repository are in `skills/the-way/THE-WAY.md`. All are primary:
-
-- **SIMPLE** — Things are done in the simplest and most linear way possible: less is better. Simplicity is a complexity solved, not a complexity avoided.
-- **GENERIC** — The plugin works the same way in every project and in every context. A form, a name or a rule that holds in only one project does not enter.
-- **NO_PLUGIN_NEEDED** — A project's principles live in its `THE-WAY.md` and its `CLAUDE.md`: whoever opens the project without the plugin reads and applies them all the same.
-- **VISIBLE** — When something does not work, whoever uses the project sees it: a missing file, a failed check, a step gone wrong are said out loud, they do not fail in silence.
-- **CITED** — Every choice that a principle decides carries the name of that principle: whoever reads always knows where a choice comes from, and none passes in silence.
-- **OBVIOUS** — What has only one sensible answer is done without asking; ask only where whoever leads could really choose in two ways.
-- **ANY_DOOR** — You can begin with any skill: the one that finds something missing says so, asks one yes, prepares it, and then does what it was asked.
-- **LIGHT** — What is written for a reader is short and makes them smile.
+The principles of this repository are in [`THE-WAY.md`](./THE-WAY.md), and only there (ONE_PLACE).
 
 ## 2. Nothing runs by itself
 
@@ -55,9 +46,9 @@ There is no "verify" gesture: it would have no purpose of its own (SIMPLE).
 ### the-way-setup
 
 - On a project with no principles: creates an empty `THE-WAY.md` (title, opening line and `## Primary`) and `THE-WAY-USAGE.md`, and puts the two import lines at the top of `CLAUDE.md` (see section 4). It does not invent principles; `the-way-discover` finds them.
-- On a project with principles in another form: asks permission, renames the file to `THE-WAY.md`, brings it to the single form (no numbers, no dates of origin) and updates the `@` import, then adds `THE-WAY-USAGE.md` and its import. The words of a principle change only with the "yes" of whoever leads the project.
+- On a project with principles in another form: asks permission, renames the file to `THE-WAY.md`, brings it to the single form (no numbers, no dates of origin) and updates the `@` import, then adds `THE-WAY-USAGE.md` and its import. The words of a principle change only with the "yes" of whoever leads the project. Other lines that still name the old file: a line that only says to read the principles is now a copy of the import, so setup proposes removing it; any other line gets the new name. Both only after a yes.
 - Rerun: checks that everything is in place (`THE-WAY.md`, the two `@` imports, `THE-WAY-USAGE.md` written by the current plugin version). It compares only the version number on the first line of `THE-WAY-USAGE.md`: same is fine; older or missing, it offers to rewrite the file. It also recognizes the old marker block of setup 0.1.1 and offers to remove it and switch to the file. It says what is not in place and offers to fix it, with permission (VISIBLE).
-- Close: in every case, at the end, if `THE-WAY.md` has no principle yet, it adds one line suggesting `the-way-discover` (finds the principles the project already follows) and `the-way-new` (writes one). Nothing more.
+- Close: in every case, at the end, if `THE-WAY.md` has no principle yet, it adds one line suggesting the next step: on a project with some substance (a `CLAUDE.md` beyond the imports, docs, a git history), first `the-way-discover` (finds the principles the project already follows), then `the-way-new` (writes one) as the alternative; on a practically empty project, the other way round. Nothing more.
 
 ### the-way-self-answer
 
@@ -70,7 +61,7 @@ The skill is a convenience, not the rule: the instructions in `CLAUDE.md` alread
 
 ### the-way-discover
 
-Run when you want. It searches the conversation, `CLAUDE.md`, the documents and the recorded decisions for principles the project follows without having written them. It passes each one, one at a time, to `the-way-new` (with the Skill tool), which asks the "yes"; `the-way-discover` does not ask it. If a principle is already written in another file, it passes it as a candidate to move into `THE-WAY.md`.
+Run when you want. It searches the conversation, `CLAUDE.md`, the documents and the recorded decisions for principles the project follows without having written them. It passes each one, one at a time, to `the-way-new` (with the Skill tool), which asks the "yes"; `the-way-discover` does not ask it. When a principle comes from a sentence written in a file, it passes that sentence along: once the principle is in `THE-WAY.md` the sentence is a copy, and `the-way-new` proposes removing it, in the same "yes". A sentence that repeats a principle already in `THE-WAY.md` is a copy too: `the-way-discover` proposes removing it (ONE_PLACE).
 
 ### the-way-new
 
@@ -80,12 +71,13 @@ It passes the rule through the criterion (section 5), proposes the name, the sen
 
 ## 4. What `setup` writes in the project
 
-The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.5: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.6: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
 - Try first. If you already know what the user would answer, a principle has decided. The answer that looks too obvious is the answer.
 - Ask only when no principle decides, or when two pull in opposite directions. Under the question, write the comparison, starting with "the principles do not decide".
+- Never go against a principle in silence. If a choice goes against one, say which one and why, before doing it.
 - The same holds for a "to decide" that comes back in a subagent report: if a principle decides, answer it and cite it.
 - Every task given to a subagent ends with the line "In the report, next to each choice, write the project principle that decided it". The task does not copy any principle, and nothing checks the report automatically. Claude reads it in the session.
 - A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project. Without the plugin, at least the yes remains.

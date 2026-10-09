@@ -21,3 +21,5 @@ They are the point of the work. In a conflict they win.
 **ANY_DOOR** — You can begin with any skill: the one that finds something missing says so, asks one yes, prepares it, and then does what it was asked.
 
 **LIGHT** — What is written for a reader is short and makes them smile.
+
+**ONE_PLACE** — Every principle is written in one place, `THE-WAY.md`: wherever else it was written, it is taken out.

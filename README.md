@@ -4,19 +4,19 @@
 
 You write down your project's **principles** once. From then on, every choice Claude and its agents make follows them, and says which one decided. Fewer questions are a happy side effect.
 
-A principle is a short rule with a **name** that decides many choices. One line in `THE-WAY.md`:
+A principle is what your project cares about, said in one sentence with a **name**: it decides many choices. One line in `THE-WAY.md`:
 
 ```markdown
-**SIMPLE** — Do things in the simplest way that works: less is better.
+**USER_FIRST** — When in doubt, pick what is easier for whoever uses the product.
 ```
 
 ## One scene
 
 Claude is about to ask: "Short error message, or long with all the details?" With `the-way` it doesn't:
 
-> I do the short, plain message (SIMPLE).
+> I do the short, plain message (USER_FIRST). The details go to the log.
 
-Disagree? Change the rule once. When two principles pull apart, Claude asks, and shows you the tug of war.
+Disagree? Change the principle once. When two principles pull apart, Claude asks, and shows you the tug of war.
 
 This repo uses the-way on itself: see [its principles](./skills/the-way/THE-WAY.md).
 
@@ -31,7 +31,9 @@ Or in a session: `/plugin marketplace add Alecsplus/alecsplus-skills`, then `/pl
 
 ## The four skills
 
-Start from any of them: if setup is missing, the skill says so, asks one yes, prepares it, then does what you asked. Nothing is written without your yes.
+Got a project with some history? Start with `the-way-discover`: it finds the principles you already follow. Starting from scratch? `the-way-new` writes your first one.
+
+Any skill can be the first: if setup is missing, the skill says so, asks one yes, prepares it, then does what you asked. Nothing is written without your yes.
 
 - `/alecsplus-skills:the-way-setup` gets a project ready. Try it on a bare project.
 - `/alecsplus-skills:the-way-self-answer` answers Claude's question from the principles. Try it when Claude asks "tabs or spaces?".
