@@ -62,7 +62,7 @@ The skill is a convenience, not the rule: the instructions in `CLAUDE.md` alread
 
 ### the-way-discover
 
-Run when you want. It searches the conversation, `CLAUDE.md`, the documents and the recorded decisions for principles the project follows without having written them. Rules are the clue: several rules that come from the same want point to one principle, and the skill hands over the want (PRINCIPLE_NOT_RULE). It passes each one, one at a time, to `the-way-new` (with the Skill tool), which asks the "yes"; `the-way-discover` does not ask it. When a sentence written in a file says the principle itself, it passes that sentence along: once the principle is in `THE-WAY.md` the sentence is a copy, and `the-way-new` proposes removing it, in the same "yes". A rule that follows from the principle is not a copy and stays. A sentence that repeats a principle already in `THE-WAY.md` is a copy too: `the-way-discover` proposes removing it (ONE_PLACE).
+Run when you want. It searches the conversation, `CLAUDE.md`, the documents and the recorded decisions for principles the project follows without having written them. Rules are the clue: several rules that come from the same want point to one principle, and the skill hands over the want (PRINCIPLE_NOT_RULE). It passes each one, one at a time, to `the-way-new` (with the Skill tool), which asks the "yes"; `the-way-discover` does not ask it. When a sentence written in a file says the principle itself, it passes that sentence along: once the principle is in `THE-WAY.md` the sentence is a copy, and `the-way-new` proposes removing it, in the same "yes". A rule that only follows from the principle is a copy too, removed in the same "yes"; a rule that carries a fact the principle does not give (a command, a path, a number) stays. A sentence that repeats a principle already in `THE-WAY.md` is a copy too: `the-way-discover` proposes removing it (ONE_PLACE).
 
 ### the-way-new
 
@@ -72,7 +72,7 @@ What the person says is usually a rule (what not to do, or what to do in one cas
 
 ## 4. What `setup` writes in the project
 
-The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.7: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.8: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
@@ -85,19 +85,18 @@ The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, al
 
 ## 5. The criterion for writing a principle
 
-It is one list, the same in every project (GENERIC). A principle:
+It is one list, the same in every project (GENERIC); each point has a name, written in italics so it is not mistaken for a principle of the project. A principle:
 
-1. has a name of one word, or two joined by `_`, that alone calls back the whole sentence;
-2. is as short as possible, usually one sentence; a second one enters only if the first is misunderstood without it;
-3. says the general thing from which many choices come: no cases, examples or history, and no repeating another principle;
-4. says in positive terms what you want to obtain: not a motto good for everything, not a prohibition. A rule says what not to do and stops there; a principle says what the project wants, so it also decides the case nobody wrote down (PRINCIPLE_NOT_RULE);
-5. makes clear at once who and what it talks about;
-6. uses every word for exactly what it says, and the word the project already uses for that thing;
-7. is true as written: if a real case contradicts it, the sentence is corrected before it enters;
-8. has an opposite that someone could seriously choose;
-9. is born from the meaning: first fix what it is for, then write the sentence; the meaning does not change under objection;
-10. enters only with the words of whoever leads the project, or with their yes;
-11. if it is secondary, gives shape to a primary one that you can name.
+- *Self_explaining*: Has a name of one word, or two joined by `_`, that alone calls back the whole sentence;
+- *Short*: Is as short as possible, usually one sentence; a second one enters only if the first is misunderstood without it;
+- *General*: Says the general thing from which many choices come: no cases, examples or history, and no repeating another principle;
+- *Target*: Says in positive terms what you want to obtain: not a motto good for everything, not a prohibition. A rule says what not to do and stops there; a principle says what the project wants, so it also decides the case nobody wrote down (PRINCIPLE_NOT_RULE);
+- *Who_and_what*: Makes clear at once who and what it talks about;
+- *Exact_words*: Uses every word for exactly what it says, and the word the project already uses for that thing;
+- *Uncontradicted*: Is true as written: if a real case contradicts it, the sentence is corrected before it enters;
+- *Has_opposite*: Has an opposite that someone could seriously choose;
+- *Meaning_first*: Is born from the meaning: first fix what it is for, then write the sentence; the meaning does not change under objection;
+- *Serves_primary*: If it is secondary, gives shape to a primary one that you can name.
 
 A principle may talk about how the project is worked on, not only about the product.
 

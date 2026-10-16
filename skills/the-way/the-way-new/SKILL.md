@@ -16,28 +16,27 @@ Principles live in `THE-WAY.md` in the repo root. This skill writes one principl
 
 1. Take the sentence as the person leading the project said it (or as `the-way-discover` handed it over). It is the starting point, not the principle: the principle enters only with that person's yes to your proposal. Never put in a principle on your own.
 2. What the person said is usually a rule: what not to do, or what to do in one case. People are good at giving rules and bad at naming principles; this step raises the level. Find what the project wants that makes that rule follow, and write that as the principle; the rule stays as one of its consequences, and so do the cases nobody has met yet (PRINCIPLE_NOT_RULE). Then write a name and one sentence. Compare with the principles already there: if one already says it, say which and stop.
-3. Pass it through the criterion. If it fails a point, say which one and propose a fixed wording.
-4. Propose to the leader: the name, the sentence, whether it is primary or secondary, and which choices it would decide, starting with the sentence the person said, which must follow from it. If a sentence written in a file (handed over by `the-way-discover`, or one you know of) says the principle itself, it is a copy once the principle is in `THE-WAY.md`: propose in the same proposal to remove it, quoting it with its file. A rule that follows from the principle is not a copy: it stays where it is. Wait for the answer; the one yes covers all of it.
+3. Pass it through the criterion. If it fails a point, name it and propose a fixed wording.
+4. Propose to the leader: the name, the sentence, whether it is primary or secondary, and which choices it would decide, starting with the sentence the person said, which must follow from it. If a sentence written in a file (handed over by `the-way-discover`, or one you know of) says the principle itself, it is a copy once the principle is in `THE-WAY.md`: propose in the same proposal to remove it, quoting it with its file. A rule that only follows from the principle is a copy too: propose removing it in the same yes. A rule that carries a fact the principle does not give (a command, a path, a number) stays. Wait for the answer; the one yes covers all of it.
 5. After the yes, write it (see "Writing it"). A principle that is being changed gets its line rewritten the same way, with the same criterion and the same yes.
 
 ## The criterion
 
 Every principle, new or changed, has to pass this. First fix what it is for, then write the sentence; the meaning does not change under objection.
 
-1. It has a name of one word, or two joined by `_`, that alone calls back the whole sentence.
-2. It is as short as possible, usually one sentence; a second one enters only if without it the first is misunderstood.
-3. It says the general thing from which many choices are born: no cases, examples or history, and it does not repeat another principle.
-4. It says in positive what the project wants to get: not a motto good for everything, not a prohibition. A rule says what not to do and stops there; a principle says what the project wants, so it also decides the case nobody wrote down (PRINCIPLE_NOT_RULE).
-5. It is clear at once who and what it is about.
-6. Every word means exactly what it says, and is the word the project already uses for that thing.
-7. It is true as written: if a real case contradicts it, fix the sentence before it enters.
-8. It has an opposite that someone could seriously choose.
-9. It is born from its meaning: say what it is for, then write the sentence.
-10. It enters only with the words of whoever leads the project, or with their yes.
-11. If it is secondary, it gives substance to a primary that you can name.
+- *Self_explaining*: It has a name of one word, or two joined by `_`, that alone calls back the whole sentence.
+- *Short*: It is as short as possible, usually one sentence; a second one enters only if without it the first is misunderstood.
+- *General*: It says the general thing from which many choices are born: no cases, examples or history, and it does not repeat another principle.
+- *Target*: It says in positive what the project wants to get: not a motto good for everything, not a prohibition. A rule says what not to do and stops there; a principle says what the project wants, so it also decides the case nobody wrote down (PRINCIPLE_NOT_RULE).
+- *Who_and_what*: It is clear at once who and what it is about.
+- *Exact_words*: Every word means exactly what it says, and is the word the project already uses for that thing.
+- *Uncontradicted*: It is true as written: if a real case contradicts it, fix the sentence before it enters.
+- *Has_opposite*: It has an opposite that someone could seriously choose.
+- *Meaning_first*: It is born from its meaning: say what it is for, then write the sentence.
+- *Serves_primary*: If it is secondary, it gives substance to a primary that you can name.
 
 A principle may also talk about how the project is worked on, not only about the product.
 
 ## Writing it
 
-One line: `**NAME** — sentence`, NAME in uppercase letters and `_`. Under `## Primary`, or under `## Secondary` (create the section, with its fixed line, if it is not there: "## Secondary" then "They give substance to the primary ones: read them in their light; they do not contradict them.", translated faithfully into the project's language) when point 11 holds. Write in the language of the file. If the proposal included a sentence to remove, remove it from its file too. After writing, say in one line what you added.
+One line: `**NAME** — sentence`, NAME in uppercase letters and `_`. Under `## Primary`, or under `## Secondary` (create the section, with its fixed line, if it is not there: "## Secondary" then "They give substance to the primary ones: read them in their light; they do not contradict them.", translated faithfully into the project's language) when *Serves_primary* holds. Write in the language of the file. If the proposal included a sentence to remove, remove it from its file too. After writing, say in one line what you added.

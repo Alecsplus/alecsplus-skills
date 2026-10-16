@@ -1,4 +1,4 @@
-*Written by `/alecsplus-skills:the-way-setup` 0.1.7: rerun it to update.*
+*Written by `/alecsplus-skills:the-way-setup` 0.1.8: rerun it to update.*
 
 ## Principles
 
