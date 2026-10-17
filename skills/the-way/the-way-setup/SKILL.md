@@ -25,7 +25,7 @@ In the repo root of the project you are in:
 - Is there a file that holds principles in another form or under another name (`PRINCIPI.md`, `PRINCIPLES.md`, a constitution file imported by `CLAUDE.md`)? If unsure which file it is, ask.
 - Does `CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`? Does it have an old block between `<!-- the-way:start` and `<!-- the-way:end -->` (written by setup 0.1.1)?
 - Which language does the project use? Read the existing `CLAUDE.md`, README and docs. The fixed texts are in English: translate them faithfully into the project's language, English included as is.
-- The version of this plugin is **0.1.9**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **0.1.10**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
