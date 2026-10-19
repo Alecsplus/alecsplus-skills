@@ -32,7 +32,7 @@ The project carries everything (NO_PLUGIN_NEEDED):
 - The project's `CLAUDE.md` pulls in the file with `@THE-WAY.md` and the instructions for comparing choices to principles with `@THE-WAY-USAGE.md`. Someone who opens the project without the plugin reads and applies the principles all the same.
 - Subagents receive both, because they read the project's `CLAUDE.md`. Nothing is copied into the task given to them (NO_PLUGIN_NEEDED, SIMPLE).
 - `Explore` and `Plan` do not read `CLAUDE.md`. This is accepted; Claude compares with the principles the choices that come back from them.
-- When the instructions change, rerunning `the-way-setup` updates the project; the other three skills run it first, so the update is offered the next time any of them starts.
+- When the instructions change, rerunning `the-way-setup` updates the project; the other three skills run it first, so the update is offered the next time any of them starts. After an update, the principles already written are read again against the criterion, one at a time, and only the ones that fail a point get a proposed change, each with its yes.
 
 ## 3. The four skills
 
@@ -48,7 +48,7 @@ There is no "verify" gesture: it would have no purpose of its own (SIMPLE).
 
 - On a project with no principles: creates an empty `THE-WAY.md` (title, opening line and `## Primary`) and `THE-WAY-USAGE.md`, and puts the two import lines at the top of `CLAUDE.md` (see section 4). It does not invent principles; `the-way-discover` finds them.
 - On a project with principles in another form: asks permission, renames the file to `THE-WAY.md`, brings it to the single form (no numbers, no dates of origin) and updates the `@` import, then adds `THE-WAY-USAGE.md` and its import. The words of a principle change only with the "yes" of whoever leads the project. Other lines that still name the old file: a line that only says to read the principles is now a copy of the import, so setup proposes removing it; any other line gets the new name. Both only after a yes.
-- Rerun: checks that everything is in place (`THE-WAY.md`, the two `@` imports, `THE-WAY-USAGE.md` written by the current plugin version). It compares only the version number on the first line of `THE-WAY-USAGE.md`: same is fine; older or missing, it offers to rewrite the file. It also recognizes the old marker block of setup 0.1.1 and offers to remove it and switch to the file. It says what is not in place and offers to fix it, with permission (VISIBLE).
+- Rerun: checks that everything is in place (`THE-WAY.md`, the two `@` imports, `THE-WAY-USAGE.md` written by the current plugin version). It compares only the version number on the first line of `THE-WAY-USAGE.md`: same is fine; older or missing, it offers to rewrite the file; after that rewrite it passes every principle of `THE-WAY.md` to `the-way-new`, one at a time, to read it again against the criterion, by itself and before any other work: a principle that passes is not mentioned, one that fails a point gets a proposed line and its own yes. It also recognizes the old marker block of setup 0.1.1 and offers to remove it and switch to the file. It says what is not in place and offers to fix it, with permission (VISIBLE).
 - Close: in every case, at the end, if `THE-WAY.md` has no principle yet, it adds one line suggesting the next step: on a project with some substance (a `CLAUDE.md` beyond the imports, docs, a git history), first `the-way-discover` (finds the principles the project already follows), then `the-way-new` (writes one) as the alternative; on a practically empty project, the other way round. Nothing more.
 
 ### the-way-self-answer
@@ -72,7 +72,7 @@ What the person says is usually a rule (what not to do, or what to do in one cas
 
 ## 4. What `setup` writes in the project
 
-The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 1.0.0: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 1.0.1: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
@@ -93,6 +93,7 @@ It is one list, the same in every project (GENERIC); each point has a name, writ
 - *Target*: Says in positive terms what you want to obtain: not a motto good for everything, not a prohibition. A rule says what not to do and stops there; a principle says what the project wants, so it also decides the case nobody wrote down (PRINCIPLE_NOT_RULE);
 - *Who_and_what*: Makes clear at once who and what it talks about;
 - *Exact_words*: Uses every word for exactly what it says, and the word the project already uses for that thing;
+- *One_reading*: Read by Claude in a fresh session, with nothing of the conversation that wrote it, has one reading only; a sentence that a person understands from the context is not enough;
 - *Uncontradicted*: Is true as written: if a real case contradicts it, the sentence is corrected before it enters;
 - *Has_opposite*: Has an opposite that someone could seriously choose;
 - *Meaning_first*: Is born from the meaning: first fix what it is for, then write the sentence; the meaning does not change under objection;

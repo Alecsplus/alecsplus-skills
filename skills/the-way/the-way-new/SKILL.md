@@ -14,6 +14,7 @@ Principles live in `THE-WAY.md` in the repo root. This skill writes one principl
 
 ## Steps
 
+0. If `the-way-setup` handed over a principle already written, to read again after a plugin update: pass its line through the criterion. If it passes every point, say nothing and hand back. If a point fails, name it and propose the fixed line, with its own yes, as in step 4; skip steps 1 and 2.
 1. Take the sentence as the person leading the project said it (or as `the-way-discover` handed it over). It is the starting point, not the principle: the principle enters only with that person's yes to your proposal. Never put in a principle on your own.
 2. What the person said is usually a rule: what not to do, or what to do in one case. People are good at giving rules and bad at naming principles; this step raises the level. Find what the project wants that makes that rule follow, then ask once more why the project wants that: if the answer is a larger thing the project really wants, that is the principle. Stop when the next why would hold for any project. Write that as the principle; the rule stays as one of its consequences, and so do the cases nobody has met yet (PRINCIPLE_NOT_RULE). A principle that only restates the rule with two words more has not raised the level: "don't log passwords" does not become "passwords, tokens and keys stay out of the logs", it becomes "what a person entrusts to us stays only where it is needed". The same holds when a principle already written is read again: a new sentence that names the mechanism carrying it out (a file, a part of the code, who writes what where) has gone down a level, from the principle to one of its consequences; the principle stays above them. Then write a name and one sentence. Compare with the principles already there: if one already says it, say which and stop.
 3. Pass it through the criterion. If it fails a point, name it and propose a fixed wording.
@@ -30,6 +31,7 @@ Every principle, new or changed, has to pass this. First fix what it is for, the
 - *Target*: It says in positive what the project wants to get: not a motto good for everything, not a prohibition. A rule says what not to do and stops there; a principle says what the project wants, so it also decides the case nobody wrote down (PRINCIPLE_NOT_RULE).
 - *Who_and_what*: It is clear at once who and what it is about.
 - *Exact_words*: Every word means exactly what it says, and is the word the project already uses for that thing.
+- *One_reading*: Read by Claude in a fresh session, with nothing of the conversation that wrote it, it has one reading only; a sentence that a person understands from the context is not enough.
 - *Uncontradicted*: It is true as written: if a real case contradicts it, fix the sentence before it enters.
 - *Has_opposite*: It has an opposite that someone could seriously choose.
 - *Meaning_first*: It is born from its meaning: say what it is for, then write the sentence.

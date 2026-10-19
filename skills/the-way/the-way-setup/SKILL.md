@@ -25,7 +25,7 @@ In the repo root of the project you are in:
 - Is there a file that holds principles in another form or under another name (`PRINCIPI.md`, `PRINCIPLES.md`, a constitution file imported by `CLAUDE.md`)? If unsure which file it is, ask.
 - Does `CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`? Does it have an old block between `<!-- the-way:start` and `<!-- the-way:end -->` (written by setup 0.1.1)?
 - Which language does the project use? Read the existing `CLAUDE.md`, README and docs. The fixed texts are in English: translate them faithfully into the project's language, English included as is.
-- The version of this plugin is **1.0.0**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **1.0.1**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
@@ -42,7 +42,7 @@ The words of a principle change only with the yes of whoever leads the project. 
 **C. The setup already exists.** Check, and report each point as ok or not ok:
 1. `THE-WAY.md` exists and has the opening, the sections and the one-line form;
 2. `CLAUDE.md` has the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`;
-3. `THE-WAY-USAGE.md` exists and its first line carries the version of this plugin. Compare only that number: same version → ok; older version, or no version line → not ok, propose rewriting the whole file with the current text; do not compare the rest of the text;
+3. `THE-WAY-USAGE.md` exists and its first line carries the version of this plugin. Compare only that number: same version → ok; older version, or no version line → not ok, propose rewriting the whole file with the current text; do not compare the rest of the text. After that rewrite, the plugin has changed since the principles were written: pass every principle of `THE-WAY.md` to `the-way-new` (call the `Skill` tool with `alecsplus-skills:the-way-new`), one at a time, in the order of the file, to read it again against its criterion. A principle that passes is not mentioned; for one that fails a point, `the-way-new` proposes the fixed line and asks its yes. This happens by itself, no yes asked for it, also when another `the-way-` skill called you: it comes before the work that skill was asked;
 4. `CLAUDE.md` has no old block between `<!-- the-way:start` and `<!-- the-way:end -->`. If it has one (setup 0.1.1), say so and propose: take the whole block out, from the start marker to the end marker included, put in its place the two import lines (keep `@THE-WAY.md`, which was inside the block), and write `THE-WAY-USAGE.md`.
 
 If all is right, say so in one line ("in order", in the project's language); if another `the-way-` skill called you, say nothing and hand back. For whatever is not, say what differs and propose the fix; apply it only after a yes. Do not touch the principles themselves.
