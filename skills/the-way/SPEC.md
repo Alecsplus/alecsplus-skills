@@ -72,7 +72,7 @@ What the person says is usually a rule (what not to do, or what to do in one cas
 
 ## 4. What `setup` writes in the project
 
-The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 0.1.10: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 1.0.0: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
