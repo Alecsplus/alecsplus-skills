@@ -1,60 +1,73 @@
 ---
 name: holo
-description: Draw a hand-drawn schema (Excalidraw style, dark theme) that explains a piece of code, a document, the conversation or a sentence, so a human understands it at a glance. Use when the user runs it, asks for a schema, a diagram or a drawing of something, or says "holo".
+description: Draw a hand-drawn schema (Excalidraw style, dark theme) that explains a piece of code, a document, an architecture, the conversation or a sentence, so a human understands it at a glance. Use when the user runs it, asks for a schema, a diagram or a drawing of something, or says "holo".
 ---
 
 # Holo
 
-"Help me, Obi-Wan." A holo is a drawing that appears in the middle of the table and makes a thing understood at a glance. You write it as an `.excalidraw` file, by hand, element by element; the script beside this file draws it with rough.js, in a hand-drawn line and Excalifont letters, and gives you a PNG to look at.
+"Help me, Obi-Wan." A holo is a drawing that appears in the middle of the table and makes a thing understood at a glance. You build it with a short script on the helper module beside this file, which writes an `.excalidraw` file; `render.mjs` draws it with rough.js, in a hand-drawn line and Excalifont letters, and gives you a PNG to look at.
 
 ## Steps
 
 1. **Read the principles** in `THE-WAY.md`, next to this file. They decide every choice below; cite them by name when they do.
-2. **Take the context**: what the user points at (code, a document, the conversation, a sentence). Find the one thing the holo must say, in one sentence, for someone who meets it for the first time (ONE_HOLO, PADAWAN). If the context holds two things, say so and draw two holos, one file each.
-3. **Choose where it lands**: next to what it explains, as `<topic>.excalidraw` (for `checkout.ts` explain in the same folder, as `checkout.excalidraw` or `checkout-flow.excalidraw`). If it explains the conversation or nothing that lives in the repository, ask the place once, then never again in the session.
-4. **Write the source** (format below). Place every element by hand: where things stand, what is aligned, what is left empty all mean something (EVERYTHING_MEANS). Colour says what a thing is, never what is pretty. An arrow carries a verb, and so does its width, its dashes, its colour; if the sentence reads without the arrow, leave the arrow out. Words are the reader's: full sentences where a label would need the code open beside it, labels where the reader already knows the words.
-5. **Render and look**: run the script, then open the PNG with the Read tool and look at it as the reader would: text cut by a card, elements overlapping, an arrow pointing at nothing, a sentence too long for its line, a thing nobody meeting it first would understand. Fix the source and render again. Two passes at most: then hand it over and say what you still see (VISIBLE).
-6. **Hand it over**: the sentence the holo says, and the paths of the `.excalidraw` and the `.svg`. The PNG was for looking: delete it unless the user wants it. The source stays beside the drawing so anyone changes it, in Excalidraw (open the file at excalidraw.com) or by asking you, and renders it again (NEVER_FINAL).
+2. **Say what it must make understood**, in one sentence, for someone who meets the thing for the first time (ONE_HOLO, PADAWAN). Then pick the form that says it, from the forms below. Two things to understand are two holos, one file each.
+3. **Choose where it lands**: next to what it explains, as `<topic>.excalidraw` (for `checkout.ts`, in the same folder, as `checkout.excalidraw` or `checkout-flow.excalidraw`). If it explains the conversation or nothing that lives in the repository, ask the place once, then never again in the session.
+4. **Write the script** (`<topic>.holo.mjs` beside the drawing) with the helper, and run it. Place every element by hand: where a thing stands, what is aligned, what is left empty all mean something (EVERYTHING_MEANS). Words are the reader's, and few: the drawing must work with them covered (AT_A_GLANCE).
+5. **Look before you hand it over**: open the PNG with the Read tool and look for, on purpose: text wider than its box; boxes overlapping; an element crossing a divider; a thing inside a fence that should be outside; a corner word without room; an arrow pointing at nothing. Then the covered-words test: hide every word in your mind and ask whether the drawing still says its thing. Fix the script and render again. Two passes are normal (NEVER_FINAL).
+6. **Hand it over** with one sentence, "this drawing says that …", the paths of the `.excalidraw` and the `.svg`, and one question: "does it get looked at, or read?". The reader decides whether it works, not you: expect to redo it. The PNG was for looking: delete it unless the user wants it. The source stays beside the drawing so anyone changes it, in Excalidraw (open the file at excalidraw.com), by editing the script, or by asking you.
 
-## Render
+## Forms
+
+First what must be understood, then the form. One thing to understand = one form.
+
+- **A change** (before and after, without and with): two columns, the same rows on both sides, a thick faint divider, the side left behind dimmed (opacity 55). The eye reads each row left to right and sees what changed.
+- **A system** (what is there and how it is connected): boxes, arrows each carrying a verb, boundaries. Few boxes, few arrows.
+- **Belonging** (who holds what, what lives where): fences. Every piece sits inside the fence of whoever holds it, and the meaning is in the position, inside or outside; colour confirms it. Outside every fence means nobody's.
+- **N variants compared**: the same scene repeated on the page, the same pieces in the same place in every variant, so only what differs differs and the eye finds it without reading. A grid of cards with words in them is a table: HTML makes tables, a holo does not.
+- **Steps in time**: one row per moment, left to right.
+
+## Marks with a fixed meaning
+
+Offer them as a vocabulary; a reader learns them once.
+
+- **Dashed box** = appears by itself when needed (a standby, one more machine in the peak).
+- **Person figure** = someone who has to be there, with when beside it ("at night: nobody").
+- **Fence** = who hosts or keeps alive: low-opacity fill plus border, label top left. Outside every fence = nobody's.
+- **Small corner word** on a card = when, or how often (`every time`, `written once`, `16 Sep`).
+- **Dotted arrow** = becomes, reads; **solid arrow** = moves, sends. Arrows white, 2 px, rare: inside a column the rows already order things.
+
+## Colour
+
+Colour says one thing per drawing, and only one: who (two parties: neutral colours, say blue and ochre), or a judgement (good, bad, risk: green and red), or a state. Never two: if colour says who, red cannot also say danger. Pick the meaning from the form, and when it is not obvious from the drawing itself, say it in a legend at the top, before the drawing: one sample per colour, dash or figure, with the sentence of what it means. When colour is only the identity of a row, no legend.
+
+Starting values on `#121212`: cards `#5e2a4b` plum, `#0f3f1b` green, `#5a4512` olive, `#2b3340` slate, `#5a1f1f` wine; fences `#1f4e8c` blue and `#8a5a0a` ochre; white `#ffffff` for words in cards, a lighter tint of the card's colour for corner words, `#9a9a9a` for notes. Cards have `strokeColor` equal to `backgroundColor`, no visible border, `roughness` 0: a wobbly edge on a filled card leaves double lines. Text at 18 or more, cards cut to their text, the canvas ends where the content ends.
+
+## The script
+
+```js
+import { holo } from '${CLAUDE_PLUGIN_ROOT}/skills/holo/holo.mjs';
+
+const page = holo();                                   // background #121212
+page.legend(20, 20, [
+  { sample: 'fence', color: '#1f4e8c', text: 'blue fence: the provider keeps it alive' },
+  { sample: 'dashed', text: 'appears by itself in a peak or a failure' },
+]);
+page.fence(20, 120, 420, 360, 'the provider keeps alive', { color: '#1f4e8c' });
+page.card(50, 170, 360, 'entry and balancer', { color: '#1f4e8c' });
+page.slot(50, 240, 360, 50, 'one more, by itself');
+page.person(50, 500, 'one person, by day');
+page.arrow([440, 300], [520, 300], { dotted: true, label: 'reads' });
+page.save('topic.excalidraw', { render: true });       // writes topic.excalidraw, topic.svg, topic.png
+```
+
+`page.measure(text, size)` gives the width and height a text will take (0.55 × size per character, 1.25 × size per line), to size what holds it. `page.card` returns its height, so the next element can sit under it. `page.text`, `page.line` and `page.fence` take `opacity` for what is left behind or dimmed.
+
+## Render by hand
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/skills/holo/render.mjs path/to/topic.excalidraw
 ```
 
-It writes `topic.svg` (self-contained, fonts embedded; it shows in any Markdown with `![](topic.svg)`) and `topic.png` if it finds Chrome or Chromium in the PATH, or in `HOLO_BROWSER`. Without a browser it says so and writes only the SVG: then look at the SVG as text and check positions by the numbers. Nothing is installed and nothing goes over the network: rough.js and the font are in `vendor/`.
+It writes `topic.svg` (self-contained, fonts embedded; it shows in any Markdown with `![](topic.svg)`) and `topic.png` if it finds Chrome or Chromium in the PATH or in `HOLO_BROWSER`. Without a browser it says so and writes only the SVG: then look at the SVG as text and check positions by the numbers. Nothing is installed and nothing goes over the network: rough.js and the fonts are in `vendor/`.
 
-## The source
-
-An `.excalidraw` file is JSON; Excalidraw opens it and fills in what is missing. The script reads these fields:
-
-```json
-{"type": "excalidraw", "version": 2, "source": "holo",
- "appState": {"viewBackgroundColor": "#121212"},
- "elements": [
-  {"id": "t1", "type": "text", "x": 40, "y": 30, "width": 200, "height": 28,
-   "text": "In the repo", "fontSize": 22, "fontFamily": 5, "textAlign": "left",
-   "strokeColor": "#e6e6e6"},
-  {"id": "r1", "type": "rectangle", "x": 30, "y": 90, "width": 370, "height": 92,
-   "strokeColor": "#2b3340", "backgroundColor": "#2b3340", "fillStyle": "solid",
-   "strokeWidth": 1, "roughness": 0, "roundness": {"type": 3}},
-  {"id": "a1", "type": "arrow", "x": 215, "y": 182, "width": 0, "height": 28,
-   "points": [[0, 0], [0, 28]], "strokeColor": "#9a9a9a", "strokeWidth": 1.5,
-   "strokeStyle": "dotted", "endArrowhead": "arrow"},
-  {"id": "l1", "type": "line", "x": 440, "y": 20, "width": 0, "height": 680,
-   "points": [[0, 0], [0, 680]], "strokeColor": "#9a9a9a", "strokeWidth": 2}
- ]}
-```
-
-Shapes: `rectangle`, `ellipse`, `diamond`, `line`, `arrow`, `text`, `freedraw`. Common fields: `strokeColor`, `backgroundColor` (`"transparent"` for none), `fillStyle` (`solid`, `hachure`, `cross-hatch`, `zigzag`), `strokeWidth`, `strokeStyle` (`solid`, `dashed`, `dotted`), `roughness` (0 clean, 1 hand, 2 shaky), `opacity` (0–100), `angle` in radians, `seed` (any integer; keeps the strokes the same between renders). `points` of lines and arrows are relative to `x, y`; `roundness` `{"type": 3}` rounds a rectangle, `{"type": 2}` smooths a line. Text: `fontFamily` 5 is Excalifont (the default, what Excalidraw writes today), 1 Virgil, 2 Helvetica, 3 Cascadia; `textAlign` `left`, `center`, `right`; lines break on `\n`; a text starting with spaces keeps them, so a list indents by itself. Text width is about `0.55 × fontSize` per character, height `1.25 × fontSize` per line: use them to size cards.
-
-## What makes it alive
-
-A holo that works is a scene, not a map: it shows a thing happening, to someone. Before placing anything, find the contrast the reader needs (without and with, before and after, here and there) and give it the whole page: two columns, a thick faint divider, a short heading over each. Then the page is a grid: **rows are the moments or the items, columns are the two sides**, and the eye reads each row left to right. What fails at a glance is a page where each column is its own flowchart: nothing lines up, so nothing compares.
-
-- **Dense.** Cards nearly as wide as their column, text at 18, cards cut to their text with 16 px of air; rows 20 to 30 px apart; the canvas ends where the content ends. A card holds a title and a short indented list, in the reader's words. Four to six cards on a page, not twelve.
-- **Colour is the row.** One colour per row, the same on both sides, so left and right are recognised as the same thing in two states: `#5e2a4b` plum, `#0f3f1b` green, `#5a4512` olive, `#2b3340` slate, `#5a1f1f` wine, on `#121212`; `strokeColor` equal to `backgroundColor` so a card has no border; white `#ffffff` for words in cards, a lighter tint of the card colour for the small words.
-- **Before is dimmed.** The side that is left behind has `opacity` 55 on cards and text; the side that stays is full. What was there and is gone is a dimmed card facing an empty slot.
-- **Small words in the corner.** A 13 px word at the bottom right of a card (`every time`, `written once`, `16 Sep`) says when or how often, like a date on a note.
-- **Arrows between columns, white, dotted, rare.** `strokeWidth` 2, `roughness` 1, horizontal, from a row's left card to its right card: dotted when a thing becomes the other, solid when it moves. Inside a column, none: the rows already order it. Cards keep `roughness` 0: a wobbly edge on a filled card leaves double lines.
-
+The `.excalidraw` file is plain Excalidraw JSON (`rectangle`, `ellipse`, `diamond`, `line`, `arrow`, `text`, `freedraw`; `fontFamily` 5 is Excalifont; `points` relative to `x, y`; `roundness {"type": 3}` rounds a rectangle), so a file drawn in Excalidraw renders the same way, and one written by the script opens in Excalidraw.
