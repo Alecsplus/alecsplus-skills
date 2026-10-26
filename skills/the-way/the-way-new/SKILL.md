@@ -18,7 +18,7 @@ Principles live in `THE-WAY.md` in the repo root. This skill writes one principl
 1. Take the sentence as the person leading the project said it (or as `the-way-discover` handed it over). It is the starting point, not the principle: the principle enters only with that person's yes to your proposal. Never put in a principle on your own.
 2. What the person said is usually a rule: what not to do, or what to do in one case. People are good at giving rules and bad at naming principles; this step raises the level. Find what the project wants that makes that rule follow, then ask once more why the project wants that: if the answer is a larger thing the project really wants, that is the principle. Stop when the next why would hold for any project. Write that as the principle; the rule stays as one of its consequences, and so do the cases nobody has met yet (PRINCIPLE_NOT_RULE). A principle that only restates the rule with two words more has not raised the level: "don't log passwords" does not become "passwords, tokens and keys stay out of the logs", it becomes "what a person entrusts to us stays only where it is needed". The same holds when a principle already written is read again: a new sentence that names the mechanism carrying it out (a file, a part of the code, who writes what where) has gone down a level, from the principle to one of its consequences; the principle stays above them. Then write a name and one sentence. Compare with the principles already there: if one already says it, say which and stop.
 3. Pass it through the criterion. If it fails a point, name it and propose a fixed wording.
-4. Propose to the leader: the name, the sentence, whether it is primary or secondary, and which choices it would decide, starting with the sentence the person said, which must follow from it. If a sentence written in a file (handed over by `the-way-discover`, or one you know of) says the principle itself, it is a copy once the principle is in `THE-WAY.md`: propose in the same proposal to remove it, quoting it with its file. A rule that only follows from the principle is a copy too: propose removing it in the same yes. A rule that carries a fact the principle does not give (a command, a path, a number) stays. Wait for the answer; the one yes covers all of it.
+4. Propose to the leader: the name, the sentence, which list it goes in (see "Result or Work"), and which choices it would decide, starting with the sentence the person said, which must follow from it. If a sentence written in a file (handed over by `the-way-discover`, or one you know of) says the principle itself, it is a copy once the principle is in `THE-WAY.md`: propose in the same proposal to remove it, quoting it with its file. A rule that only follows from the principle is a copy too: propose removing it in the same yes. A rule that carries a fact the principle does not give (a command, a path, a number) stays. Wait for the answer; the one yes covers all of it.
 5. After the yes, write it (see "Writing it"). A principle that is being changed gets its line rewritten the same way, with the same criterion and the same yes.
 
 ## The criterion
@@ -35,10 +35,20 @@ Every principle, new or changed, has to pass this. First fix what it is for, the
 - *Uncontradicted*: It is true as written: if a real case contradicts it, fix the sentence before it enters.
 - *Has_opposite*: It has an opposite that someone could seriously choose.
 - *Meaning_first*: It is born from its meaning: say what it is for, then write the sentence.
-- *Serves_primary*: If it is secondary, it gives substance to a primary that you can name.
 
 A principle may also talk about how the project is worked on, not only about the product.
 
+## Result or Work
+
+Ask two questions of the sentence, each on its own:
+
+1. Is it a quality of the result? Yes: **Result**.
+2. Is it how we work to get there? Yes: **Work**.
+
+Ask them of the words of the sentence, not of what you know of the principle. When in doubt, ask who sees it: if whoever uses the finished thing sees it, it is Result; if only whoever builds sees it, it is Work.
+
+You pick the list alone (OBVIOUS) and say it in one line. Yes to both: it is two principles, one per list, with two sentences, never one double sentence; propose both and ask two yes. No to both: it is not a principle. A principle is never in both lists. The order inside a list is importance: the first weighs more than the last, and no one "wins" over another. Add the new one where it weighs.
+
 ## Writing it
 
-One line: `**NAME** — sentence`, NAME in uppercase letters and `_`. Under `## Primary`, or under `## Secondary` (create the section, with its fixed line, if it is not there: "## Secondary" then "They give substance to the primary ones: read them in their light; they do not contradict them.", translated faithfully into the project's language) when *Serves_primary* holds. Write in the language of the file. If the proposal included a sentence to remove, remove it from its file too. After writing, say in one line what you added.
+One line: `**NAME** — sentence`, NAME in uppercase letters and `_`. Under `## Result` or `## Work`. Write in the language of the file. If the proposal included a sentence to remove, remove it from its file too. After writing, say in one line what you added.

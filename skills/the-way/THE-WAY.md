@@ -2,11 +2,11 @@
 
 These apply to everything done in this project, including what is not yet named. When a principle guides a choice, cite it by name.
 
-## Primary
+## Result
 
-They are the point of the work. In a conflict they win.
+The principles in this list say the qualities the result will have. A Mandalorian who orders an armour asks for this: that it stops a blaster shot and weighs little. That is why they want it in beskar.
 
-**SIMPLE** — Things are done in the simplest and most linear way possible: less is better. Simplicity is a complexity solved, not a complexity avoided.
+**SIMPLE** — Using the plugin is simple: one skill, one yes, nothing to learn first.
 
 **GENERIC** — The plugin works the same way in every project and in every context. A form, a name or a rule that holds in only one project does not enter.
 
@@ -14,14 +14,20 @@ They are the point of the work. In a conflict they win.
 
 **VISIBLE** — When something does not work, whoever uses the project sees it: a missing file, a failed check, a step gone wrong are said out loud, they do not fail in silence.
 
+**LIGHT** — What is written for a reader is short and makes them smile.
+
+**ONE_PLACE** — Every principle is written in one place, `THE-WAY.md`, and nowhere else.
+
+**PRINCIPLE_NOT_RULE** — A principle says what the project wants, so whoever meets a case nobody wrote down can decide it alone; a rule only says what not to do.
+
 **CITED** — Every choice that a principle decides carries the name of that principle: whoever reads always knows where a choice comes from, and none passes in silence.
 
 **OBVIOUS** — What has only one sensible answer is done without asking; ask only where whoever leads could really choose in two ways.
 
 **ANY_DOOR** — You can begin with any skill: the one that finds something missing says so, asks one yes, prepares it, and then does what it was asked.
 
-**LIGHT** — What is written for a reader is short and makes them smile.
+## Work
 
-**ONE_PLACE** — Every principle is written in one place, `THE-WAY.md`: wherever else it was written, it is taken out.
+The principles in this list say how we work to get there. The Armorer works one piece at a time, and nothing leaves the forge that she has not hammered herself: it holds for a helmet and it holds for a ring. This is the forge.
 
-**PRINCIPLE_NOT_RULE** — A principle says what the project wants, so whoever meets a case nobody wrote down can decide it alone; a rule only says what not to do.
+**SIMPLE** — Things are done in the simplest and most linear way possible: less is better. Simplicity is a complexity solved, not a complexity avoided.

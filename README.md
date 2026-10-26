@@ -29,6 +29,14 @@ We humans are good at giving rules ("don't log passwords") and bad at naming pri
 
 Your rule still holds, as one consequence. The gain: by looking at the past, the principle also decides the cases that have not happened yet, the ones you cannot foresee.
 
+## Beskar and the forge
+
+**Beskar.** Result principles say the qualities the result will have. A Mandalorian who orders an armour asks that it stops a blaster shot and weighs little: that is why they want it in beskar. Example from this repo: **GENERIC**, the plugin works the same way in every project: a form or a rule that holds in only one project does not enter.
+
+**The forge.** Work principles say how we work to get there. The Armorer works one piece at a time, and nothing leaves the forge that she has not hammered herself. Example from this repo: **SIMPLE**, things are done in the simplest and most linear way: a complexity solved, not avoided.
+
+Both lists sit in the same file, `THE-WAY.md`: `## Result` first, `## Work` after.
+
 This repo uses the-way on itself: see [its principles](./skills/the-way/THE-WAY.md).
 
 ## Install

@@ -25,15 +25,15 @@ In the repo root of the project you are in:
 - Is there a file that holds principles in another form or under another name (`PRINCIPI.md`, `PRINCIPLES.md`, a constitution file imported by `CLAUDE.md`)? If unsure which file it is, ask.
 - Does `CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`? Does it have an old block between `<!-- the-way:start` and `<!-- the-way:end -->` (written by setup 0.1.1)?
 - Which language does the project use? Read the existing `CLAUDE.md`, README and docs. The fixed texts are in English: translate them faithfully into the project's language, English included as is.
-- The version of this plugin is **1.0.2**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **1.1.0**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
-**A. The project has no principles.** Ask permission to create `THE-WAY.md` (empty: opening line and the primary section, nothing else), to create `THE-WAY-USAGE.md`, and to put the two import lines at the top of `CLAUDE.md` (creating the file if needed). Name the language you will use. After the yes, write all.
+**A. The project has no principles.** Ask permission to create `THE-WAY.md` (empty: opening line and the two sections, Result and Work, with their fixed lines and nothing under them), to create `THE-WAY-USAGE.md`, and to put the two import lines at the top of `CLAUDE.md` (creating the file if needed). Name the language you will use. After the yes, write all.
 
 **B. The project has principles in another form or file.** Ask permission to: rename the file to `THE-WAY.md` (`git mv` if it is tracked); bring it to the single form; update every `@old-name` import in `CLAUDE.md` files; create `THE-WAY-USAGE.md` and add its import line. The single form:
 - opening: the fixed title and line of the fixed texts below;
-- `## Primary` always (fixed line), `## Secondary` only if the project has secondary principles (fixed line);
+- `## Result` always (fixed line), `## Work` only if the project has principles of how it works (fixed line); if the file has primary and secondary principles, divide them as in the migration of step 2C;
 - each principle on one line: `**NAME** — sentence`, NAME in uppercase letters, with `_` for spaces; no number, no origin sentence or date;
 - other free paragraphs may stay.
 
@@ -42,7 +42,7 @@ The words of a principle change only with the yes of whoever leads the project. 
 **C. The setup already exists.** Check, and report each point as ok or not ok:
 1. `THE-WAY.md` exists and has the opening, the sections and the one-line form;
 2. `CLAUDE.md` has the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`;
-3. `THE-WAY-USAGE.md` exists and its first line carries the version of this plugin. Compare only that number: same version → ok; older version, or no version line → not ok, propose rewriting the whole file with the current text; do not compare the rest of the text. After that rewrite, the plugin has changed since the principles were written: pass every principle of `THE-WAY.md` to `the-way-new` (call the `Skill` tool with `alecsplus-skills:the-way-new`), one at a time, in the order of the file, to read it again against its criterion. A principle that passes is not mentioned; for one that fails a point, `the-way-new` proposes the fixed line and asks its yes. This happens by itself, no yes asked for it, also when another `the-way-` skill called you: it comes before the work that skill was asked;
+3. `THE-WAY-USAGE.md` exists and its first line carries the version of this plugin. Compare only that number: same version → ok; older version, or no version line → not ok, propose rewriting the whole file with the current text; do not compare the rest of the text. After that rewrite, the plugin has changed since the principles were written. If `THE-WAY.md` still has the old sections `## Primary` and `## Secondary` (before 1.1.0), first divide the whole file in one go: read every principle, ask the two questions of `the-way-new` ("Result or Work") of each, and show one proposal with the new file, `## Result` and `## Work` with their fixed lines, the sentences unchanged, the order kept. One yes covers all. Ask a question only about a principle in doubt, and check that no principle is in both lists. Then pass every principle of `THE-WAY.md` to `the-way-new` (call the `Skill` tool with `alecsplus-skills:the-way-new`), one at a time, in the order of the file, to read it again against its criterion. A principle that passes is not mentioned; for one that fails a point, `the-way-new` proposes the fixed line and asks its yes. This happens by itself, no yes asked for it, also when another `the-way-` skill called you: it comes before the work that skill was asked;
 4. `CLAUDE.md` has no old block between `<!-- the-way:start` and `<!-- the-way:end -->`. If it has one (setup 0.1.1), say so and propose: take the whole block out, from the start marker to the end marker included, put in its place the two import lines (keep `@THE-WAY.md`, which was inside the block), and write `THE-WAY-USAGE.md`.
 
 If all is right, say so in one line ("in order", in the project's language); if another `the-way-` skill called you, say nothing and hand back. For whatever is not, say what differs and propose the fix; apply it only after a yes. Do not touch the principles themselves.
@@ -62,19 +62,13 @@ These texts are the only ones the skill writes into a project. They are written 
 
 These apply to everything done in this project, including what is not yet named. When a principle guides a choice, cite it by name.
 
-## Primary
+## Result
 
-They are the point of the work. In a conflict they win.
-```
+The principles in this list say the qualities the result will have. A Mandalorian who orders an armour asks for this: that it stops a blaster shot and weighs little. That is why they want it in beskar.
 
-### Secondary section
+## Work
 
-Added by `the-way-new` only when a secondary principle exists, after the last primary.
-
-```markdown
-## Secondary
-
-They give substance to the primary ones: read them in their light; they do not contradict them.
+The principles in this list say how we work to get there. The Armorer works one piece at a time, and nothing leaves the forge that she has not hammered herself: it holds for a helmet and it holds for a ring. This is the forge.
 ```
 
 ### Lines for CLAUDE.md
