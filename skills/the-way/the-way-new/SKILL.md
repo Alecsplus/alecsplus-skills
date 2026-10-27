@@ -47,7 +47,7 @@ Ask two questions of the sentence, each on its own:
 
 Ask them of the words of the sentence, not of what you know of the principle. When in doubt, ask who sees it: if whoever uses the finished thing sees it, it is Result; if only whoever builds sees it, it is Work.
 
-You pick the list alone (OBVIOUS) and say it in one line. Yes to both: it is two principles, one per list, with two sentences, never one double sentence; propose both and ask two yes. No to both: it is not a principle. A principle is never in both lists. The order inside a list is importance: the first weighs more than the last, and no one "wins" over another. Add the new one where it weighs.
+You pick the list alone (OBVIOUS) and say it in one line. Yes to both: the principle keeps one name and stands in both lists, with one sentence per list. How the sentences come depends on the sentence you have: if it already says both things whole, it goes under both lists as it is; if it says one thing whole, it goes under that list and you propose a sentence for the other, or leave that side to be written later, saying so; if it says half of one and half of the other, split it in two and complete each half. Propose and ask one yes per sentence written. No to both: it is not a principle. The same name is never in one list twice. The order inside a list is importance: the first weighs more than the last, and no one "wins" over another. Add the new one where it weighs.
 
 ## Writing it
 
