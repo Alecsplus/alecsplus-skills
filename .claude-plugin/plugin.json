@@ -14,7 +14,6 @@
     "./skills/the-way/the-way-setup",
     "./skills/the-way/the-way-self-answer",
     "./skills/the-way/the-way-discover",
-    "./skills/the-way/the-way-new",
-    "./skills/holo"
+    "./skills/the-way/the-way-new"
   ]
 }
