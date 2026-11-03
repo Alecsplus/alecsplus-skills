@@ -35,15 +35,15 @@ The project carries everything (NO_PLUGIN_NEEDED):
 - The project's `CLAUDE.md` pulls in the file with `@THE-WAY.md` and the instructions for comparing choices to principles with `@THE-WAY-USAGE.md`. Someone who opens the project without the plugin reads and applies the principles all the same.
 - Subagents receive both, because they read the project's `CLAUDE.md`. Nothing is copied into the task given to them (NO_PLUGIN_NEEDED, SIMPLE).
 - `Explore` and `Plan` do not read `CLAUDE.md`. This is accepted; Claude compares with the principles the choices that come back from them.
-- When the instructions change, rerunning `the-way-setup` updates the project; the other three skills run it first, so the update is offered the next time any of them starts. After an update, the principles already written are read again against the criterion, one at a time, and only the ones that fail a point get a proposed change, each with its yes.
+- When the instructions change, rerunning `the-way-setup` updates the project; the other four skills run it first, so the update is offered the next time any of them starts. After an update, the principles already written are read again against the criterion, one at a time, and only the ones that fail a point get a proposed change, each with its yes.
 
-## 3. The four skills
+## 3. The five skills
 
-Commands: `/alecsplus-skills:the-way-setup`, `/alecsplus-skills:the-way-self-answer`, `/alecsplus-skills:the-way-discover`, `/alecsplus-skills:the-way-new`.
+Commands: `/alecsplus-skills:the-way-setup`, `/alecsplus-skills:the-way-self-answer`, `/alecsplus-skills:the-way-discover`, `/alecsplus-skills:the-way-new`, `/alecsplus-skills:the-way-grilling`.
 
-They are four separate skills, not one skill with arguments, because a skill with arguments does not offer its gestures when you type its name.
+They are five separate skills, not one skill with arguments, because a skill with arguments does not offer its gestures when you type its name.
 
-Every skill asks permission before it writes a file, always, even `setup` on a new project. You can begin with any `the-way-` skill (ANY_DOOR). `the-way-self-answer`, `the-way-discover` and `the-way-new` first run `the-way-setup`, which checks that `THE-WAY.md`, `THE-WAY-USAGE.md` and the two import lines in `CLAUDE.md` are in place and written by the current plugin version. If all is in order, setup says nothing; if something is missing or out of date, it says which, asks for one yes and fixes it, then the skill does what was asked; without the yes the skill stops and says why (VISIBLE). The check and the version number live only in `the-way-setup` (ONE_PLACE).
+Every skill asks permission before it writes a file, always, even `setup` on a new project. You can begin with any `the-way-` skill (ANY_DOOR). `the-way-self-answer`, `the-way-discover`, `the-way-new` and `the-way-grilling` first run `the-way-setup`, which checks that `THE-WAY.md`, `THE-WAY-USAGE.md` and the two import lines in `CLAUDE.md` are in place and written by the current plugin version. If all is in order, setup says nothing; if something is missing or out of date, it says which, asks for one yes and fixes it, then the skill does what was asked; without the yes the skill stops and says why (VISIBLE). The check and the version number live only in `the-way-setup` (ONE_PLACE).
 
 There is no "verify" gesture: it would have no purpose of its own (SIMPLE).
 
@@ -73,9 +73,19 @@ Writes a principle in `THE-WAY.md`. Run it when you have a principle of the proj
 
 What the person says is usually a rule (what not to do, or what to do in one case): the skill finds what the project wants behind it, asks once more why the project wants that, and stops when the next why would hold for any project; it proposes that as the principle, with the rule as one of its consequences, so the principle also decides the cases not yet met (PRINCIPLE_NOT_RULE). A rule that carries a command, a path or a file name is a rule and stays one: the skill says so and does not write it anywhere; it proposes a principle only if the why behind it is a choice of this project, not of any project. When a principle already written is read again, the new sentence stays at the level of the principle: one that names the mechanism carrying it out has gone down to a consequence. It passes the sentence through the criterion (section 5) and chooses the list alone with the two questions (OBVIOUS); it asks only when the sentence is yes to both, and then proposes what the sentence allows (section 1), one yes per sentence written. It proposes the name, the sentence, and which list it goes in, and writes only after the "yes". One "yes" covers everything. There is no skill to remove a principle. Its description explains what a principle is, because whoever reads it for the first time does not know the word.
 
+### the-way-grilling
+
+Run when you want a plan, decision or idea stress-tested, or when a skill, a ticket or a map says "grilling". It runs Pocock's `mattpocock-skills:grilling` as it is (decision tree, rounds, facts found by Claude, decisions by the leader) and changes only two things: the form of the questions and how the principles enter (SIMPLE). Without Pocock's plugin it says so, gives the two commands to install it and stops; it never grills on its own, because "grilling" is his word (VISIBLE).
+
+- A really obvious case is written as a question with its answer and principle already in it, and the work goes on; what the leader sees or does is always a real question (OBVIOUS).
+- Every other question has answers A/B/C, each with the principles that pull toward it and their weight on three steps; the recommendation comes from the weights, and with equal weights there is none (CITED).
+- An answer enters only if someone could really choose it; a principle is written under an answer only if it pulls toward it.
+- The form and the rules of the question are fixed in the skill, written for a human who reads fast.
+- The usage line written by `setup` sends every "grilling" called by a skill, a ticket or a map to this skill, so Pocock's own skills stay untouched (NO_PLUGIN_NEEDED).
+
 ## 4. What `setup` writes in the project
 
-The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 1.1.0: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
+The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 1.2.0: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
 
 - Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
 - If a principle decides, do not ask. Write "I do A (NAME)".
@@ -84,6 +94,7 @@ The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, al
 - Never go against a principle in silence. If a choice goes against one, say which one and why, before doing it.
 - The same holds for a "to decide" that comes back in a subagent report: if a principle decides, answer it and cite it.
 - Every task given to a subagent ends with the line "In the report, next to each choice, write the project principle that decided it". The task does not copy any principle, and nothing checks the report automatically. Claude reads it in the session.
+- Grilling in the project goes through `/alecsplus-skills:the-way-grilling`: when a skill, a ticket or a map says "grilling", call that one.
 - A rule said for the whole project is a principle waiting to be named: find what the project wants behind it and propose that, not the rule. A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project. Without the plugin, at least the yes remains.
 
 ## 5. The criterion for writing a principle

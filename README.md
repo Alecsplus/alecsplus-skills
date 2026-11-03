@@ -50,16 +50,17 @@ Or in a session: `/plugin marketplace add Alecsplus/alecsplus-skills`, then `/pl
 
 Already installed? Update with `claude plugin update alecsplus-skills@alecsplus-skills`.
 
-## The four skills
+## The five skills
 
 Got a project with some history? Start with `the-way-discover`: it finds the principles you already follow. Starting from scratch? `the-way-new` writes your first one.
 
 Any skill can be the first: if setup is missing, the skill says so, asks one yes, prepares it, then does what you asked. Nothing is written without your yes. Files are written in your project's language.
 
-- `/alecsplus-skills:the-way-setup` gets a project ready, and keeps it up to date after a plugin update. You rarely run it: the other three run it first.
+- `/alecsplus-skills:the-way-setup` gets a project ready, and keeps it up to date after a plugin update. You rarely run it: the other four run it first.
 - `/alecsplus-skills:the-way-self-answer` answers Claude's question from the principles. Try it when Claude asks "tabs or spaces?".
 - `/alecsplus-skills:the-way-discover` finds the principles you already follow without knowing it. Try it on a project with a long history.
 - `/alecsplus-skills:the-way-new` writes one principle, raising your rule to the level above. Try: "don't log passwords".
+- `/alecsplus-skills:the-way-grilling` grills your plan with Pocock's `grilling` and hangs every answer on your principles, with their weight; needs `mattpocock-skills` installed. Try it on a decision you are not sure about.
 
 ## License
 
