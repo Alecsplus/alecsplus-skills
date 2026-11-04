@@ -10,7 +10,7 @@ description: Draw a hand-drawn schema (Excalidraw style, dark theme) that explai
 ## Steps
 
 1. **Read the principles** in `THE-WAY.md`, next to this file. They decide every choice below; cite them by name when they do.
-2. **Say what it must make understood**, in one sentence, for someone who meets the thing for the first time (ONE_HOLO, PADAWAN). Then pick the form that says it, from the forms below. Two things to understand are two holos, one file each.
+2. **Find the reader's question**, read from the request itself: it usually says it ("show me what changes", "who keeps what", "how does it get there"); ask only if the request does not. Say it in one sentence, as what the reader must do after looking, for someone who meets the thing for the first time (FORM_FOLLOWS_GOAL, PADAWAN). Then the form is the one that answers that question, from the table below: no form comes first. Two questions are two holos, one file each (ONE_HOLO).
 3. **Choose where it lands**: next to what it explains, as `<topic>.excalidraw` (for `checkout.ts`, in the same folder, as `checkout.excalidraw` or `checkout-flow.excalidraw`). If it explains the conversation or nothing that lives in the repository, ask the place once, then never again in the session.
 4. **Write the script** (`<topic>.holo.mjs` beside the drawing) with the helper, and run it. Place every element by hand: where a thing stands, what is aligned, what is left empty all mean something (EVERYTHING_MEANS). Words are the reader's, and few: the drawing must work with them covered (AT_A_GLANCE).
 5. **Look before you hand it over**: open the PNG with the Read tool and look for, on purpose: text wider than its box; boxes overlapping; an element crossing a divider; a thing inside a fence that should be outside; a corner word without room; an arrow pointing at nothing. Then the covered-words test: hide every word in your mind and ask whether the drawing still says its thing. Fix the script and render again. Two passes are normal (NEVER_FINAL, READER_DECIDES).
@@ -18,13 +18,18 @@ description: Draw a hand-drawn schema (Excalidraw style, dark theme) that explai
 
 ## Forms
 
-First what must be understood, then the form. One thing to understand = one form.
+First the reader's question, then the form: the form answers the question.
 
-- **A change** (before and after, without and with): two columns, the same rows on both sides, a thick faint divider, the side left behind dimmed (opacity 55). The eye reads each row left to right and sees what changed.
-- **A system** (what is there and how it is connected): boxes, arrows each carrying a verb, boundaries. Few boxes, few arrows.
-- **Belonging** (who holds what, what lives where): fences. Every piece sits inside the fence of whoever holds it, and the meaning is in the position, inside or outside; colour confirms it. Outside every fence means nobody's.
-- **N variants compared**: the same scene repeated on the page, the same pieces in the same place in every variant, so only what differs differs and the eye finds it without reading. A grid of cards with words in them is a table: HTML makes tables, a holo does not.
-- **Steps in time**: one row per moment, left to right.
+| The reader's question | The form | How it is drawn |
+| --- | --- | --- |
+| What is it, what is it made of? | Portrait: the thing with its parts | The thing in the middle, its parts around or inside it, each named once. |
+| Where does it live, whose is it? | Map and fences | Every piece inside the fence of whoever holds it; the meaning is in the position, inside or outside; colour confirms it; outside every fence means nobody's. |
+| When, what comes first? | Timeline | One row per moment, left to right. |
+| How is it done, what happens step by step? | Flow with its forks | Steps in order, a fork where a choice is made, each branch labelled with the condition. |
+| How are they connected? | Network: boxes and arrows | Few boxes, arrows each carrying a verb, boundaries. |
+| What is the difference? | Variants side by side | The same scene repeated, the same pieces in the same place in every variant, so only what differs differs. Before and after is two variants: a thick faint divider, the side left behind dimmed (opacity 55). A grid of cards with words in them is a table: HTML makes tables, a holo does not. |
+| At what height am I looking? | Levels of zoom | One holo per level, the same thing from the whole picture down to the detail; a request for "everything" is this: one file per level. |
+| Why does it happen? | Cause and effect | What provokes what, the mechanism in between, arrows carrying the verb. |
 
 ## Marks with a fixed meaning
 

@@ -10,7 +10,7 @@ The principles in this list say the qualities the result will have. A Mandaloria
 
 **AT_A_GLANCE** — A holo is looked at, not read: cover every word and the drawing still says its thing. If what is left is a grid of boxes, it is a table, and a table is not a holo.
 
-**PADAWAN** — A holo is drawn for whoever meets the thing for the first time, not for whoever already knows it. How much to say, and in what form, is decided by what it explains.
+**PADAWAN** — A holo is drawn for whoever meets the thing for the first time, not for whoever already knows it.
 
 **ONE_HOLO** — One holo says one thing. The second idea is a second holo.
 
@@ -25,3 +25,5 @@ The principles in this list say the qualities the result will have. A Mandaloria
 ## Work
 
 The principles in this list say how we work to get there. The Armorer works one piece at a time, and nothing leaves the forge that she has not hammered herself: it holds for a helmet and it holds for a ring. This is the forge.
+
+**FORM_FOLLOWS_GOAL** — The form follows the goal of the drawing, never the other way round: it is chosen after saying what the reader must do.
