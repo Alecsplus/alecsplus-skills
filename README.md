@@ -56,16 +56,16 @@ Got a project with some history? Start with `the-way-discover`: it finds the pri
 
 Any skill can be the first: if setup is missing, the skill says so, asks one yes, prepares it, then does what you asked. Nothing is written without your yes. Files are written in your project's language (for the global ones, in yours).
 
-- `/alecsplus-skills:the-way-setup` gets a project ready, and keeps it up to date after a plugin update. You rarely run it: the other skills run it first.
+- `/alecsplus-skills:the-way-setup` gets a project ready, and keeps it up to date after a plugin update. You rarely run it: the other skills run it first (the global ones run `the-way-global-setup` instead; `the-way-self-answer` and `the-way-grilling` skip it when the project has no file and yours exists).
 - `/alecsplus-skills:the-way-self-answer` answers Claude's question from the principles. Try it when Claude asks "tabs or spaces?".
 - `/alecsplus-skills:the-way-discover` finds the principles you already follow without knowing it. Try it on a project with a long history.
 - `/alecsplus-skills:the-way-new` writes one principle, raising your rule to the level above. Try: "don't log passwords".
 - `/alecsplus-skills:the-way-grilling` grills your plan with Pocock's `grilling` and hangs every answer on your principles, with their weight; needs `mattpocock-skills` installed. Try it on a decision you are not sure about.
-- `/alecsplus-skills:the-way-global-setup` gets `~/.claude/` ready for principles that hold in all your projects. The three below run it first.
+- `/alecsplus-skills:the-way-global-setup` gets `~/.claude/` ready for principles that hold in all your projects. The two below run it first.
 - `/alecsplus-skills:the-way-global-new` writes one global principle. Try: "in all my projects, never X".
 - `/alecsplus-skills:the-way-global-discover` finds the principles you follow in every project.
 
-The global level is one more `THE-WAY.md`, in `~/.claude/`: it holds in every project, and cited as `NAME_global`. In a project that has its own file, the project wins.
+The global level is one more `THE-WAY.md`, in `~/.claude/`: it holds in every project, and is cited as `NAME_global`. In a project that has its own file, the project wins.
 
 ## License
 
