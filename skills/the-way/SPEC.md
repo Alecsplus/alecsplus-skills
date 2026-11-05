@@ -85,7 +85,7 @@ Run when you want a plan, decision or idea stress-tested, or when a skill, a tic
 
 ### the-way-global-setup
 
-Does for `~/.claude/` what `the-way-setup` does for a project: creates an empty `THE-WAY.md` and `THE-WAY-USAGE.md` there and puts the two import lines at the top of `~/.claude/CLAUDE.md`, after one yes (it says that `~/.claude/` is a protected path). On rerun it checks the same points and the version number. It never touches the project's files and invents no principles.
+Does for `~/.claude/` what `the-way-setup` does for a project: creates an empty `THE-WAY.md` and `THE-WAY-USAGE.md` there and puts the two import lines at the top of `~/.claude/CLAUDE.md`, after one yes. On rerun it checks the same points and the version number. It never touches the project's files and invents no principles.
 
 ### the-way-global-new
 
