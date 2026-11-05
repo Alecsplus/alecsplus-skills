@@ -1,6 +1,6 @@
 ---
 name: the-way-grilling
-description: Grilling with the project's principles. Runs `mattpocock-skills:grilling` and changes only the form of the questions and how each answer hooks the principles in THE-WAY.md. Use when the user runs it, when a skill, a ticket or a map says "grilling" in a project that has THE-WAY.md, or when the user wants a plan, decision or idea stress-tested with the principles.
+description: Grilling with the project's principles. Runs `mattpocock-skills:grilling` and changes only the form of the questions and how each answer hooks the principles in THE-WAY.md. Use when the user runs it, when a skill, a ticket or a map says "grilling" in a project that has THE-WAY.md, or anywhere when ~/.claude/THE-WAY.md exists, or when the user wants a plan, decision or idea stress-tested with the principles.
 ---
 
 # The way: grilling

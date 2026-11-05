@@ -88,6 +88,6 @@ How to use them:
 - Never go against a principle in silence: if a choice goes against one, say which one and why before doing it.
 - The same holds for a "to decide" coming back from a subagent's report: compare first, then ask only if needed.
 - End every task you give to a subagent with this line: "In the report, next to each choice, write the principle that decided it." Do not copy any principle into the task.
-- A rule said for all projects is a principle waiting to be named: find what the person wants behind it and propose that, not the rule. A new or changed principle goes through the criterion of the `the-way-global-new` skill and the yes of the person.
+- A rule said for all projects is a principle waiting to be named: find what the person wants behind it and propose that, not the rule. A new or changed global principle goes through the criterion of the `the-way-global-new` skill and the yes of the person.
 - Grilling in this project goes through `/alecsplus-skills:the-way-grilling`: when a skill, a ticket or a map says "grilling", call that one.
 ```
