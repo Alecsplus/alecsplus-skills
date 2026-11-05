@@ -11,7 +11,7 @@ The fixed texts to write are at the end of this file, under "Fixed texts". They 
 
 ## For every step
 
-- **Ask before writing.** Say exactly which files you will create or change, then wait for a yes. Always, also when nothing exists yet. Say before that `~/.claude/` is a protected path and Claude Code will ask for confirmation at each write. When another `the-way-` skill called you, do the same: it did not ask anything, it leaves the check and the yes to you. If everything is in order, say nothing and hand back.
+- **Ask before writing.** Say exactly which files you will create or change, then wait for a yes. Always, also when nothing exists yet. When another `the-way-` skill called you, do the same: it did not ask anything, it leaves the check and the yes to you. If everything is in order, say nothing and hand back.
 - **Never invent principles.** The file you create has no principle in it. Finding them is `the-way-global-discover`.
 - **Say what is wrong.** If something is missing or off, say it in plain words; never skip it silently. If Claude Code refuses a write in `~/.claude/` (for example in `dontAsk` mode), say which file was not written and stop.
 - Do not commit. Do not touch anything but `~/.claude/THE-WAY.md`, `~/.claude/THE-WAY-USAGE.md` and `~/.claude/CLAUDE.md`. Do not look at the `THE-WAY.md` of the project you were launched in, and do not check it: it is not yours.
@@ -50,7 +50,7 @@ These texts are the only ones the skill writes into `~/.claude/`. They are writt
 ```markdown
 # Principles
 
-These apply to everything done in this project, including what is not yet named. When a principle guides a choice, cite it by name.
+These apply to everything done in every project, including what is not yet named. When a principle guides a choice, cite it by name.
 
 ## Result
 
@@ -89,5 +89,5 @@ How to use them:
 - The same holds for a "to decide" coming back from a subagent's report: compare first, then ask only if needed.
 - End every task you give to a subagent with this line: "In the report, next to each choice, write the principle that decided it." Do not copy any principle into the task.
 - A rule said for all projects is a principle waiting to be named: find what the person wants behind it and propose that, not the rule. A new or changed global principle goes through the criterion of the `the-way-global-new` skill and the yes of the person.
-- Grilling in this project goes through `/alecsplus-skills:the-way-grilling`: when a skill, a ticket or a map says "grilling", call that one.
+- Grilling in every project goes through `/alecsplus-skills:the-way-grilling`: when a skill, a ticket or a map says "grilling", call that one.
 ```
