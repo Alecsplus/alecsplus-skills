@@ -33,7 +33,7 @@ There are no hooks and no stop check, neither in the plugin nor in the project (
 The project carries everything (NO_PLUGIN_NEEDED):
 
 - The project's `CLAUDE.md` pulls in the file with `@THE-WAY.md` and the instructions for comparing choices to principles with `@THE-WAY-USAGE.md`. Someone who opens the project without the plugin reads and applies the principles all the same.
-- Subagents receive both, because they read the project's `CLAUDE.md`. They also receive `~/.claude/CLAUDE.md`, so likely its imports too (not yet proven), and with them the global principles. Nothing is copied into the task given to them (NO_PLUGIN_NEEDED, SIMPLE).
+- Subagents receive both, because they read the project's `CLAUDE.md`. They also receive `~/.claude/CLAUDE.md` and the files it imports, and with them the global principles: a subagent in a repo with no `THE-WAY.md` cites `NAME_global` in its report. Nothing is copied into the task given to them (NO_PLUGIN_NEEDED, SIMPLE).
 - `Explore`, `Plan` and agents with `omitClaudeMd` do not read `CLAUDE.md`. This is accepted; Claude compares with the principles the choices that come back from them.
 - When the instructions change, rerunning `the-way-setup` updates the project; the other skills run it first (the three global ones run `the-way-global-setup` instead, for `~/.claude/`; `the-way-self-answer` and `the-way-grilling` skip the project's setup when it has no `THE-WAY.md` and the global one exists), so the update is offered the next time any of them starts. After an update, the principles already written are read again against the criterion, one at a time, and only the ones that fail a point get a proposed change, each with its yes.
 
@@ -97,7 +97,7 @@ Like `the-way-discover`, but for principles that hold in every project: it searc
 
 ## 4. The global level
 
-- `~/.claude/THE-WAY.md` and `~/.claude/THE-WAY-USAGE.md` are written by `the-way-global-setup`, with the same form as in a project. `~/.claude/CLAUDE.md` imports both, so every session reads them, and subagents likely too (not yet proven) (NO_PLUGIN_NEEDED).
+- `~/.claude/THE-WAY.md` and `~/.claude/THE-WAY-USAGE.md` are written by `the-way-global-setup`, with the same form as in a project. `~/.claude/CLAUDE.md` imports both, so every session reads them, and subagents too (NO_PLUGIN_NEEDED).
 - A name written in both the project's file and the global one: only the project's line counts.
 - A global principle is cited `NAME_global` (CITED); project principles stay bare.
 - Gestures that write have a level, gestures that read do not. The level is said by the words ("in all my projects" is global, "in this project" is the project's).
