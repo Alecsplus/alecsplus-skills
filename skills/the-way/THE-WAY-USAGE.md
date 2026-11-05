@@ -1,4 +1,4 @@
-*Written by `/alecsplus-skills:the-way-setup` 1.2.0: rerun it to update.*
+*Written by `/alecsplus-skills:the-way-setup` 1.3.0: rerun it to update.*
 
 ## Principles
 
@@ -10,6 +10,6 @@ How to use them:
 - Ask only when no principle decides or two pull in opposite directions. Then the question carries its comparison right under it, starting with the words "the principles do not decide:" and saying which two principles pull in opposite directions (X toward B, Y toward A).
 - Never go against a principle in silence: if a choice goes against one, say which one and why before doing it.
 - The same holds for a "to decide" coming back from a subagent's report: compare first, then ask only if needed.
-- End every task you give to a subagent with this line: "In the report, next to each choice, write the project principle that decided it." Do not copy any principle into the task.
+- End every task you give to a subagent with this line: "In the report, next to each choice, write the principle that decided it." Do not copy any principle into the task.
 - A rule said for the whole project is a principle waiting to be named: find what the project wants behind it and propose that, not the rule. A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project.
 - Grilling in this project goes through `/alecsplus-skills:the-way-grilling`: when a skill, a ticket or a map says "grilling", call that one.
