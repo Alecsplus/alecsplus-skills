@@ -22,20 +22,21 @@ Fixed. The example is invented.
 ❓ *Q2 – Error message when saving fails: how much does the user read?*
 
 A) One plain line, the details go to the log.
-   *USER_FIRST strong, NOTHING_LEAKS medium.*
+   *USER_FIRST ●●●  NOTHING_LEAKS ●●○*
 
 **B) One plain line and a "Show details" button.**
-   ➡️ *USER_FIRST strong, WITHIN_REACH medium.*
+   ➡️ *USER_FIRST ●●●  WITHIN_REACH ●●○*
 
 C) The full technical message, as it comes.
-   *No principle wants it; it goes against USER_FIRST.*
+   ❌ *USER_FIRST ●●●*
 ```
 
 - ❓ opens the question, in italics.
 - The answers stand one under the other, plain.
-- Under each answer, in italics, the principles that pull toward it, each with its weight on three steps (strong, medium, weak): a judgement written next to the answer.
+- Under each answer, in italics, the principles that pull toward it, each with its weight on three steps, written as dots after the name: `●●●` strong, `●●○` medium, `●○○` weak. The weight is a judgement written next to the answer.
+- A principle that goes against an answer has ❌ before it, with the dots saying how strongly it goes against. An answer that no principle wants has only its ❌ line.
 - The recommended answer is in bold, with ➡️ before its principles. The recommendation comes from the weights, not from taste.
-- A global principle is written `NAME_global` (underscore, the level in lowercase and in the language you write in: `LEGGIBILE_globale` in an Italian question): "*NAME_global strong*". Project principles stay bare. The level does not weigh: a project principle and a global one pulling opposite ways are weighed by their weights, as two project principles are.
+- A global principle is written `NAME_global` (underscore, the level in lowercase and in the language you write in: `LEGGIBILE_globale` in an Italian question): "*NAME_global ●●●*". Project principles stay bare. The level does not weigh: a project principle and a global one pulling opposite ways are weighed by their weights, as two project principles are.
 - If two answers weigh the same: no bold, no arrow, and under the question the line "the principles do not decide between A and B".
 
 An answer enters the list only if someone could really choose it, never to make up a number. A principle is written under an answer only if it really pulls toward it, never to dress a preference.

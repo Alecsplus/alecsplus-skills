@@ -24,7 +24,7 @@ In `~/.claude/` (the home has no variable: write `~`):
 - Is there a `THE-WAY.md`? A `THE-WAY-USAGE.md`? What does its first line say?
 - Does `~/.claude/CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`?
 - Which language does the user use? Read `~/.claude/CLAUDE.md`. If it does not exist, use English. The fixed texts are in English: translate them faithfully into the user's language, English included as is.
-- The version of this plugin is **1.3.0**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **1.3.1**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
