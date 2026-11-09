@@ -78,7 +78,7 @@ What the person says is usually a rule (what not to do, or what to do in one cas
 Run when you want a plan, decision or idea stress-tested, or when a skill, a ticket or a map says "grilling". It runs Pocock's `mattpocock-skills:grilling` as it is (decision tree, rounds, facts found by Claude, decisions by the leader) and changes only two things: the form of the questions and how the principles enter (SIMPLE). Without Pocock's plugin it says so, gives the two commands to install it and stops; it never grills on its own, because "grilling" is his word (VISIBLE).
 
 - A really obvious case is written as a question with its answer and principle already in it, and the work goes on; what the leader sees or does is always a real question (OBVIOUS).
-- Every other question has answers A/B/C, each with the principles that pull toward it and their weight on three steps, written as dots (`●●●`, `●●○`, `●○○`), and with ❌ before a principle that goes against it; the recommendation comes from the weights, and with equal weights there is none (CITED).
+- Every other question has answers A/B/C, each with the principles that pull toward it and their weight on three steps, written as dots (`●●●`, `●●○`, `●○○`), and with 🔻 before a principle that goes against it; the recommendation comes from the weights, and with equal weights there is none (CITED).
 - An answer enters only if someone could really choose it; a principle is written under an answer only if it pulls toward it.
 - The form and the rules of the question are fixed in the skill, written for a human who reads fast.
 - The usage line written by `setup` sends every "grilling" called by a skill, a ticket or a map to this skill, so Pocock's own skills stay untouched (NO_PLUGIN_NEEDED).
