@@ -107,8 +107,8 @@ Like `the-way-discover`, but for principles that hold in every project: it searc
 
 The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 1.3.0: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
 
-- Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
-- If a principle decides, do not ask. Write "I do A (NAME)".
+- Compare before anything. Before doing, proposing, answering or asking anything, compare the road with all the principles, and write at the top of the message which ones decided it and how ("Principles: NAME → …").
+- If a principle decides, do not ask: do. A message without that comparison is not written; if no principle can be named, read the list again.
 - Try first. If you already know what the user would answer, a principle has decided. The answer that looks too obvious is the answer.
 - Ask only when no principle decides, or when two pull in opposite directions. Under the question, write the comparison, starting with "the principles do not decide", naming the two principles.
 - Never go against a principle in silence. If a choice goes against one, say which one and why, before doing it.
