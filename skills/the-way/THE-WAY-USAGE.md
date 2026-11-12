@@ -1,11 +1,11 @@
-*Written by `/alecsplus-skills:the-way-setup` 1.3.1: rerun it to update.*
+*Written by `/alecsplus-skills:the-way-setup` 1.3.2: rerun it to update.*
 
 ## Principles
 
 The project's principles are in THE-WAY.md, imported in CLAUDE.md. They apply to everything done in this project, including how we work.
 
 How to use them:
-- Before asking the person leading the project to choose, compare the choice with the principles. If one decides, do not ask: write "I do A (NAME)" and go on. Never ask what the principles already answer.
+- Before doing, proposing, answering or asking anything, compare the road with the principles, all of them, and write at the top of the message which ones decided it and how ("Principles: NAME → …"). If one decides, do not ask: do. A message without that comparison is not written: if you cannot name any principle, read the list again.
 - Try first: if you already know what the person would answer, a principle has decided. The answer that looks too obvious is the answer.
 - Ask only when no principle decides or two pull in opposite directions. Then the question carries its comparison right under it, starting with the words "the principles do not decide:" and saying which two principles pull in opposite directions (X toward B, Y toward A).
 - Never go against a principle in silence: if a choice goes against one, say which one and why before doing it.
