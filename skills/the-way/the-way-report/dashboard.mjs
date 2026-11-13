@@ -68,7 +68,7 @@ export const TEXTS = {
   decidedAskedLabel: 'Decided and asked per {unit}',
   tileTrend: 'trend per {unit}',
   tileTrendPoint: '{part} (of {whole})',
-  tileTrendAll: 'the faint line is the same count with no Principles or List filter',
+  tileTrendAll: 'the faint line is the same count with Principles and List on "All": it is not the global line; the coloured line sits on its scale',
   explainAnswers: 'You see the messages that ended my turn.',
   explainWithLine: 'You see how many of them have the "Principles:" line on top.',
   explainWithLineFiltered: 'You see how many of them have the "Principles:" line on top citing at least one principle {which}.',
