@@ -88,6 +88,12 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.ok(page.includes('CERTEZZA'));
   assert.ok(page.includes('SIMPLE'));
   assert.ok(!page.includes('http'));
+  assert.equal(page.match(/<span class="groupLabel">(Show|Principles|List|Unit|Period)<\/span>/g).length, 5);
+  const explanationKeys = ['explainAnswers', 'explainWithLine', 'explainClosed', 'explainAsked', 'explainGrillingTile', 'explainShare', 'explainDecidedAsked', 'explainGrillingChart', 'explainWayInUse', 'explainRecommended', 'explainOther', 'explainLeftOpen', 'explainSelfAnswered', 'explainGrillingWith', 'explainGrillingWithout', 'explainSelfAnswer', 'explainColumns', 'explainTrend', 'explainPairs'];
+  const printed = JSON.parse(execFileSync('node', [reportPath, '--print-texts'], { encoding: 'utf8' }));
+  assert.ok(explanationKeys.every((key) => typeof printed[key] === 'string' && printed[key].length > 0));
+  assert.ok(page.includes(printed.explainAnswers));
+  assert.ok(page.includes('type="checkbox" data-folder=') && page.includes('id="projectHeading"'));
   assert.ok(page.includes('id="projectSearch"') && !page.includes('<select'));
   assert.ok(['day', 'week', 'month'].every((unit) => page.includes(`data-unit="${unit}"`)));
   assert.ok(['all', 'result', 'work'].every((kind) => page.includes(`data-kind="${kind}"`)));
