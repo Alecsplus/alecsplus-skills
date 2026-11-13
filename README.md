@@ -50,7 +50,7 @@ Or in a session: `/plugin marketplace add Alecsplus/alecsplus-skills`, then `/pl
 
 Already installed? Update with `claude plugin update alecsplus-skills@alecsplus-skills`.
 
-## The eight skills
+## The nine skills
 
 Got a project with some history? Start with `the-way-discover`: it finds the principles you already follow. Starting from scratch? `the-way-new` writes your first one.
 
@@ -64,6 +64,7 @@ Any skill can be the first: if setup is missing, the skill says so, asks one yes
 - `/alecsplus-skills:the-way-global-setup` gets `~/.claude/` ready for principles that hold in all your projects. The two below run it first.
 - `/alecsplus-skills:the-way-global-new` writes one global principle. Try: "in all my projects, never X".
 - `/alecsplus-skills:the-way-global-discover` finds the principles you follow in every project.
+- `/alecsplus-skills:the-way-report` counts, in your own sessions, which principles decide, which tie, which lose and which stay silent, and says what to touch. Try it after a month of work.
 
 The global level is one more `THE-WAY.md`, in `~/.claude/`: it holds in every project, and is cited as `NAME_global`. In a project that has its own file, the project wins.
 
