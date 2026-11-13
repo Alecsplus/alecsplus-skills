@@ -118,7 +118,8 @@ export const TEXTS = {
   globalAsUsed: 'Global principles, as used here',
   decisionsPerUnit: 'decisions per {unit}',
   tiesTitle: 'The two principles that pulled in opposite directions, and how many times',
-  globalSuffix: ' (global)',
+  globalMarkTitle: 'global principle',
+  legendGlobalMark: '{mark} = global principle, from ~/.claude/THE-WAY.md',
   recommendedChosen: 'recommended chosen',
   otherChosen: 'other chosen',
   noAnswer: 'no answer read',
@@ -165,6 +166,8 @@ svg.chart { width:100%; height:auto; display:block; } svg .grid { stroke:var(--l
 .legend { list-style:none; padding:0; margin:6px 0; display:flex; flex-direction:column; gap:3px; font-size:.82rem; color:var(--muted); } .legend b { color:var(--text); font-weight:600; } .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; }
 .principle { display:grid; grid-template-columns:minmax(150px,1.1fr) 3fr 120px; gap:10px; align-items:center; padding:6px 0; border-top:1px solid var(--line); }
 .principle:first-child { border-top:0; } .principle .name { font-weight:600; } .principle .position, .principle .projects { color:var(--muted); font-size:.78rem; font-weight:400; }
+.globalMark { display:inline-flex; vertical-align:-2px; margin-right:4px; color:var(--ties); } .globalMark svg { width:13px; height:13px; }
+.legendMark { color:var(--muted); font-size:.8rem; }
 .silent { color:var(--muted); font-size:.75rem; border:1px solid var(--line); border-radius:10px; padding:0 6px; margin-left:4px; }
 .bar { display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--muted); height:12px; margin:1px 0; } .bar span.fill { display:block; height:8px; border-radius:3px; min-width:1px; }
 .columns { display:grid; grid-template-columns:1fr 1fr; gap:16px; } ul.plain { list-style:none; padding:0; margin:0; } ul.plain li { display:flex; justify-content:space-between; border-top:1px solid var(--line); padding:3px 0; }
@@ -184,11 +187,16 @@ const PALETTE = ['#2a9d8f', '#e9a23b', '#7b6cd9', '#4f8fd6', '#c06c9c', '#6a994e
 const WIDTH = 640, HEIGHT = 190, LEFT = 36, TOP = 10, RIGHT = 8, BOTTOM = 24;
 const CHOICE_GROUPS = ['scope', 'level', 'kind', 'unit'];
 const GRILLING_WITHOUT_SKILLS = ['mattpocock-skills:grilling', 'grilling'];
+const GLOBAL_PAIR_PREFIX = '*';
 const state = { single: '*', multiple: false, unselected: {}, from: '', to: '', preset: '30', kind: 'all', unit: 'week', scope: 'both', level: 'all' };
 const element = function (id) { return document.getElementById(id); };
 const isoDay = function (time) { return new Date(time).toISOString().slice(0, 10); };
 const escapeHtml = function (text) { return String(text).replace(/[&<>"]/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[character]; }); };
 const increase = function (counts, key, amount) { counts[key] = (counts[key] || 0) + amount; };
+const globalMark = function () {
+  const title = escapeHtml(texts.globalMarkTitle);
+  return '<span class="globalMark" aria-label="' + title + '" title="' + title + '"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><ellipse cx="8" cy="8" rx="2.8" ry="6.5"/><path d="M1.5 8h13"/></svg></span>';
+};
 const percentage = function (part, whole) { return whole > 0 ? Math.round(100 * part / whole) + '%' : '—'; };
 function bucketStart(day) {
   const date = new Date(day + 'T00:00:00Z');
@@ -263,7 +271,7 @@ function aggregate() {
         Object.keys(facts.tiePairs).forEach(function (pair) {
           const found = pair.split(' × ').map(function (key) { return classify(key, folder); });
           const fits = found.every(function (entry) { return passes(entry, folder); });
-          const label = found.map(function (entry) { return entry.base + (entry.level === 'global' ? texts.globalSuffix : ''); }).join(' × ');
+          const label = found.map(function (entry) { return (entry.level === 'global' ? GLOBAL_PAIR_PREFIX : '') + entry.base; }).join(' × ');
           if (fits) { increase(total.tiePairs, label, facts.tiePairs[pair]); }
         });
         ['decided', 'ties', 'against'].forEach(function (field) {
@@ -411,7 +419,7 @@ function principleRow(row, bucketList, maximum, showsProjects) {
   const isSilent = row.level !== NOT_IN_A_FILE && row.decided + row.ties + row.against === 0;
   const bar = function (label, value, color) { return '<div class="bar"><span class="fill" style="width:' + Math.round(100 * value / maximum) * 0.8 + '%;background:' + color + '"></span>' + label + ' ' + value + '</div>'; };
   const projects = showsProjects ? '<div class="projects">' + sortedEntries(row.projects).map(function (pair) { return escapeHtml(pair[0]) + ' ' + pair[1]; }).join(', ') + '</div>' : '';
-  return '<div class="principle"><div class="name">' + escapeHtml(row.name) + (row.position ? ' <span class="position">#' + row.position + '</span>' : '') + (isSilent ? '<span class="silent">' + escapeHtml(texts.silent) + '</span>' : '') + projects + '</div>'
+  return '<div class="principle"><div class="name">' + (row.level === 'global' ? globalMark() : '') + escapeHtml(row.name) + (row.position ? ' <span class="position">#' + row.position + '</span>' : '') + (isSilent ? '<span class="silent">' + escapeHtml(texts.silent) + '</span>' : '') + projects + '</div>'
     + '<div>' + bar(escapeHtml(texts.decided), row.decided, COLORS.decided) + bar(escapeHtml(texts.ties), row.ties, COLORS.ties) + bar(escapeHtml(texts.against), row.against, COLORS.against) + '</div>'
     + '<div>' + sparkline(bucketList, row.perBucket) + '</div></div>';
 }
@@ -420,19 +428,19 @@ function renderPrinciples(total, bucketList) {
   const maximum = Math.max.apply(null, rows.map(function (row) { return Math.max(row.decided, row.ties, row.against); }).concat([1]));
   const byDecisions = function (left, right) { return (right.decided - left.decided) || ((left.position || 999) - (right.position || 999)) || left.name.localeCompare(right.name); };
   const showsProjects = selectedFolders().length > 1;
-  const section = function (title, list) {
-    return '<h3>' + escapeHtml(title) + '</h3>' + (list.length ? list.map(function (row) { return principleRow(row, bucketList, maximum, showsProjects); }).join('') : '<div class="empty">' + escapeHtml(texts.none) + '</div>');
+  const section = function (title, list, isGlobal) {
+    return '<h3>' + (isGlobal ? globalMark() : '') + escapeHtml(title) + '</h3>' + (list.length ? list.map(function (row) { return principleRow(row, bucketList, maximum, showsProjects); }).join('') : '<div class="empty">' + escapeHtml(texts.none) + '</div>');
   };
   const ofLevel = function (level) { return rows.filter(function (row) { return row.level === level; }).sort(byDecisions); };
   const outside = ofLevel(NOT_IN_A_FILE);
   const ownSection = state.level !== 'global' ? section(selectedFolders().length === 1 ? texts.ownPrinciples : texts.projectsOwn, ofLevel('project')) : '';
-  const globalSection = state.level !== 'project' ? section(showsProjects ? texts.globalWithProjects : texts.globalAsUsed, ofLevel('global')) : '';
+  const globalSection = state.level !== 'project' ? section(showsProjects ? texts.globalWithProjects : texts.globalAsUsed, ofLevel('global'), true) : '';
   const outsideSection = outside.length ? section(texts.notInAFileGroup, outside) : '';
   element('principles').innerHTML = '<div class="explain">' + escapeHtml(texts.explainColumns) + ' ' + escapeHtml(perUnit(texts.explainTrend)) + '</div>' + ownSection + globalSection + outsideSection;
 }
 function renderPairs(total) {
   const entries = sortedEntries(total.tiePairs).slice(0, 8);
-  const list = entries.length ? '<ul class="plain">' + entries.map(function (pair) { return '<li><span>' + escapeHtml(pair[0]) + '</span><b>' + pair[1] + '</b></li>'; }).join('') + '</ul>' : '<div class="empty">' + escapeHtml(texts.none) + '</div>';
+  const list = entries.length ? '<ul class="plain">' + entries.map(function (pair) { return '<li><span>' + pair[0].split(' × ').map(function (name) { return name.charAt(0) === GLOBAL_PAIR_PREFIX ? globalMark() + escapeHtml(name.slice(1)) : escapeHtml(name); }).join(' × ') + '</span><b>' + pair[1] + '</b></li>'; }).join('') + '</ul>' : '<div class="empty">' + escapeHtml(texts.none) + '</div>';
   element('pairs').innerHTML = '<h3>' + escapeHtml(texts.tiesTitle) + '</h3><div class="explain">' + escapeHtml(texts.explainPairs) + '</div>' + list;
 }
 function renderGrilling(total, bucketList) {
@@ -539,6 +547,7 @@ Array.prototype.forEach.call(document.querySelectorAll('button[data-days]'), fun
 const dayCount = allDays().filter(function (day, index, days) { return day !== days[index - 1]; }).length;
 element('footer').textContent = fill(texts.footer, { path: ledger.meta.path, updatedAt: ledger.meta.updatedAt, projects: Object.keys(ledger.projects).length, days: dayCount });
 setPreset('30');
+element('legendGlobalMark').innerHTML = escapeHtml(texts.legendGlobalMark).replace('{mark}', globalMark());
 render();
 })();
 `;
@@ -554,7 +563,7 @@ export function writeDashboard({ ledger, ledgerPath, filePath, texts = TEXTS }) 
 <h1>${text('title')}</h1>
 <div class="filterBar">
 <div class="group"><span class="groupLabel">${text('filterShow')}</span><button data-scope="chat">${text('scopeChat')}</button><button data-scope="grilling">${text('scopeGrilling')}</button><button data-scope="both">${text('scopeBoth')}</button></div>
-<div class="group"><span class="groupLabel">${text('filterPrinciples')}</span><button data-level="all">${text('kindAll')}</button><button data-level="project">${text('levelProject')}</button><button data-level="global">${text('levelGlobal')}</button></div>
+<div class="group"><span class="groupLabel">${text('filterPrinciples')}</span><button data-level="all">${text('kindAll')}</button><button data-level="project">${text('levelProject')}</button><button data-level="global">${text('levelGlobal')}</button><span class="legendMark" id="legendGlobalMark"></span></div>
 <div class="group"><span class="groupLabel">${text('filterList')}</span><button data-kind="all">${text('kindAll')}</button><button data-kind="result">${text('kindResult')}</button><button data-kind="work">${text('kindWork')}</button></div>
 <div class="group"><span class="groupLabel">${text('filterUnit')}</span><button data-unit="day">${text('unitDay')}</button><button data-unit="week">${text('unitWeek')}</button><button data-unit="month">${text('unitMonth')}</button></div>
 <div class="group"><span class="groupLabel">${text('filterPeriod')}</span><label>${text('from')} <input type="date" id="from"></label><label>${text('to')} <input type="date" id="to"></label><button data-days="7">${text('days7')}</button><button data-days="30">${text('days30')}</button><button data-days="90">${text('days90')}</button><button data-days="all">${text('daysAll')}</button></div>

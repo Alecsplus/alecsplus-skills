@@ -186,10 +186,22 @@ function incoherences(page, situation) {
     title: part.slice(0, part.indexOf('</h3>')),
     rows: part.split('<div class="principle">').slice(1).map((row) => {
       const bars = [...row.matchAll(/<\/span>\S+ (\d+)<\/div>/g)].map((match) => Number(match[1]));
-      return { name: /^<div class="name">([^ <]*)/.exec(row)[1], decided: bars[0], ties: bars[1], trendSum: sumOfTrend(/<svg viewBox="0 0 100 24".*?<\/svg>/s.exec(row)[0]) };
+      return { name: /^<div class="name">(?:<span class="globalMark".*?<\/span>)?([^ <]*)/.exec(row)[1], marks: (/^<div class="name">(.*?)<\/div>/s.exec(row)[1].match(/class="globalMark"/g) || []).length, decided: bars[0], ties: bars[1], trendSum: sumOfTrend(/<svg viewBox="0 0 100 24".*?<\/svg>/s.exec(row)[0]) };
     }),
   }));
   const rows = groups.flatMap((group) => group.rows);
+  const globalGroupTitle = (group) => group.title.includes('class="globalMark"');
+  groups.forEach((group) => group.rows.forEach((row) => {
+    const expected = globalGroupTitle(group) ? 1 : 0;
+    expect(row.marks === expected, `row ${row.name} in "${group.title.replace(/<span.*?<\/span>/, '')}" carries ${row.marks} global marks, expected ${expected}`);
+  }));
+  expect(groups.every((group) => globalGroupTitle(group) === (group.title.replace(/<span.*?<\/span>/, '') === TEXTS.globalWithProjects || group.title.replace(/<span.*?<\/span>/, '') === TEXTS.globalAsUsed)), 'only the global group heading carries the mark');
+  const pairItems = [...nodes.pairs.innerHTML.matchAll(/<li><span>(.*?)<\/span>/g)].map((match) => match[1]);
+  pairItems.forEach((item) => item.split(' × ').forEach((name) => {
+    const isGlobalName = /^(?:<span class="globalMark".*?<\/span>)?[A-Z_]+_globale$|^<span class="globalMark"/.test(name) || name.endsWith('_globale');
+    expect(isGlobalName === name.startsWith('<span class="globalMark"'), `pair name ${name}: the global mark is ${isGlobalName ? 'missing' : 'on a non-global name'}`);
+  }));
+  expect(!nodes.pairs.innerHTML.includes('(global)') && (!/\*/.test(nodes.pairs.innerHTML.replace(/<svg.*?<\/svg>/gs, '')) ), 'pairs show a text suffix or a raw prefix');
   const inFile = groups.filter((group) => group.title !== TEXTS.notInAFileGroup).flatMap((group) => group.rows);
   expect(inFile.reduce((sum, row) => sum + row.decided, 0) === closed.value, `closed ${closed.value}, the rows decide ${inFile.reduce((sum, row) => sum + row.decided, 0)}`);
   rows.forEach((row) => expect(row.trendSum === row.decided, `row ${row.name} decided ${row.decided}, its line sums ${row.trendSum}`));
