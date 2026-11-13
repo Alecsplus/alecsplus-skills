@@ -28,13 +28,13 @@ A) One plain line, the details go to the log.
    ➡️ *USER_FIRST ●●●  WITHIN_REACH ●●○*
 
 C) The full technical message, as it comes.
-   🔻 *USER_FIRST ●●●*
+   *USER_FIRST 🔻🔻🔻*
 ```
 
 - ❓ opens the question, in italics.
 - The answers stand one under the other, plain.
 - Under each answer, in italics, the principles that pull toward it, each with its weight on three steps, written as dots after the name: `●●●` strong, `●●○` medium, `●○○` weak. The weight is a judgement written next to the answer.
-- A principle that goes against an answer has 🔻 before it, with the dots saying how strongly it goes against. An answer that no principle wants has only its 🔻 line.
+- A principle that goes against an answer has red triangles after its name instead of dots, on the same three steps: `🔻🔻🔻` strongly against, `🔻🔻` medium, `🔻` weak. An answer that no principle wants has only its line of triangles.
 - The recommended answer is in bold, with ➡️ before its principles. The recommendation comes from the weights, not from taste.
 - A global principle is written `NAME_global` (underscore, the level in lowercase and in the language you write in: `LEGGIBILE_globale` in an Italian question): "*NAME_global ●●●*". Project principles stay bare. The level does not weigh: a project principle and a global one pulling opposite ways are weighed by their weights, as two project principles are.
 - If two answers weigh the same: no bold, no arrow, and under the question the line "the principles do not decide between A and B".
