@@ -5,16 +5,16 @@ description: Measure how much the principles take part in the work, from the ses
 
 # The way: report
 
-The plugin asks for one thing at every turn: the line "Principles: NAME → why" at the top of the message. That line is also the measure. This skill counts it in the transcripts Claude Code keeps on disk and tells whoever leads the project which principles decide, how often, when, with whom, and which never do. It counts; it does not judge whether a choice turned out well, because nothing in a transcript says so. It never writes a principle.
+The plugin asks for one thing at every turn: the line "Principles: NAME → why" at the top of the message. That line is also the measure. This skill counts it in the transcripts Claude Code keeps on disk and tells whoever leads the project, in plain words, which principles decide, how often, when, with whom, and which never do. It counts; it does not judge whether a choice turned out well, because nothing in a transcript says so. It never writes a principle.
 
-Transcripts live for about 30 days (Claude Code's `cleanupPeriodDays`), so every report is saved, and the saved reports are the memory: run it once a month and the trend is there.
+Transcripts live for about 30 days (Claude Code's `cleanupPeriodDays`); the saved pages do not expire: run it once a month and the trend is there.
 
 ## Before anything
 
 1. Find the two files of principles. The project's: `THE-WAY.md` in the repo root, or the file that `CLAUDE.md` imports with an `@…/THE-WAY.md` line (in this plugin's own repo it is `skills/the-way/THE-WAY.md`). The global one: `~/.claude/THE-WAY.md`. Either may be missing; with both missing, say so in one line and stop: there is nothing to measure.
 2. Read the project's `THE-WAY-USAGE.md` (or the global one if the project has none) and take the words it fixes for a question the principles do not close, the ones in quotes after "starting with the words": in English "the principles do not decide", in Italian "i principi non decidono". The counter needs them.
 3. The period is the last 30 days unless the person gave a number of days or "all". Every count is shown next to the same count in the period before.
-4. If the person asked for the history ("history", "how did it go over time", "the past reports"), run the counter with `--history` and print what it gives: nothing else is read.
+4. If the person asked for the history ("history", "how did it go over time", "the past reports"), run the counter with `--history` and tell what it gives in the words of "Tell": nothing else is read.
 
 ## Count
 
@@ -36,13 +36,28 @@ It reads `~/.claude/projects/<folder of the current directory>/*.jsonl` (every c
 
 The counter prints Markdown with two parts, "This project" (from this project's transcripts: project principles and the global ones cited here) and "All your projects" (from every folder: global principles only, with the projects that cited them). Each part has: the turns and the turns with the line; the choices closed by a principle against the ones that came to the person; the weeks of the period, one line each, with turns, turns with the line and decisions as a bar; a table with one principle per line (position in the file, decided, ties, against, a sparkline of the decisions over the weeks, last date; each count with the period before in parentheses); the principles of the file never cited in the period; the pairs that tie; the against counts; the principles that come together most. A part with no file is left out. The oldest transcript on disk is named at the top, so the reader knows how far back the counts can see.
 
-Then it saves the report in `~/.claude/the-way-reports/<folder of the project>/<date>.md` and the counts in `<date>.json` next to it, and prints that path on the last line. Nothing of this is estimated by you: print the counter's output as it is.
+Then it saves the counts in `~/.claude/the-way-reports/<folder of the project>/<date>.counts.md` and `<date>.json`, and prints that folder on the last line. The counter's output is for you, not for the person: do not print it. The person reads the page of the next step.
 
-With `--history` it reads only the saved `.json` files of this project and prints one table, principles down, report dates across, with the decided count in every cell and a sparkline at the end of the row; and the same for the global principles across all projects. That is how the past reports are read: never by opening them one by one.
+With `--history` it reads only the saved `.json` files of this project and prints one table, principles down, report dates across, with the decided count in every cell and a sparkline at the end of the row; and the same for the global principles across all projects. That too is for you: tell it in the words of the page below, one line per principle that moved, and say which report dates it spans.
+
+## Tell
+
+Write the page for the person who leads the project, in the language of the project, in the words of someone who reads fast and has never seen the counter: no column names, no "ties", "against", "sparkline" or "turns with the line". Numbers stay, as plain facts. The page has these lines, in this order, each one sentence, left out when it has nothing to say:
+
+1. How many times Claude answered in the period, and in how many of them it said at the top which principles decided; the same share in the period before, in words ("before: never", "before: one in ten").
+2. How many choices the principles closed by themselves, and how many came to the person.
+3. Who worked most, with the count, up to four names; and which pairs always come together, if any pair came three times or more.
+4. Which weeks were loud and which were quiet, only when they differ a lot: "almost all of it in the last week".
+5. Who never spoke, in this project; and, for the global ones, in no project at all.
+6. Which choices went against a principle, if any, with the count.
+7. Which names Claude cited that no file has, if any.
+8. Where the reports are kept and how to read them again: the folder, and the word "history" to see all of them in one table.
+
+Then "What to do" (next section), and save the page, exactly as printed, as `<date>.md` in the same folder, so it is what the person finds when they open the folder. The counter's own output stays in `<date>.counts.md` for whoever wants the full table.
 
 ## Say what to do
 
-Under the counter's output, close with "What to do", at most three lines, chosen by these readings, in this order; a principle that falls in two gets one line. Each line names the principle, the fact, and the next step. You propose, you do not write: the step is a call to `/alecsplus-skills:the-way-new` (or `the-way-global-new` for a global one), which passes the sentence through its criterion and asks its own yes.
+Close the page with "What to do", at most three lines, chosen by these readings, in this order; a principle that falls in two gets one line. Each line names the principle, the fact, and the next step. You propose, you do not write: the step is a call to `/alecsplus-skills:the-way-new` (or `the-way-global-new` for a global one), which passes the sentence through its criterion and asks its own yes.
 
 - **Against two times or more**: real cases beat the sentence; it fails *Uncontradicted*. Next step: `the-way-new` reads it again with the cases from the against lines.
 - **The same tie pair two times or more**: the two overlap at the border, or their order in the list does not say which weighs more. Next step: `the-way-new` on the two, to sharpen one sentence or move one line (the order is importance).

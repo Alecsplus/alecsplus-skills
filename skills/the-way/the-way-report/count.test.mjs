@@ -94,12 +94,15 @@ test('together lists the pairs of names in the same decision line', () => {
 
 test('the report names the oldest transcript and saves the markdown and the json', () => {
   const directory = join(root, 'saved-once');
-  const output = runReport([], directory);
   const savedDirectory = join(directory, '-home-x-develop-fake_proj');
+  mkdirSync(savedDirectory, { recursive: true });
+  writeFileSync(join(savedDirectory, `${today}.md`), 'page of the skill');
+  const output = runReport([], directory);
   assert.match(output, new RegExp(`Transcripts on disk go back to ${today} \\(Claude Code keeps them about 30 days\\)`));
   assert.match(output, /Saved reports for this project: none yet\./);
-  assert.match(output, new RegExp(`\\nSaved: ${savedDirectory}/${today}\\.md\\n$`));
-  const markdown = readFileSync(join(savedDirectory, `${today}.md`), 'utf8');
+  assert.match(output, new RegExp(`\\nSaved in: ${savedDirectory}\\n$`));
+  assert.equal(readFileSync(join(savedDirectory, `${today}.md`), 'utf8'), 'page of the skill');
+  const markdown = readFileSync(join(savedDirectory, `${today}.counts.md`), 'utf8');
   assert.ok(!markdown.includes('Saved:'));
   const saved = JSON.parse(readFileSync(join(savedDirectory, `${today}.json`), 'utf8'));
   assert.equal(saved.date, today);

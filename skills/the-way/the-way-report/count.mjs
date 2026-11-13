@@ -374,10 +374,8 @@ function saveReport(options, markdown, projectRows, globalRows, aggregates, proj
     turns: { project: turnsOf(aggregates.project), global: turnsOf(aggregates.global) },
   };
   mkdirSync(projectDirectory, { recursive: true });
-  const markdownPath = join(projectDirectory, `${date}.md`);
-  writeFileSync(markdownPath, `${markdown}\n`);
+  writeFileSync(join(projectDirectory, `${date}.counts.md`), `${markdown}\n`);
   writeFileSync(join(projectDirectory, `${date}.json`), `${JSON.stringify(summary, null, 2)}\n`);
-  return markdownPath;
 }
 
 function renderHistoryTable(reports, partName, includesZeroRows) {
@@ -457,9 +455,9 @@ async function main() {
     if (globalPart) {
       parts.push(globalPart.text);
     }
-    const markdownPath = saveReport(options, parts.join('\n\n'), project.rows, globalPart ? globalPart.rows : [],
+    saveReport(options, parts.join('\n\n'), project.rows, globalPart ? globalPart.rows : [],
       { project: projectAggregate, global: globalAggregate }, projectDirectory);
-    lastLine = `\n\nSaved: ${markdownPath}`;
+    lastLine = `\n\nSaved in: ${projectDirectory}`;
   }
   process.stdout.write(`${parts.join('\n\n')}${lastLine}\n`);
   process.exitCode = exitCode;
