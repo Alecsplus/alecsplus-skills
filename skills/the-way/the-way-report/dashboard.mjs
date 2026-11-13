@@ -49,7 +49,8 @@ export const TEXTS = {
   kindWork: 'Work',
   partChat: 'Chat',
   partGrilling: 'Grilling and questions',
-  sectionOverTime: 'Over time',
+  sectionLineOverTime: 'The Principles line over time',
+  sectionClosedAskedOverTime: 'Choices closed and questions asked over time',
   sectionPrinciples: 'Principles',
   sectionPairs: 'When the principles did not decide',
   sectionGrilling: 'Grilling over time',
@@ -60,29 +61,28 @@ export const TEXTS = {
   tileSaved: 'questions saved',
   tileAsked: 'Questions asked to you',
   tileGrilling: 'Grilling questions',
-  tileGrillingDetail: 'recommended chosen {recommended} · other {other}<br>left open {open} · answered by themselves {self}',
-  shareTitle: 'Answers with the Principles line, per {unit}',
+  tileGrillingDetail: 'recommended chosen {recommended} · other {other} · no answer read {unanswered}<br>among them: the principles did not decide {open} · answer already in it {self}',
+  shareTitle: 'Share of answers with the Principles line, per {unit}',
   shareLabel: 'Share of answers with the Principles line, per {unit}',
   decidedAskedTitle: 'Choices decided by the principles and questions asked to you, per {unit}',
   decidedAskedLabel: 'Decided and asked per {unit}',
   tileTrend: 'trend per {unit}',
   explainAnswers: 'You see the messages that ended my turn.',
   explainWithLine: 'You see how many of them have the "Principles:" line on top.',
-  explainClosed: 'You see the choices the principles decided on their own, without asking you.',
+  explainClosed: 'You see the choices a principle written in a file decided on its own, without asking you; it follows the Principles and List filters.',
   explainAsked: 'You see the answers that ended with a question to you.',
-  explainGrillingTile: 'You see the ❓ questions asked in the grilling, and how they ended.',
-  explainShare: 'You see, for each {unit}, the share of my answers that had the "Principles:" line on top: 100% means all of them.',
+  explainGrillingTile: 'You see the ❓ grilling questions and how you answered them. The second line counts some of the same questions again, by what they said.',
+  explainShare: 'You see, for each {unit}, the share of my answers that had the "Principles:" line on top: 100% means all of them. A {unit} without answers has no point.',
   explainDecidedAsked: 'You see, for each {unit}, two bars: how many choices the principles closed alone and how many questions I asked you.',
-  explainGrillingChart: 'You see, for each {unit}, one stacked bar: its colours are how the grilling questions ended.',
+  explainGrillingChart: 'You see, for each {unit}, one stacked bar as tall as the grilling questions: its colours are how you answered them.',
   explainWayInUse: 'You see, for each {unit}, how many times each way of working was used.',
   explainRecommended: 'You see the questions where you took the answer I recommended.',
   explainOther: 'You see the questions where you chose a different answer.',
-  explainLeftOpen: 'You see the questions that got no answer yet.',
-  explainSelfAnswered: 'You see the questions I closed myself with the principles, without asking you.',
+  explainNoAnswer: 'You see the questions whose reply named no option: no reply yet, or a reply in words.',
   explainGrillingWith: 'You see the grilling runs done with the principles.',
   explainGrillingWithout: 'You see the grilling runs done without the principles.',
-  explainSelfAnswer: 'You see the questions closed with the self-answer.',
-  explainColumns: 'You see one row per principle. Decided: times the principle decided. Ties: times it was one of the two pulling in opposite directions. Against: times I chose against it and said so. #n: its line in the file.',
+  explainSelfAnswer: 'You see how many times the self-answer skill ran.',
+  explainColumns: 'You see one row per principle. Decided: times the principle decided. Ties: times it was named where the principles did not decide. Against: times I chose against it and said so. #n: its place in the file.',
   explainTrend: 'The small line on the right is how often it decided, per {unit}.',
   explainPairs: 'You see the pairs of principles that pulled in opposite directions when I wrote that they did not decide, and how many times each pair came up.',
   legendShare: 'Answers with the Principles line',
@@ -99,7 +99,7 @@ export const TEXTS = {
   ties: 'ties',
   against: 'against',
   silent: 'silent',
-  notInAFile: 'not in a file',
+  notInAFileGroup: 'Names cited that no file has, or cited at the wrong level (not counted in the choices closed)',
   none: 'None.',
   noData: 'No data in this range.',
   globalWithProjects: 'Global principles, with the projects that cited them',
@@ -110,14 +110,13 @@ export const TEXTS = {
   globalSuffix: ' (global)',
   recommendedChosen: 'recommended chosen',
   otherChosen: 'other chosen',
-  leftOpen: 'left open',
-  answeredByThemselves: 'answered by themselves',
+  noAnswer: 'no answer read',
   grillingLabel: 'Grilling questions per {unit}',
   grillingWith: 'grilling with the principles',
   grillingWithout: 'grilling without',
-  selfAnswer: 'questions closed with self-answer',
+  selfAnswer: 'self-answer runs',
   wayInUseLabel: 'The way in use per {unit}',
-  principlesWritten: 'the-way-new runs (a principle proposed): {n}',
+  principlesWritten: 'the-way-new and the-way-global-new runs (a principle proposed): {n}',
   footer: 'Ledger: {path}, updated {updatedAt}, {projects} projects, {days} days'
 };
 
@@ -172,6 +171,7 @@ const COLORS = { decided: '#2a9d8f', asked: '#e9a23b', ties: '#7b6cd9', against:
 const PALETTE = ['#2a9d8f', '#e9a23b', '#7b6cd9', '#4f8fd6', '#c06c9c', '#6a994e'];
 const WIDTH = 640, HEIGHT = 190, LEFT = 36, TOP = 10, RIGHT = 8, BOTTOM = 24;
 const CHOICE_GROUPS = ['scope', 'level', 'kind', 'unit'];
+const GRILLING_WITHOUT_SKILLS = ['mattpocock-skills:grilling', 'grilling'];
 const state = { single: '*', multiple: false, unselected: {}, from: '', to: '', preset: '30', kind: 'all', unit: 'week', scope: 'both', level: 'all' };
 const element = function (id) { return document.getElementById(id); };
 const isoDay = function (time) { return new Date(time).toISOString().slice(0, 10); };
@@ -210,7 +210,7 @@ function selectedFolders() {
   return state.multiple ? folders.filter(function (folder) { return !state.unselected[folder]; }) : (state.single === '*' ? folders : [state.single]);
 }
 function isAllSelected() { return selectedFolders().length === Object.keys(ledger.projects).length; }
-function emptyBucket() { return { answers: 0, withLine: 0, closed: 0, asked: 0, questions: 0, recommended: 0, other: 0, open: 0, self: 0, skills: {} }; }
+function emptyBucket() { return { answers: 0, withLine: 0, closed: 0, asked: 0, questions: 0, recommended: 0, other: 0, skills: {} }; }
 function rowOf(rows, level, base) {
   const id = level + ':' + base;
   rows[id] = rows[id] || { name: base, level: level, decided: 0, ties: 0, against: 0, perBucket: {}, projects: {} };
@@ -230,11 +230,13 @@ function aggregate() {
         bucketEntry.answers += facts.answers; bucketEntry.withLine += facts.withLine; bucketEntry.asked += facts.questionsAsked;
         Object.keys(total.grilling).forEach(function (field) { total.grilling[field] += facts.grilling[field]; });
         bucketEntry.recommended += facts.grilling.chosenRecommended; bucketEntry.other += facts.grilling.chosenOther;
-        bucketEntry.questions += facts.grilling.questions; bucketEntry.open += facts.grilling.notDecided; bucketEntry.self += facts.grilling.selfAnswered;
+        bucketEntry.questions += facts.grilling.questions;
         Object.keys(facts.skills).forEach(function (skill) { increase(total.skills, skill, facts.skills[skill]); increase(bucketEntry.skills, skill, facts.skills[skill]); });
         Object.keys(facts.tiePairs).forEach(function (pair) {
-          const fits = pair.split(' × ').every(function (key) { return passes(classify(key, folder), folder); });
-          if (fits) { increase(total.tiePairs, pair, facts.tiePairs[pair]); }
+          const found = pair.split(' × ').map(function (key) { return classify(key, folder); });
+          const fits = found.every(function (entry) { return passes(entry, folder); });
+          const label = found.map(function (entry) { return entry.base + (entry.level === 'global' ? texts.globalSuffix : ''); }).join(' × ');
+          if (fits) { increase(total.tiePairs, label, facts.tiePairs[pair]); }
         });
         ['decided', 'ties', 'against'].forEach(function (field) {
           Object.keys(facts[field]).forEach(function (key) {
@@ -317,7 +319,8 @@ function barChart(bucketList, series, stacked, label) {
 function lineChart(bucketList, values, label, series) {
   const drawing = frame(bucketList, 100, label, '%');
   const slot = drawing.innerWidth / (bucketList.length || 1);
-  const points = bucketList.map(function (bucket, index) { return { x: LEFT + (index + 0.5) * slot, y: TOP + drawing.innerHeight * (1 - (values[bucket] || 0) / 100), bucket: bucket, value: values[bucket] || 0 }; });
+  const points = bucketList.map(function (bucket, index) { return { x: LEFT + (index + 0.5) * slot, y: TOP + drawing.innerHeight * (1 - (values[bucket] || 0) / 100), bucket: bucket, value: values[bucket] }; })
+    .filter(function (point) { return point.value !== undefined; });
   let html = drawing.html + '<polyline fill="none" stroke="' + COLORS.decided + '" stroke-width="2" points="' + points.map(function (point) { return point.x.toFixed(1) + ',' + point.y.toFixed(1); }).join(' ') + '"/>';
   points.forEach(function (point) { html += '<circle cx="' + point.x.toFixed(1) + '" cy="' + point.y.toFixed(1) + '" r="3" fill="' + COLORS.decided + '"><title>' + bucketLabel(point.bucket) + ': ' + point.value + '%</title></circle>'; });
   return html + '</svg>' + legend(series);
@@ -326,13 +329,16 @@ function sparkline(bucketList, perBucket) {
   const values = bucketList.map(function (bucket) { return perBucket[bucket] || 0; });
   const maximum = Math.max.apply(null, values.concat([1]));
   const points = values.map(function (value, index) { return (bucketList.length > 1 ? 100 * index / (bucketList.length - 1) : 50).toFixed(1) + ',' + (22 - 20 * value / maximum).toFixed(1); }).join(' ');
-  return '<svg viewBox="0 0 100 24" preserveAspectRatio="none" width="110" height="24" role="img" aria-label="' + escapeHtml(perUnit(texts.decisionsPerUnit)) + '"><polyline fill="none" stroke="' + COLORS.decided + '" stroke-width="1.5" points="' + points + '"/></svg>';
+  return '<svg viewBox="0 0 100 24" preserveAspectRatio="none" width="110" height="24" role="img" aria-label="' + escapeHtml(perUnit(texts.decisionsPerUnit)) + '">' + trendTitle(perUnit(texts.decisionsPerUnit), bucketList, values) + '<polyline fill="none" stroke="' + COLORS.decided + '" stroke-width="1.5" points="' + points + '"/></svg>';
+}
+function trendTitle(label, bucketList, values) {
+  return '<title>' + escapeHtml(label) + ' — ' + bucketList.map(function (bucket, index) { return bucketLabel(bucket) + ': ' + values[index]; }).join(', ') + '</title>';
 }
 function tileTrend(bucketList, total, field, color) {
   const values = bucketList.map(function (bucket) { return (total.buckets[bucket] || emptyBucket())[field]; });
   const maximum = Math.max.apply(null, values.concat([1]));
   const points = values.map(function (value, index) { return (bucketList.length > 1 ? 100 * index / (bucketList.length - 1) : 50).toFixed(1) + ',' + (26 - 24 * value / maximum).toFixed(1); }).join(' ');
-  return '<div class="sub">' + escapeHtml(perUnit(texts.tileTrend)) + '</div><svg class="tile-trend" viewBox="0 0 100 28" preserveAspectRatio="none" width="100%" height="28" role="img" aria-label="' + escapeHtml(perUnit(texts.tileTrend)) + '"><polyline fill="none" stroke="' + color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + points + '"/></svg>';
+  return '<div class="sub">' + escapeHtml(perUnit(texts.tileTrend)) + '</div><svg class="tile-trend" viewBox="0 0 100 28" preserveAspectRatio="none" width="100%" height="28" role="img" aria-label="' + escapeHtml(perUnit(texts.tileTrend)) + '">' + trendTitle(perUnit(texts.tileTrend), bucketList, values) + '<polyline fill="none" stroke="' + color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + points + '"/></svg>';
 }
 function tile(label, value, sub, explanation, trend) {
   return '<div class="tile"><div class="label">' + escapeHtml(label) + '</div><div class="value">' + value + '</div>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '<div class="sub">' + escapeHtml(explanation) + '</div>' + trend + '</div>';
@@ -346,13 +352,13 @@ function renderTiles(total, bucketList) {
     + tile(texts.tileWithLine, total.withLine, percentage(total.withLine, total.answers), texts.explainWithLine, tileTrend(bucketList, total, 'withLine', COLORS.decided));
   element('tilesGrilling').innerHTML = tile(texts.tileClosed, total.closed, escapeHtml(texts.tileSaved), texts.explainClosed, tileTrend(bucketList, total, 'closed', COLORS.decided))
     + tile(texts.tileAsked, total.asked, '', texts.explainAsked, tileTrend(bucketList, total, 'asked', COLORS.asked))
-    + tile(texts.tileGrilling, grilling.questions, fill(texts.tileGrillingDetail, { recommended: grilling.chosenRecommended, other: grilling.chosenOther, open: grilling.notDecided, self: grilling.selfAnswered }), texts.explainGrillingTile, tileTrend(bucketList, total, 'questions', COLORS.ties));
+    + tile(texts.tileGrilling, grilling.questions, fill(texts.tileGrillingDetail, { recommended: grilling.chosenRecommended, other: grilling.chosenOther, unanswered: grilling.questions - grilling.chosenRecommended - grilling.chosenOther, open: grilling.notDecided, self: grilling.selfAnswered }), texts.explainGrillingTile, tileTrend(bucketList, total, 'questions', COLORS.ties));
 }
 function renderOverTime(total, bucketList) {
   const shares = {}, decided = {}, asked = {};
   bucketList.forEach(function (bucket) {
     const entry = total.buckets[bucket] || emptyBucket();
-    shares[bucket] = entry.answers > 0 ? Math.round(100 * entry.withLine / entry.answers) : 0;
+    if (entry.answers > 0) { shares[bucket] = Math.round(100 * entry.withLine / entry.answers); }
     decided[bucket] = entry.closed; asked[bucket] = entry.asked;
   });
   element('overtime').innerHTML = chartBlock(perUnit(texts.shareTitle), perUnit(texts.explainShare), texts.axisShare,
@@ -364,7 +370,7 @@ function principleRow(row, bucketList, maximum, showsProjects) {
   const isSilent = row.level !== NOT_IN_A_FILE && row.decided + row.ties + row.against === 0;
   const bar = function (label, value, color) { return '<div class="bar"><span class="fill" style="width:' + Math.round(100 * value / maximum) * 0.8 + '%;background:' + color + '"></span>' + label + ' ' + value + '</div>'; };
   const projects = showsProjects ? '<div class="projects">' + sortedEntries(row.projects).map(function (pair) { return escapeHtml(pair[0]) + ' ' + pair[1]; }).join(', ') + '</div>' : '';
-  return '<div class="principle"><div class="name">' + escapeHtml(row.name) + (row.position ? ' <span class="position">#' + row.position + '</span>' : '') + (isSilent ? '<span class="silent">' + escapeHtml(texts.silent) + '</span>' : '') + (row.level === NOT_IN_A_FILE ? '<span class="silent">' + escapeHtml(texts.notInAFile) + '</span>' : '') + projects + '</div>'
+  return '<div class="principle"><div class="name">' + escapeHtml(row.name) + (row.position ? ' <span class="position">#' + row.position + '</span>' : '') + (isSilent ? '<span class="silent">' + escapeHtml(texts.silent) + '</span>' : '') + projects + '</div>'
     + '<div>' + bar(escapeHtml(texts.decided), row.decided, COLORS.decided) + bar(escapeHtml(texts.ties), row.ties, COLORS.ties) + bar(escapeHtml(texts.against), row.against, COLORS.against) + '</div>'
     + '<div>' + sparkline(bucketList, row.perBucket) + '</div></div>';
 }
@@ -372,52 +378,41 @@ function renderPrinciples(total, bucketList) {
   const rows = Object.keys(total.rows).map(function (id) { return total.rows[id]; });
   const maximum = Math.max.apply(null, rows.map(function (row) { return Math.max(row.decided, row.ties, row.against); }).concat([1]));
   const byDecisions = function (left, right) { return (right.decided - left.decided) || ((left.position || 999) - (right.position || 999)) || left.name.localeCompare(right.name); };
-  const section = function (title, list, showsProjects) {
+  const showsProjects = selectedFolders().length > 1;
+  const section = function (title, list) {
     return '<h3>' + escapeHtml(title) + '</h3>' + (list.length ? list.map(function (row) { return principleRow(row, bucketList, maximum, showsProjects); }).join('') : '<div class="empty">' + escapeHtml(texts.none) + '</div>');
   };
-  const globals = rows.filter(function (row) { return row.level === 'global'; }).sort(byDecisions);
-  const outside = rows.filter(function (row) { return row.level === NOT_IN_A_FILE; }).sort(byDecisions);
-  const own = rows.filter(function (row) { return row.level === 'project'; }).sort(byDecisions);
-  const isAll = isAllSelected();
-  const showsOwn = state.level !== 'global';
-  const showsGlobals = state.level !== 'project';
-  const globalSection = isAll ? section(texts.globalWithProjects, globals, true) : section(texts.globalAsUsed, globals.concat(outside.map(function (row) { return Object.assign({ label: NOT_IN_A_FILE }, row); })), false);
-  const ownSection = section(selectedFolders().length === 1 ? texts.ownPrinciples : texts.projectsOwn, own, isAll);
-  element('principles').innerHTML = '<div class="explain">' + escapeHtml(texts.explainColumns) + ' ' + escapeHtml(perUnit(texts.explainTrend)) + '</div>' + (showsOwn && (!isAll || state.level === 'project') ? ownSection : '') + (showsGlobals ? globalSection : '');
-}
-function pairLabels(counts, separator) {
-  const isAll = isAllSelected();
-  const result = {};
-  Object.keys(counts).forEach(function (pair) {
-    const keys = pair.split(separator);
-    const parsed = keys.map(function (key) { return /^(.*?)_([a-z]+)$/.exec(key); });
-    const isEveryGlobal = parsed.every(function (match) { return Boolean(match); });
-    const label = keys.map(function (key, index) { return parsed[index] ? parsed[index][1] + (isAll ? '' : texts.globalSuffix) : key; }).join(separator);
-    if (!isAll || isEveryGlobal) { increase(result, label, counts[pair]); }
-  });
-  return result;
+  const ofLevel = function (level) { return rows.filter(function (row) { return row.level === level; }).sort(byDecisions); };
+  const outside = ofLevel(NOT_IN_A_FILE);
+  const ownSection = state.level !== 'global' ? section(selectedFolders().length === 1 ? texts.ownPrinciples : texts.projectsOwn, ofLevel('project')) : '';
+  const globalSection = state.level !== 'project' ? section(showsProjects ? texts.globalWithProjects : texts.globalAsUsed, ofLevel('global')) : '';
+  const outsideSection = outside.length ? section(texts.notInAFileGroup, outside) : '';
+  element('principles').innerHTML = '<div class="explain">' + escapeHtml(texts.explainColumns) + ' ' + escapeHtml(perUnit(texts.explainTrend)) + '</div>' + ownSection + globalSection + outsideSection;
 }
 function renderPairs(total) {
-  const list = function (counts, separator) {
-    const entries = sortedEntries(pairLabels(counts, separator)).slice(0, 8);
-    return entries.length ? '<ul class="plain">' + entries.map(function (pair) { return '<li><span>' + escapeHtml(pair[0]) + '</span><b>' + pair[1] + '</b></li>'; }).join('') + '</ul>' : '<div class="empty">' + escapeHtml(texts.none) + '</div>';
-  };
-  element('pairs').innerHTML = '<h3>' + escapeHtml(texts.tiesTitle) + '</h3><div class="explain">' + escapeHtml(texts.explainPairs) + '</div>' + list(total.tiePairs, ' × ');
+  const entries = sortedEntries(total.tiePairs).slice(0, 8);
+  const list = entries.length ? '<ul class="plain">' + entries.map(function (pair) { return '<li><span>' + escapeHtml(pair[0]) + '</span><b>' + pair[1] + '</b></li>'; }).join('') + '</ul>' : '<div class="empty">' + escapeHtml(texts.none) + '</div>';
+  element('pairs').innerHTML = '<h3>' + escapeHtml(texts.tiesTitle) + '</h3><div class="explain">' + escapeHtml(texts.explainPairs) + '</div>' + list;
 }
 function renderGrilling(total, bucketList) {
   const pick = function (field) { const values = {}; bucketList.forEach(function (bucket) { values[bucket] = (total.buckets[bucket] || emptyBucket())[field]; }); return values; };
+  const unanswered = {};
+  bucketList.forEach(function (bucket) { const entry = total.buckets[bucket] || emptyBucket(); unanswered[bucket] = entry.questions - entry.recommended - entry.other; });
   element('grilling').innerHTML = chartBlock(perUnit(texts.grillingTitle), perUnit(texts.explainGrillingChart), texts.axisQuestions, barChart(bucketList, [
     { label: texts.recommendedChosen, explain: texts.explainRecommended, color: COLORS.decided, values: pick('recommended') }, { label: texts.otherChosen, explain: texts.explainOther, color: COLORS.asked, values: pick('other') },
-    { label: texts.leftOpen, explain: texts.explainLeftOpen, color: COLORS.ties, values: pick('open') }, { label: texts.answeredByThemselves, explain: texts.explainSelfAnswered, color: COLORS.neutral, values: pick('self') }], true, perUnit(texts.grillingLabel)));
+    { label: texts.noAnswer, explain: texts.explainNoAnswer, color: COLORS.neutral, values: unanswered }], true, perUnit(texts.grillingLabel)));
 }
 function renderWayInUse(total, bucketList) {
   const series = [
-    { label: texts.grillingWith, explain: texts.explainGrillingWith, skill: 'alecsplus-skills:the-way-grilling', color: COLORS.decided },
-    { label: texts.grillingWithout, explain: texts.explainGrillingWithout, skill: 'mattpocock-skills:grilling', color: COLORS.asked },
-    { label: texts.selfAnswer, explain: texts.explainSelfAnswer, skill: 'alecsplus-skills:the-way-self-answer', color: COLORS.neutral }
+    { label: texts.grillingWith, explain: texts.explainGrillingWith, skills: ['alecsplus-skills:the-way-grilling'], color: COLORS.decided },
+    { label: texts.grillingWithout, explain: texts.explainGrillingWithout, skills: GRILLING_WITHOUT_SKILLS, color: COLORS.asked },
+    { label: texts.selfAnswer, explain: texts.explainSelfAnswer, skills: ['alecsplus-skills:the-way-self-answer'], color: COLORS.neutral }
   ].map(function (entry) {
     const values = {};
-    bucketList.forEach(function (bucket) { values[bucket] = (total.buckets[bucket] || emptyBucket()).skills[entry.skill] || 0; });
+    bucketList.forEach(function (bucket) {
+      const runs = (total.buckets[bucket] || emptyBucket()).skills;
+      values[bucket] = entry.skills.reduce(function (sum, skill) { return sum + (runs[skill] || 0); }, 0);
+    });
     return { label: entry.label, explain: entry.explain, color: entry.color, values: values };
   });
   const written = (total.skills['alecsplus-skills:the-way-new'] || 0) + (total.skills['alecsplus-skills:the-way-global-new'] || 0);
@@ -498,7 +493,7 @@ CHOICE_GROUPS.forEach(function (name) {
 });
 ['from', 'to'].forEach(function (id) { element(id).addEventListener('change', function () { state[id] = element(id).value; state.preset = ''; render(); }); });
 Array.prototype.forEach.call(document.querySelectorAll('button[data-days]'), function (button) { button.addEventListener('click', function () { setPreset(button.getAttribute('data-days')); render(); }); });
-const dayCount = Object.keys(ledger.projects).reduce(function (sum, folder) { return sum + Object.keys(ledger.projects[folder].days).length; }, 0);
+const dayCount = allDays().filter(function (day, index, days) { return day !== days[index - 1]; }).length;
 element('footer').textContent = fill(texts.footer, { path: ledger.meta.path, updatedAt: ledger.meta.updatedAt, projects: Object.keys(ledger.projects).length, days: dayCount });
 setPreset('30');
 render();
@@ -527,7 +522,7 @@ export function writeDashboard({ ledger, ledgerPath, filePath, texts = TEXTS }) 
 <div id="partChat">
 <h2 class="part">${text('partChat')}</h2>
 <div class="tiles" id="tiles"></div>
-<h3 class="section">${text('sectionOverTime')}</h3><div class="panel" id="overtime"></div>
+<h3 class="section">${text('sectionLineOverTime')}</h3><div class="panel" id="overtime"></div>
 <h3 class="section">${text('sectionPrinciples')}</h3>
 <div class="panel" id="principles"></div>
 <h3 class="section">${text('sectionPairs')}</h3><div class="panel" id="pairs"></div>
@@ -535,7 +530,7 @@ export function writeDashboard({ ledger, ledgerPath, filePath, texts = TEXTS }) 
 <div id="partGrilling">
 <h2 class="part">${text('partGrilling')}</h2>
 <div class="tiles" id="tilesGrilling"></div>
-<h3 class="section">${text('sectionOverTime')}</h3><div class="panel" id="decidedAsked"></div>
+<h3 class="section">${text('sectionClosedAskedOverTime')}</h3><div class="panel" id="decidedAsked"></div>
 <h3 class="section">${text('sectionGrilling')}</h3><div class="panel" id="grilling"></div>
 <h3 class="section">${text('sectionWayInUse')}</h3><div class="panel" id="wayinuse"></div>
 </div>

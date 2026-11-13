@@ -194,7 +194,7 @@ function summarize(ledger, currentFolder, options, now) {
   });
   addLine('Position vs use', gaps);
   const skillCount = (name) => totals.skills[`alecsplus-skills:${name}`] || 0;
-  lines.push(`The way in use: grilling with the principles ${skillCount('the-way-grilling')}, without ${totals.skills['mattpocock-skills:grilling'] || 0}, self-answer ${skillCount('the-way-self-answer')}, the-way-new runs ${skillCount('the-way-new') + skillCount('the-way-global-new')}`);
+  lines.push(`The way in use: grilling with the principles ${skillCount('the-way-grilling')}, without ${(totals.skills['mattpocock-skills:grilling'] || 0) + (totals.skills.grilling || 0)}, self-answer ${skillCount('the-way-self-answer')}, the-way-new runs ${skillCount('the-way-new') + skillCount('the-way-global-new')}`);
   lines.push(globalLine(ledger, files, bounds));
   return lines;
 }
