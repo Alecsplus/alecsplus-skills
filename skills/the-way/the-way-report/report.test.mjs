@@ -93,7 +93,8 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   const printed = JSON.parse(execFileSync('node', [reportPath, '--print-texts'], { encoding: 'utf8' }));
   assert.ok(explanationKeys.every((key) => typeof printed[key] === 'string' && printed[key].length > 0));
   assert.ok(page.includes(printed.explainAnswers));
-  assert.ok(page.includes('type="checkbox" data-folder=') && page.includes('id="projectHeading"'));
+  assert.ok(page.includes('class="tile-trend"') && printed.tileTrend.includes('{unit}'));
+  assert.ok(page.includes('type="checkbox" data-folder=') && page.includes('id="projectHeading"') && page.includes('id="projectsMultiple"'));
   assert.ok(page.includes('id="projectSearch"') && !page.includes('<select'));
   assert.ok(['day', 'week', 'month'].every((unit) => page.includes(`data-unit="${unit}"`)));
   assert.ok(['all', 'result', 'work'].every((kind) => page.includes(`data-kind="${kind}"`)));

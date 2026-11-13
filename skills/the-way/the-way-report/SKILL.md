@@ -12,7 +12,7 @@ Transcripts live about 30 days (Claude Code's `cleanupPeriodDays`); the ledger d
 ## Before anything
 
 1. Find the two files of principles. The project's: `THE-WAY.md` in the repo root, or the file that `CLAUDE.md` imports with an `@…/THE-WAY.md` line (in this plugin's own repo it is `skills/the-way/THE-WAY.md`). The global one: `~/.claude/THE-WAY.md`. Either may be missing; with both missing, say so in one line and stop: there is nothing to measure. In each file, the first `## ` section is the Result list and the second the Work list: the dashboard filters by them.
-2. Read the project's `THE-WAY-USAGE.md` (or the global one if the project has none) and take the words it fixes for a question the principles do not close, the ones in quotes after "starting with the words": in English "the principles do not decide", in Italian "i principi non decidono". The counter needs them.
+2. Read the project's `THE-WAY-USAGE.md` and the global one, `~/.claude/THE-WAY-USAGE.md`, and take from each the words it fixes for a question the principles do not close, the ones in quotes after "starting with the words": in English "the principles do not decide", in Italian "i principi non decidono". The counter needs all of them, because it reads every project and each may speak its own language: join them with `|`.
 3. The period of the chat summary is the last 30 days unless the person gave a number of days or "all"; the dashboard always has everything and its own date selector.
 
 ## Language
@@ -24,7 +24,7 @@ The dashboard speaks the language of `~/.claude/CLAUDE.md` (English if the file 
 Run, from the root of the project:
 
 ```
-node <this skill's folder>/report.mjs --way <project THE-WAY.md or none> --global <~/.claude/THE-WAY.md or none> --days <days or all> --tie "<the words from step 2>"
+node <this skill's folder>/report.mjs --way <project THE-WAY.md or none> --global <~/.claude/THE-WAY.md or none> --days <days or all> --tie "<the words from step 2, joined with |>"
 ```
 
 It reads `~/.claude/projects/*/*.jsonl` (the folder of a project is its directory path with every character that is not a letter, a digit or `_` turned into `-`), only the main conversation (not subagents, not tool results), and takes for every day and every project:

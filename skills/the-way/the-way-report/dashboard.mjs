@@ -18,6 +18,7 @@ export const TEXTS = {
   title: 'The way: report',
   searchProjects: 'Search projects',
   projectButton: 'Projects: {chosen} of {total} chosen',
+  moreProjects: 'More projects',
   projectsHeading: 'Projects, with the answers in the chosen period',
   answersCount: '{n} answers',
   noProjectMatches: 'No project matches.',
@@ -64,6 +65,7 @@ export const TEXTS = {
   shareLabel: 'Share of answers with the Principles line, per {unit}',
   decidedAskedTitle: 'Choices decided by the principles and questions asked to you, per {unit}',
   decidedAskedLabel: 'Decided and asked per {unit}',
+  tileTrend: 'trend per {unit}',
   explainAnswers: 'You see the messages that ended my turn.',
   explainWithLine: 'You see how many of them have the "Principles:" line on top.',
   explainClosed: 'You see the choices the principles decided on their own, without asking you.',
@@ -135,6 +137,7 @@ aside { position:sticky; top:12px; max-height:calc(100vh - 24px); display:flex; 
 #projectToggle { display:none; width:100%; text-align:left; }
 .projectRow { display:block; width:100%; text-align:left; border:1px solid transparent; border-radius:6px; padding:5px 8px; cursor:pointer; }
 .projectRow .line { display:flex; justify-content:space-between; gap:8px; } .projectRow .count { color:var(--muted); font-size:.8rem; }
+.switch { font-size:.8rem; color:var(--muted); cursor:pointer; }
 .projectRow .share { display:block; height:4px; border-radius:2px; background:var(--decided); opacity:.5; margin-top:3px; min-width:1px; }
 .projectRow.selected { border-color:var(--decided); background:var(--surface); }
 @media (max-width:800px) { .layout { grid-template-columns:1fr; } aside { position:static; max-height:none; } #projectToggle { display:block; } #projectPanel { display:none; } #projectPanel.open { display:flex; flex-direction:column; gap:8px; } #projectList { max-height:50vh; } }
@@ -169,7 +172,7 @@ const COLORS = { decided: '#2a9d8f', asked: '#e9a23b', ties: '#7b6cd9', against:
 const PALETTE = ['#2a9d8f', '#e9a23b', '#7b6cd9', '#4f8fd6', '#c06c9c', '#6a994e'];
 const WIDTH = 640, HEIGHT = 190, LEFT = 36, TOP = 10, RIGHT = 8, BOTTOM = 24;
 const CHOICE_GROUPS = ['scope', 'level', 'kind', 'unit'];
-const state = { unselected: {}, from: '', to: '', preset: '30', kind: 'all', unit: 'week', scope: 'both', level: 'all' };
+const state = { single: '*', multiple: false, unselected: {}, from: '', to: '', preset: '30', kind: 'all', unit: 'week', scope: 'both', level: 'all' };
 const element = function (id) { return document.getElementById(id); };
 const isoDay = function (time) { return new Date(time).toISOString().slice(0, 10); };
 const escapeHtml = function (text) { return String(text).replace(/[&<>"]/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[character]; }); };
@@ -202,9 +205,12 @@ function passes(found, folder) {
   const kindFits = state.kind === 'all' || (found.level !== NOT_IN_A_FILE && Boolean(lists) && (lists[state.kind] || []).indexOf(found.base) >= 0);
   return levelFits && kindFits;
 }
-function selectedFolders() { return Object.keys(ledger.projects).filter(function (folder) { return !state.unselected[folder]; }); }
+function selectedFolders() {
+  const folders = Object.keys(ledger.projects);
+  return state.multiple ? folders.filter(function (folder) { return !state.unselected[folder]; }) : (state.single === '*' ? folders : [state.single]);
+}
 function isAllSelected() { return selectedFolders().length === Object.keys(ledger.projects).length; }
-function emptyBucket() { return { answers: 0, withLine: 0, closed: 0, asked: 0, recommended: 0, other: 0, open: 0, self: 0, skills: {} }; }
+function emptyBucket() { return { answers: 0, withLine: 0, closed: 0, asked: 0, questions: 0, recommended: 0, other: 0, open: 0, self: 0, skills: {} }; }
 function rowOf(rows, level, base) {
   const id = level + ':' + base;
   rows[id] = rows[id] || { name: base, level: level, decided: 0, ties: 0, against: 0, perBucket: {}, projects: {} };
@@ -224,7 +230,7 @@ function aggregate() {
         bucketEntry.answers += facts.answers; bucketEntry.withLine += facts.withLine; bucketEntry.asked += facts.questionsAsked;
         Object.keys(total.grilling).forEach(function (field) { total.grilling[field] += facts.grilling[field]; });
         bucketEntry.recommended += facts.grilling.chosenRecommended; bucketEntry.other += facts.grilling.chosenOther;
-        bucketEntry.open += facts.grilling.notDecided; bucketEntry.self += facts.grilling.selfAnswered;
+        bucketEntry.questions += facts.grilling.questions; bucketEntry.open += facts.grilling.notDecided; bucketEntry.self += facts.grilling.selfAnswered;
         Object.keys(facts.skills).forEach(function (skill) { increase(total.skills, skill, facts.skills[skill]); increase(bucketEntry.skills, skill, facts.skills[skill]); });
         Object.keys(facts.tiePairs).forEach(function (pair) {
           const fits = pair.split(' × ').every(function (key) { return passes(classify(key, folder), folder); });
@@ -322,19 +328,25 @@ function sparkline(bucketList, perBucket) {
   const points = values.map(function (value, index) { return (bucketList.length > 1 ? 100 * index / (bucketList.length - 1) : 50).toFixed(1) + ',' + (22 - 20 * value / maximum).toFixed(1); }).join(' ');
   return '<svg viewBox="0 0 100 24" preserveAspectRatio="none" width="110" height="24" role="img" aria-label="' + escapeHtml(perUnit(texts.decisionsPerUnit)) + '"><polyline fill="none" stroke="' + COLORS.decided + '" stroke-width="1.5" points="' + points + '"/></svg>';
 }
-function tile(label, value, sub, explanation) {
-  return '<div class="tile"><div class="label">' + escapeHtml(label) + '</div><div class="value">' + value + '</div>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '<div class="sub">' + escapeHtml(explanation) + '</div></div>';
+function tileTrend(bucketList, total, field, color) {
+  const values = bucketList.map(function (bucket) { return (total.buckets[bucket] || emptyBucket())[field]; });
+  const maximum = Math.max.apply(null, values.concat([1]));
+  const points = values.map(function (value, index) { return (bucketList.length > 1 ? 100 * index / (bucketList.length - 1) : 50).toFixed(1) + ',' + (26 - 24 * value / maximum).toFixed(1); }).join(' ');
+  return '<div class="sub">' + escapeHtml(perUnit(texts.tileTrend)) + '</div><svg class="tile-trend" viewBox="0 0 100 28" preserveAspectRatio="none" width="100%" height="28" role="img" aria-label="' + escapeHtml(perUnit(texts.tileTrend)) + '"><polyline fill="none" stroke="' + color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + points + '"/></svg>';
+}
+function tile(label, value, sub, explanation, trend) {
+  return '<div class="tile"><div class="label">' + escapeHtml(label) + '</div><div class="value">' + value + '</div>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '<div class="sub">' + escapeHtml(explanation) + '</div>' + trend + '</div>';
 }
 function sortedEntries(counts) {
   return Object.keys(counts).map(function (key) { return [key, counts[key]]; }).sort(function (left, right) { return (right[1] - left[1]) || left[0].localeCompare(right[0]); });
 }
-function renderTiles(total) {
+function renderTiles(total, bucketList) {
   const grilling = total.grilling;
-  element('tiles').innerHTML = tile(texts.tileAnswers, total.answers, '', texts.explainAnswers)
-    + tile(texts.tileWithLine, total.withLine, percentage(total.withLine, total.answers), texts.explainWithLine)
-    + tile(texts.tileClosed, total.closed, escapeHtml(texts.tileSaved), texts.explainClosed)
-    + tile(texts.tileAsked, total.asked, '', texts.explainAsked);
-  element('tilesGrilling').innerHTML = tile(texts.tileGrilling, grilling.questions, fill(texts.tileGrillingDetail, { recommended: grilling.chosenRecommended, other: grilling.chosenOther, open: grilling.notDecided, self: grilling.selfAnswered }), texts.explainGrillingTile);
+  element('tiles').innerHTML = tile(texts.tileAnswers, total.answers, '', texts.explainAnswers, tileTrend(bucketList, total, 'answers', COLORS.neutral))
+    + tile(texts.tileWithLine, total.withLine, percentage(total.withLine, total.answers), texts.explainWithLine, tileTrend(bucketList, total, 'withLine', COLORS.decided));
+  element('tilesGrilling').innerHTML = tile(texts.tileClosed, total.closed, escapeHtml(texts.tileSaved), texts.explainClosed, tileTrend(bucketList, total, 'closed', COLORS.decided))
+    + tile(texts.tileAsked, total.asked, '', texts.explainAsked, tileTrend(bucketList, total, 'asked', COLORS.asked))
+    + tile(texts.tileGrilling, grilling.questions, fill(texts.tileGrillingDetail, { recommended: grilling.chosenRecommended, other: grilling.chosenOther, open: grilling.notDecided, self: grilling.selfAnswered }), texts.explainGrillingTile, tileTrend(bucketList, total, 'questions', COLORS.ties));
 }
 function renderOverTime(total, bucketList) {
   const shares = {}, decided = {}, asked = {};
@@ -344,8 +356,8 @@ function renderOverTime(total, bucketList) {
     decided[bucket] = entry.closed; asked[bucket] = entry.asked;
   });
   element('overtime').innerHTML = chartBlock(perUnit(texts.shareTitle), perUnit(texts.explainShare), texts.axisShare,
-      lineChart(bucketList, shares, perUnit(texts.shareLabel), [{ label: texts.legendShare, color: COLORS.decided }]))
-    + chartBlock(perUnit(texts.decidedAskedTitle), perUnit(texts.explainDecidedAsked), texts.axisChoices,
+      lineChart(bucketList, shares, perUnit(texts.shareLabel), [{ label: texts.legendShare, color: COLORS.decided }]));
+  element('decidedAsked').innerHTML = chartBlock(perUnit(texts.decidedAskedTitle), perUnit(texts.explainDecidedAsked), texts.axisChoices,
       barChart(bucketList, [{ label: texts.legendDecided, color: COLORS.decided, values: decided }, { label: texts.legendAsked, color: COLORS.asked, values: asked }], false, perUnit(texts.decidedAskedLabel)));
 }
 function principleRow(row, bucketList, maximum, showsProjects) {
@@ -415,7 +427,7 @@ function render() {
   const total = aggregate();
   const bucketList = bucketsBetween();
   renderProjectList();
-  renderTiles(total); renderOverTime(total, bucketList); renderPrinciples(total, bucketList); renderPairs(total); renderGrilling(total, bucketList); renderWayInUse(total, bucketList);
+  renderTiles(total, bucketList); renderOverTime(total, bucketList); renderPrinciples(total, bucketList); renderPairs(total); renderGrilling(total, bucketList); renderWayInUse(total, bucketList);
   Array.prototype.forEach.call(document.querySelectorAll('button[data-days]'), function (button) { button.className = button.getAttribute('data-days') === state.preset ? 'active' : ''; });
   CHOICE_GROUPS.forEach(function (name) {
     Array.prototype.forEach.call(document.querySelectorAll('button[data-' + name + ']'), function (button) { button.className = button.getAttribute('data-' + name) === state[name] ? 'active' : ''; });
@@ -443,7 +455,8 @@ const answersIn = function (folder) {
   return Object.keys(days).reduce(function (sum, day) { return sum + (day >= state.from && day <= state.to ? days[day].answers : 0); }, 0);
 };
 function projectRow(folder, name, count, maximumCount, isChecked, showsBar) {
-  return '<label class="projectRow' + (isChecked ? ' selected' : '') + '"><span class="line"><span><input type="checkbox" data-folder="' + escapeHtml(folder) + '"' + (isChecked ? ' checked' : '') + '> ' + escapeHtml(name) + '</span><span class="count">' + escapeHtml(fill(texts.answersCount, { n: count })) + '</span></span>'
+  const box = state.multiple ? '<input type="checkbox" data-folder="' + escapeHtml(folder) + '"' + (isChecked ? ' checked' : '') + '> ' : '';
+  return '<label class="projectRow' + (isChecked ? ' selected' : '') + '" data-folder="' + escapeHtml(folder) + '"><span class="line"><span>' + box + escapeHtml(name) + '</span><span class="count">' + escapeHtml(fill(texts.answersCount, { n: count })) + '</span></span>'
     + (showsBar ? '<span class="share" style="width:' + Math.round(100 * count / maximumCount) + '%"></span>' : '') + '</label>';
 }
 function renderProjectList() {
@@ -454,14 +467,25 @@ function renderProjectList() {
   const matching = folderOrder.filter(function (folder) { return ledger.projects[folder].name.toLowerCase().indexOf(query) >= 0; });
   const totalAnswers = folderOrder.reduce(function (sum, folder) { return sum + counts[folder]; }, 0);
   const mostAnswers = Math.max.apply(null, folderOrder.map(function (folder) { return counts[folder]; }).concat([1]));
-  element('projectList').innerHTML = projectRow('*', texts.allProjects, totalAnswers, 1, isAllSelected(), false)
-    + (matching.length || !query ? matching.map(function (folder) { return projectRow(folder, ledger.projects[folder].name, counts[folder], mostAnswers, !state.unselected[folder], true); }).join('') : '<div class="empty">' + escapeHtml(texts.noProjectMatches) + '</div>');
+  element('projectList').innerHTML = projectRow('*', texts.allProjects, totalAnswers, 1, state.multiple ? isAllSelected() : state.single === '*', false)
+    + (matching.length || !query ? matching.map(function (folder) { return projectRow(folder, ledger.projects[folder].name, counts[folder], mostAnswers, state.multiple ? !state.unselected[folder] : state.single === folder, true); }).join('') : '<div class="empty">' + escapeHtml(texts.noProjectMatches) + '</div>');
   projectToggle.textContent = fill(texts.projectButton, { chosen: selectedFolders().length, total: folderOrder.length });
 }
 projectSearch.setAttribute('placeholder', texts.searchProjects);
 element('projectHeading').textContent = texts.projectsHeading;
+element('multipleLabel').textContent = texts.moreProjects;
 projectSearch.addEventListener('input', renderProjectList);
 projectToggle.addEventListener('click', function () { projectPanel.classList.toggle('open'); });
+element('projectsMultiple').addEventListener('change', function (event) {
+  state.multiple = event.target.checked;
+  state.unselected = {};
+  if (state.multiple && state.single !== '*') { Object.keys(ledger.projects).forEach(function (folder) { if (folder !== state.single) { state.unselected[folder] = true; } }); }
+  render();
+});
+element('projectList').addEventListener('click', function (event) {
+  const row = event.target.closest ? event.target.closest('.projectRow') : null;
+  if (row && !state.multiple) { state.single = row.getAttribute('data-folder'); projectPanel.classList.remove('open'); render(); }
+});
 element('projectList').addEventListener('change', function (event) {
   const box = event.target;
   const folder = box.getAttribute('data-folder');
@@ -498,7 +522,7 @@ export function writeDashboard({ ledger, ledgerPath, filePath, texts = TEXTS }) 
 <div class="group"><span class="groupLabel">${text('filterPeriod')}</span><label>${text('from')} <input type="date" id="from"></label><label>${text('to')} <input type="date" id="to"></label><button data-days="7">${text('days7')}</button><button data-days="30">${text('days30')}</button><button data-days="90">${text('days90')}</button><button data-days="all">${text('daysAll')}</button></div>
 </div>
 <div class="layout">
-<aside><button id="projectToggle"></button><div id="projectPanel"><div id="projectHeading" class="groupLabel"></div><input type="search" id="projectSearch" autocomplete="off"><div id="projectList"></div></div></aside>
+<aside><button id="projectToggle"></button><div id="projectPanel"><label class="switch"><input type="checkbox" id="projectsMultiple"> <span id="multipleLabel"></span></label><div id="projectHeading" class="groupLabel"></div><input type="search" id="projectSearch" autocomplete="off"><div id="projectList"></div></div></aside>
 <div class="content">
 <div id="partChat">
 <h2 class="part">${text('partChat')}</h2>
@@ -511,6 +535,7 @@ export function writeDashboard({ ledger, ledgerPath, filePath, texts = TEXTS }) 
 <div id="partGrilling">
 <h2 class="part">${text('partGrilling')}</h2>
 <div class="tiles" id="tilesGrilling"></div>
+<h3 class="section">${text('sectionOverTime')}</h3><div class="panel" id="decidedAsked"></div>
 <h3 class="section">${text('sectionGrilling')}</h3><div class="panel" id="grilling"></div>
 <h3 class="section">${text('sectionWayInUse')}</h3><div class="panel" id="wayinuse"></div>
 </div>
