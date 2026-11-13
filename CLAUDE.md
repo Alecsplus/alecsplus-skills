@@ -7,7 +7,7 @@ Skills for Claude Code. The first skill is `the-way`; how the skills work is in 
 
 ## Checks
 
-No build. One test, for the counter of `the-way-report`: `node --test skills/the-way/the-way-report/`. Before a release, run it and then, from the repo root (the first line loads `plugin.json`, the second `marketplace.json`):
+No build. One test, for the script of `the-way-report`: `node --test skills/the-way/the-way-report/`. Before a release, run it and then, from the repo root (the first line loads `plugin.json`, the second `marketplace.json`):
 
 ```sh
 python3 -c 'import json; json.load(open(".claude-plugin/plugin.json"))'

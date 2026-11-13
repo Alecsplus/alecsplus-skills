@@ -64,7 +64,7 @@ Any skill can be the first: if setup is missing, the skill says so, asks one yes
 - `/alecsplus-skills:the-way-global-setup` gets `~/.claude/` ready for principles that hold in all your projects. The two below run it first.
 - `/alecsplus-skills:the-way-global-new` writes one global principle. Try: "in all my projects, never X".
 - `/alecsplus-skills:the-way-global-discover` finds the principles you follow in every project.
-- `/alecsplus-skills:the-way-report` counts, in your own sessions, which principles decide, which tie, which lose and which stay silent, and says what to touch. Try it after a month of work.
+- `/alecsplus-skills:the-way-report` opens a dashboard of your own sessions: which principles decide and when, how many questions they saved you, how your grillings went, which skills you run. Try it after a week of work.
 
 The global level is one more `THE-WAY.md`, in `~/.claude/`: it holds in every project, and is cited as `NAME_global`. In a project that has its own file, the project wins.
 
