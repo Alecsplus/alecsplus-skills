@@ -15,7 +15,7 @@ const IGNORED_PERSON_TEXTS = ['<', 'Another Claude session', 'Base directory for
 
 export function emptyDay() {
   return {
-    answers: 0, withLine: 0, decided: {}, against: {}, ties: {}, tiePairs: {}, together: {},
+    answers: 0, withLine: 0, decided: {}, against: {}, ties: {}, tiePairs: {},
     questionsAsked: 0,
     grilling: { questions: 0, withRecommendation: 0, notDecided: 0, selfAnswered: 0, chosenRecommended: 0, chosenOther: 0 },
     skills: {},
@@ -38,7 +38,7 @@ export function sumDays(days, fromDay, toDay) {
   const total = emptyDay();
   Object.entries(days).filter(([day]) => day >= fromDay && day <= toDay).forEach(([, facts]) => {
     ['answers', 'withLine', 'questionsAsked'].forEach((field) => { total[field] += facts[field]; });
-    ['decided', 'against', 'ties', 'tiePairs', 'together', 'skills'].forEach((field) => mergeCounts(total[field], facts[field]));
+    ['decided', 'against', 'ties', 'tiePairs', 'skills'].forEach((field) => mergeCounts(total[field], facts[field]));
     Object.keys(total.grilling).forEach((field) => { total.grilling[field] += facts.grilling[field]; });
   });
   return total;
@@ -103,8 +103,6 @@ function recordAssistant(entry, day, context, state) {
       hasLine = true;
       const decisions = decisionsOf(match[1]);
       decisions.forEach((decision) => increase(decision.isAgainst ? day.against : day.decided, decision.key));
-      const names = [...new Set(decisions.filter((decision) => !decision.isAgainst).map((decision) => decision.key))].sort();
-      names.forEach((first, index) => names.slice(index + 1).forEach((second) => increase(day.together, `${first} + ${second}`)));
     }
     lines.filter((line) => context.tieWords.some((word) => line.toLowerCase().includes(word))).forEach((line) => {
       const names = tieNamesOf(line, context.knownNames);

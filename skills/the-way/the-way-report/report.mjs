@@ -37,9 +37,19 @@ function parseArguments(argumentList) {
 
 function readPrincipleNames(filePath) {
   const isMissing = !filePath || filePath === 'none';
-  const names = isMissing ? [] : readFileSync(filePath, 'utf8').split('\n')
-    .map((line) => PRINCIPLE_DEFINITION.exec(line)).filter((match) => match).map((match) => match[1]);
-  return { isMissing, names: [...new Set(names)] };
+  const lines = isMissing ? [] : readFileSync(filePath, 'utf8').split('\n');
+  const lists = { result: [], work: [] };
+  const listNames = ['result', 'work'];
+  let sectionCount = 0;
+  const names = [];
+  lines.forEach((line) => {
+    sectionCount += line.startsWith('## ') ? 1 : 0;
+    const match = PRINCIPLE_DEFINITION.exec(line);
+    const listName = listNames[sectionCount - 1];
+    match && names.push(match[1]);
+    match && listName && !lists[listName].includes(match[1]) && lists[listName].push(match[1]);
+  });
+  return { isMissing, names: [...new Set(names)], lists };
 }
 
 function loadTexts(filePath) {
@@ -71,12 +81,20 @@ function updateLedger(ledger, facts, currentFolder, way, globalFile) {
     ledger.projects[folder].name = project.name;
     Object.assign(ledger.projects[folder].days, project.days);
   });
+  const noLists = { result: [], work: [] };
   const current = ledger.files[currentFolder] || { project: [], global: [] };
+  const previousGlobal = ledger.files['*'] || {};
   ledger.files[currentFolder] = {
     project: way.isMissing ? current.project : way.names,
     global: globalFile.isMissing ? current.global : globalFile.names,
+    projectLists: way.isMissing ? (current.projectLists || noLists) : way.lists,
+    globalLists: globalFile.isMissing ? (current.globalLists || noLists) : globalFile.lists,
   };
-  ledger.files['*'] = { project: [], global: globalFile.isMissing ? (ledger.files['*']?.global || []) : globalFile.names };
+  ledger.files['*'] = {
+    project: [],
+    global: globalFile.isMissing ? (previousGlobal.global || []) : globalFile.names,
+    globalLists: globalFile.isMissing ? (previousGlobal.globalLists || noLists) : globalFile.lists,
+  };
   ledger.updatedAt = new Date().toISOString();
 }
 

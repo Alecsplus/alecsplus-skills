@@ -18,8 +18,8 @@ function setup() {
   const cwd = join(root, 'demo');
   const folder = join(projectsDirectory, cwd.replace(/[^A-Za-z0-9_]/g, '-'));
   mkdirSync(folder, { recursive: true });
-  writeFileSync(join(root, 'way.md'), '**SIMPLE** — a\n\n**ONE_PLACE** — b\n\n**LIGHT** — c\n');
-  writeFileSync(join(root, 'global.md'), '**CERTEZZA** — d\n');
+  writeFileSync(join(root, 'way.md'), '# Principles\n\n## Result\n\n**SIMPLE** — a\n\n**ONE_PLACE** — b\n\n## Work\n\n**LIGHT** — c\n\n**SIMPLE** — a\n');
+  writeFileSync(join(root, 'global.md'), '## Result\n\n**CERTEZZA** — d\n\n## Work\n');
   return { root, projectsDirectory, cwd, transcript: join(folder, 'a.jsonl') };
 }
 
@@ -66,7 +66,13 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.equal(today.grilling.notDecided, 1);
   assert.deepEqual(today.skills, { 'alecsplus-skills:the-way-grilling': 1 });
   assert.deepEqual(today.tiePairs, { 'LIGHT × SIMPLE': 1 });
-  assert.deepEqual(ledger.files[folder], { project: ['SIMPLE', 'ONE_PLACE', 'LIGHT'], global: ['CERTEZZA'] });
+  assert.equal(today.together, undefined);
+  assert.deepEqual(ledger.files[folder], {
+    project: ['SIMPLE', 'ONE_PLACE', 'LIGHT'], global: ['CERTEZZA'],
+    projectLists: { result: ['SIMPLE', 'ONE_PLACE'], work: ['LIGHT', 'SIMPLE'] },
+    globalLists: { result: ['CERTEZZA'], work: [] },
+  });
+  assert.deepEqual(ledger.files['*'].globalLists, { result: ['CERTEZZA'], work: [] });
   assert.match(output, /Answers: 5/);
   assert.match(output, /Grilling: 2 questions, 1 answered as recommended, 1 other, 1 left open/);
   assert.match(output, /CERTEZZA 1 \(global, #1\)/);
@@ -82,6 +88,11 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.ok(page.includes('CERTEZZA'));
   assert.ok(page.includes('SIMPLE'));
   assert.ok(!page.includes('http'));
+  assert.ok(page.includes('id="projectSearch"') && !page.includes('<select'));
+  assert.ok(['day', 'week', 'month'].every((unit) => page.includes(`data-unit="${unit}"`)));
+  assert.ok(['all', 'result', 'work'].every((kind) => page.includes(`data-kind="${kind}"`)));
+  assert.equal(page.match(/<h2 class="part">/g).length, 2);
+  assert.ok(page.includes('<h2 class="part">Chat</h2>') && page.includes('<h2 class="part">Grilling and questions</h2>'));
 });
 
 test('--print-texts prints the texts as JSON with title and version', () => {
@@ -100,7 +111,7 @@ test('--texts translates the dashboard when the version matches, stays english w
   const translated = run(fixture, ['--texts', textsPath]);
   assert.match(translated, new RegExp(`Texts: ${textsPath}`));
   assert.ok(readFileSync(pagePath, 'utf8').includes('<h1>Prova</h1>'));
-  assert.ok(readFileSync(pagePath, 'utf8').includes('"project":"Project"') || readFileSync(pagePath, 'utf8').includes('<label>Project'));
+  assert.ok(readFileSync(pagePath, 'utf8').includes('"searchProjects":"Search projects"'));
   writeFileSync(textsPath, JSON.stringify({ _version: 'old', title: 'Prova' }));
   const stale = run(fixture, ['--texts', textsPath]);
   assert.match(stale, /is from old, current .*: translate again/);
