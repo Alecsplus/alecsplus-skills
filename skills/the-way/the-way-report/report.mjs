@@ -133,8 +133,18 @@ function rowsOf(totals, files) {
   return [...rows.values()];
 }
 
-function percentage(part, whole) {
-  return whole > 0 ? `${Math.round((100 * part) / whole)}%` : '0%';
+
+function share(part, whole) {
+  return whole > 0 ? `${Math.round((100 * part) / whole)}` : '—';
+}
+
+function openSummary(days, bounds) {
+  const inPeriod = Object.entries(days).filter(([day]) => day >= bounds.from && day <= bounds.to).sort(([left], [right]) => left.localeCompare(right));
+  const open = inPeriod.reduce((sum, [, facts]) => sum + (facts.openCites ? (facts.openCites['*/*'] || 0) : 0), 0);
+  const firstWithCites = inPeriod.find(([, facts]) => facts.openCites);
+  const hasOldAnswers = inPeriod.some(([, facts]) => !facts.openCites && facts.answers > 0);
+  const since = hasOldAnswers && firstWithCites ? ` (counted since ${firstWithCites[0]})` : '';
+  return { open, since };
 }
 
 function ordinal(number) {
@@ -183,16 +193,19 @@ function summarize(ledger, currentFolder, options, now) {
   const closed = inFile.reduce((sum, row) => sum + row.decided, 0);
   const sorted = [...inFile].sort(byDecisions(files));
   const label = (row) => `${row.name} ${row.decided} (${row.level}, #${files[row.level].indexOf(row.name) + 1})`;
-  const beforeText = before ? `, before ${percentage(before.withLine, before.answers)}` : '';
+
   const grilling = totals.grilling;
+  const adviceWhole = grilling.chosenRecommended + grilling.chosenOther;
+  const { open, since } = openSummary(days, bounds);
   const lines = [
-    `Answers: ${totals.answers}, with the line ${totals.withLine} (${percentage(totals.withLine, totals.answers)}${beforeText})`,
-    `Choices: ${closed} closed by the principles, questions asked to you ${totals.questionsAsked}`,
+    `Answers: ${totals.answers}, with the line ${totals.withLine} (${share(totals.withLine, totals.answers)}%${before ? `, before ${share(before.withLine, before.answers)}%` : ''})`,
+    `Decided alone: ${closed} of ${closed + totals.questionsAsked} choices (${share(closed, closed + totals.questionsAsked)}%)`,
+    adviceWhole > 0
+      ? `Advice taken: ${grilling.chosenRecommended} of ${adviceWhole} grilling advices (${share(grilling.chosenRecommended, adviceWhole)}%)`
+      : 'Advice taken: no grilling advice',
+    `Left open: ${open} of ${totals.questionsAsked} questions to you (${share(open, totals.questionsAsked)}%)${since}`,
   ];
   const addLine = (title, items) => items.length > 0 && lines.push(`${title}: ${items.join(', ')}`);
-  if (grilling.questions > 0) {
-    lines.push(`Grilling: ${grilling.questions} questions, ${grilling.chosenRecommended} answered as recommended, ${grilling.chosenOther} other, ${grilling.notDecided} left open, ${grilling.selfAnswered} answered by themselves`);
-  }
   addLine('Top', sorted.filter((row) => row.decided > 0).slice(0, MAXIMUM_TOP).map(label));
   addLine('Silent', inFile.filter((row) => row.decided === 0 && row.ties === 0).map((row) => `${row.name} (${row.level})`));
   addLine('Against ≥2', rows.filter((row) => row.against >= 2).map((row) => `${row.name} ${row.against} (${row.level})`));

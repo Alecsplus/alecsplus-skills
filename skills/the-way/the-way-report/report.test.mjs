@@ -78,7 +78,9 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   });
   assert.deepEqual(ledger.files['*'].globalLists, { result: ['CERTEZZA'], work: [] });
   assert.match(output, /Answers: 5/);
-  assert.match(output, /Grilling: 2 questions, 1 answered as recommended, 1 other, 1 left open/);
+  assert.match(output, /Decided alone: 2 of 5 choices \(40%\)/);
+  assert.match(output, /Advice taken: 1 of 2 grilling advices \(50%\)/);
+  assert.match(output, /Left open: 2 of 3 questions to you \(67%\)/);
   assert.match(output, /CERTEZZA 1 \(global, #1\)/);
   assert.match(output, /The way in use: grilling with the principles 1, without 0, self-answer 0, the-way-new runs 0/);
   assert.match(output, /Dashboard:/);
