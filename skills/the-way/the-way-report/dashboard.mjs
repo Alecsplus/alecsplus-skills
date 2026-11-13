@@ -68,7 +68,7 @@ export const TEXTS = {
   decidedAskedLabel: 'Decided and asked per {unit}',
   tileTrend: 'trend per {unit}',
   tileTrendPoint: '{part} (of {whole})',
-  tileTrendAll: 'the faint line is the same count with Principles and List on "All": it is not the global line; the coloured line sits on its scale',
+  tileTrendScale: 'faint line: the same count with Principles and List on "All", {maximum} at the top; coloured line: the filtered count on that scale',
   explainAnswers: 'You see the messages that ended my turn.',
   explainWithLine: 'You see how many of them have the "Principles:" line on top.',
   explainWithLineFiltered: 'You see how many of them have the "Principles:" line on top citing at least one principle {which}.',
@@ -377,11 +377,12 @@ function trendPoints(values, maximum) {
 function tileTrend(bucketList, total, field, color, wholeField) {
   const seriesOf = function (name) { return bucketList.map(function (bucket) { return (total.buckets[bucket] || emptyBucket())[name]; }); };
   const values = seriesOf(field);
-  const wholeValues = wholeField && isFiltered() ? seriesOf(wholeField) : null;
+  const wholeValues = wholeField ? seriesOf(wholeField) : null;
   const maximum = Math.max.apply(null, (wholeValues || values).concat([1]));
-  const titleValues = wholeValues ? values.map(function (value, index) { return fill(texts.tileTrendPoint, { part: value, whole: wholeValues[index] }); }) : values;
-  const faintLine = wholeValues ? '<polyline fill="none" stroke="currentColor" opacity="0.25" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + trendPoints(wholeValues, maximum) + '"/>' : '';
-  const explanation = wholeValues ? '<div class="sub">' + escapeHtml(texts.tileTrendAll) + '</div>' : '';
+  const showsWhole = wholeValues && isFiltered();
+  const titleValues = showsWhole ? values.map(function (value, index) { return fill(texts.tileTrendPoint, { part: value, whole: wholeValues[index] }); }) : values;
+  const faintLine = showsWhole ? '<polyline fill="none" stroke="currentColor" opacity="0.25" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + trendPoints(wholeValues, maximum) + '"/>' : '';
+  const explanation = showsWhole ? '<div class="sub">' + escapeHtml(fill(texts.tileTrendScale, { maximum: maximum })) + '</div>' : '';
   return '<div class="sub">' + escapeHtml(perUnit(texts.tileTrend)) + '</div><svg class="tile-trend" viewBox="0 0 100 28" preserveAspectRatio="none" width="100%" height="28" role="img" aria-label="' + escapeHtml(perUnit(texts.tileTrend)) + '">' + trendTitle(perUnit(texts.tileTrend), bucketList, titleValues) + faintLine + '<polyline fill="none" stroke="' + color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + trendPoints(values, maximum) + '"/></svg>' + explanation;
 }
 function tile(label, value, sub, explanation, trend) {

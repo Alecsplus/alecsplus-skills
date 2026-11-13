@@ -140,8 +140,8 @@ function incoherences(page, situation) {
   const failures = [];
   const expect = (isTrue, what) => isTrue || failures.push(`${situation}: ${what}`);
   const { nodes } = page;
-  const tiles = [...(nodes.tiles.innerHTML + nodes.tilesGrilling.innerHTML).matchAll(/<div class="tile"><div class="label">([^<]*)<\/div><div class="value">(\d+)<\/div>(.*?)<\/svg>(?:<div class="sub">[^<]*<\/div>)?<\/div>/gs)]
-    .map((match) => ({ label: match[1], value: Number(match[2]), rest: match[3], trendSum: sumOfTrend(/<svg class="tile-trend".*$/s.exec(match[3])[0]) }));
+  const tiles = [...(nodes.tiles.innerHTML + nodes.tilesGrilling.innerHTML).matchAll(/<div class="tile"><div class="label">([^<]*)<\/div><div class="value">(\d+)<\/div>(.*?)<\/svg>(<div class="sub">[^<]*<\/div>)?<\/div>/gs)]
+    .map((match) => ({ label: match[1], value: Number(match[2]), rest: match[3], scaleLine: match[4] || '', trendSum: sumOfTrend(/<svg class="tile-trend".*$/s.exec(match[3])[0]) }));
   const tile = (label) => tiles.find((entry) => entry.label === label) || { value: Number.NaN, rest: '' };
   const [answers, withLine, closed, asked, grilling] = [TEXTS.tileAnswers, TEXTS.tileWithLine, TEXTS.tileClosed, TEXTS.tileAsked, TEXTS.tileGrilling].map(tile);
   const barSums = (html) => {
@@ -169,9 +169,12 @@ function incoherences(page, situation) {
     if (isFilteredNow) {
       const maximum = Math.max(...faint, 1);
       const yOf = (value) => Number((26 - (24 * value) / maximum).toFixed(1));
-      expect(faint.every((value, index) => value >= shown[index]), `tile ${entry.label}: the faint values sit under the coloured ones`);
+      expect(faint.every((value, index) => value >= shown[index]), `tile ${entry.label}: the unfiltered values sit under the shown ones`);
       expect(JSON.stringify(lines[0]) === JSON.stringify(faint.map(yOf)), `tile ${entry.label}: the faint line is not the unfiltered counts`);
       expect(JSON.stringify(lines[1]) === JSON.stringify(shown.map(yOf)), `tile ${entry.label}: the coloured line is not scaled to the unfiltered maximum`);
+      expect(entry.scaleLine.replaceAll('&quot;', '"').includes(TEXTS.tileTrendScale.replace('{maximum}', maximum)), `tile ${entry.label}: the scale line does not show ${maximum}`);
+    } else {
+      expect(!entry.scaleLine.includes(TEXTS.tileTrendScale.split('{maximum}')[0].slice(0, 12)), `tile ${entry.label}: scale line without a filter`);
     }
   });
   tiles.forEach((entry) => expect(entry.trendSum === entry.value, `tile ${entry.label} ${entry.value}, its trend sums ${entry.trendSum}`));
