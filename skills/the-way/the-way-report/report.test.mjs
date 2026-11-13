@@ -103,6 +103,8 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.ok(['day', 'week', 'month'].every((unit) => page.includes(`data-unit="${unit}"`)));
   assert.ok(['all', 'result', 'work'].every((kind) => page.includes(`data-kind="${kind}"`)));
   assert.equal(page.match(/<h2 class="part">/g).length, 2);
+  const placeOf = (text) => page.indexOf(text);
+  assert.ok(placeOf('id="tiles"') < placeOf('id="tilesGrilling"') && placeOf('id="tilesGrilling"') < placeOf('<div id="partChat">'), 'every tile on top, the chat row first');
   assert.ok(page.includes('<h2 class="part">Chat</h2>') && page.includes('<h2 class="part">Grilling and questions</h2>'));
 });
 
@@ -224,6 +226,9 @@ test('the dashboard agrees with itself under every filter', () => {
   assert.ok(words.includes('per day') && !words.includes('per week') && !words.includes('per month'), 'every "per unit" says day');
   page.press('scope', 'chat');
   assert.ok(page.nodes.partGrilling.hidden && !page.nodes.partChat.hidden, 'chat hides the grilling part');
+  assert.ok(page.nodes.tilesGrillingRow.hidden && !page.nodes.tilesChatRow.hidden, 'chat hides the grilling tiles');
+  page.press('scope', 'grilling');
+  assert.ok(page.nodes.tilesChatRow.hidden && page.nodes.partChat.hidden && !page.nodes.tilesGrillingRow.hidden, 'grilling hides the chat tiles');
   const filtered = openPage(html);
   const lineTile = () => /<div class="label">With the Principles line<\/div><div class="value">(\d+)<\/div><div class="sub">([^<]*)<\/div><div class="sub">([^<]*)</.exec(filtered.nodes.tiles.innerHTML).slice(1);
   const before = { tile: lineTile(), share: filtered.nodes.overtime.innerHTML };

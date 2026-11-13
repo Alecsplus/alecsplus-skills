@@ -153,6 +153,7 @@ h1 { font-size:1.4rem; margin:0 0 12px; } h2.part { font-size:1.3rem; margin:36p
 .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
 select, input, button { font:inherit; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:4px 8px; }
 button.active { border-color:var(--decided); color:var(--decided); font-weight:600; }
+h3.tilesLabel { margin:12px 0 6px; } #tilesChatRow h3.tilesLabel { margin-top:0; }
 .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; }
 .tile { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
 .tile .label { color:var(--muted); font-size:.8rem; } .tile .value { font-size:1.7rem; font-weight:650; } .tile .sub { color:var(--muted); font-size:.78rem; }
@@ -458,7 +459,9 @@ function render() {
     Array.prototype.forEach.call(document.querySelectorAll('button[data-' + name + ']'), function (button) { button.className = button.getAttribute('data-' + name) === state[name] ? 'active' : ''; });
   });
   element('partChat').hidden = state.scope === 'grilling';
+  element('tilesChatRow').hidden = state.scope === 'grilling';
   element('partGrilling').hidden = state.scope === 'chat';
+  element('tilesGrillingRow').hidden = state.scope === 'chat';
 }
 function allDays() {
   const days = [];
@@ -549,9 +552,10 @@ export function writeDashboard({ ledger, ledgerPath, filePath, texts = TEXTS }) 
 <div class="layout">
 <aside><button id="projectToggle"></button><div id="projectPanel"><label class="switch"><input type="checkbox" id="projectsMultiple"> <span id="multipleLabel"></span></label><div id="projectHeading" class="groupLabel"></div><input type="search" id="projectSearch" autocomplete="off"><div id="projectList"></div></div></aside>
 <div class="content">
+<div id="tilesChatRow"><h3 class="tilesLabel">${text('partChat')}</h3><div class="tiles" id="tiles"></div></div>
+<div id="tilesGrillingRow"><h3 class="tilesLabel">${text('partGrilling')}</h3><div class="tiles" id="tilesGrilling"></div></div>
 <div id="partChat">
 <h2 class="part">${text('partChat')}</h2>
-<div class="tiles" id="tiles"></div>
 <h3 class="section">${text('sectionLineOverTime')}</h3><div class="panel" id="overtime"></div>
 <h3 class="section">${text('sectionPrinciples')}</h3>
 <div class="panel" id="principles"></div>
@@ -559,7 +563,6 @@ export function writeDashboard({ ledger, ledgerPath, filePath, texts = TEXTS }) 
 </div>
 <div id="partGrilling">
 <h2 class="part">${text('partGrilling')}</h2>
-<div class="tiles" id="tilesGrilling"></div>
 <h3 class="section">${text('sectionClosedAskedOverTime')}</h3><div class="panel" id="decidedAsked"></div>
 <h3 class="section">${text('sectionGrilling')}</h3><div class="panel" id="grilling"></div>
 <h3 class="section">${text('sectionWayInUse')}</h3><div class="panel" id="wayinuse"></div>
