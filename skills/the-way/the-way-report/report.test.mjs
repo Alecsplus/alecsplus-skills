@@ -132,7 +132,7 @@ function openPage(html) {
 }
 
 const titlesOf = (svg) => [...svg.matchAll(/<title>([^<]*)<\/title>/g)].map((match) => match[1]);
-const sumOfTitles = (titles) => titles.reduce((sum, title) => sum + Number(/: (\d+)$/.exec(title)?.[1] || 0), 0);
+const sumOfTitles = (titles) => titles.reduce((sum, title) => sum + Number(/: (\d+)(?: \(.*\))?$/.exec(title)?.[1] || 0), 0);
 const sumOfTrend = (svg) => sumOfTitles((titlesOf(svg)[0] || '').split(' — ')[1]?.split(', ') || []);
 
 // Every tile, chart and row of the page must agree with the others: the failures, one line each.
@@ -140,7 +140,7 @@ function incoherences(page, situation) {
   const failures = [];
   const expect = (isTrue, what) => isTrue || failures.push(`${situation}: ${what}`);
   const { nodes } = page;
-  const tiles = [...(nodes.tiles.innerHTML + nodes.tilesGrilling.innerHTML).matchAll(/<div class="tile"><div class="label">([^<]*)<\/div><div class="value">(\d+)<\/div>(.*?)<\/svg><\/div>/gs)]
+  const tiles = [...(nodes.tiles.innerHTML + nodes.tilesGrilling.innerHTML).matchAll(/<div class="tile"><div class="label">([^<]*)<\/div><div class="value">(\d+)<\/div>(.*?)<\/svg>(?:<div class="sub">[^<]*<\/div>)?<\/div>/gs)]
     .map((match) => ({ label: match[1], value: Number(match[2]), rest: match[3], trendSum: sumOfTrend(/<svg class="tile-trend".*$/s.exec(match[3])[0]) }));
   const tile = (label) => tiles.find((entry) => entry.label === label) || { value: Number.NaN, rest: '' };
   const [answers, withLine, closed, asked, grilling] = [TEXTS.tileAnswers, TEXTS.tileWithLine, TEXTS.tileClosed, TEXTS.tileAsked, TEXTS.tileGrilling].map(tile);
@@ -156,6 +156,24 @@ function incoherences(page, situation) {
   expect(withLine.value === part, `with the line ${withLine.value}, the points of the share count ${part}`);
   expect(whole <= answers.value, `the share counts ${whole} answers of ${answers.value}`);
   expect(withLine.rest.startsWith(`<div class="sub">${whole > 0 ? `${Math.round((100 * part) / whole)}%` : '—'}`), 'the share of the tile is not the share of its points');
+  [withLine, closed].forEach((entry) => {
+    const lines = [...entry.rest.matchAll(/<polyline [^>]*points="([^"]*)"/g)].map((match) => match[1].split(' ').map((point) => Number(point.split(',')[1])));
+    const titles = (/<title>[^<]*<\/title>/.exec(entry.rest)?.[0] || '').split(' — ')[1]?.replace('</title>', '').split(', ') || [];
+    const faint = titles.map((title) => Number(/\(\S+ (\d+)\)$/.exec(title)?.[1]));
+    const shown = titles.map((title) => Number(/: (\d+)/.exec(title)?.[1]));
+    const [level, kind] = situation.split(' ');
+    const mustBeFiltered = ['all', 'project', 'global'].includes(level) && ['all', 'result', 'work'].includes(kind) && (level !== 'all' || kind !== 'all');
+    const isFilteredNow = /\(\S+ \d+\)/.test(titles[0] || '');
+    expect(isFilteredNow === mustBeFiltered || !['all', 'project', 'global'].includes(level), `tile ${entry.label}: the title says filtered ${isFilteredNow}, the filters say ${mustBeFiltered}`);
+    expect(lines.length === (isFilteredNow ? 2 : 1), `tile ${entry.label}: ${lines.length} polylines, filtered ${isFilteredNow}`);
+    if (isFilteredNow) {
+      const maximum = Math.max(...faint, 1);
+      const yOf = (value) => Number((26 - (24 * value) / maximum).toFixed(1));
+      expect(faint.every((value, index) => value >= shown[index]), `tile ${entry.label}: the faint values sit under the coloured ones`);
+      expect(JSON.stringify(lines[0]) === JSON.stringify(faint.map(yOf)), `tile ${entry.label}: the faint line is not the unfiltered counts`);
+      expect(JSON.stringify(lines[1]) === JSON.stringify(shown.map(yOf)), `tile ${entry.label}: the coloured line is not scaled to the unfiltered maximum`);
+    }
+  });
   tiles.forEach((entry) => expect(entry.trendSum === entry.value, `tile ${entry.label} ${entry.value}, its trend sums ${entry.trendSum}`));
   const decidedAsked = barSums(nodes.decidedAsked.innerHTML);
   expect((decidedAsked[TEXTS.legendDecided] || 0) === closed.value, `closed ${closed.value}, the chart sums ${decidedAsked[TEXTS.legendDecided]}`);

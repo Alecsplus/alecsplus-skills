@@ -67,6 +67,8 @@ export const TEXTS = {
   decidedAskedTitle: 'Choices decided by the principles and questions asked to you, per {unit}',
   decidedAskedLabel: 'Decided and asked per {unit}',
   tileTrend: 'trend per {unit}',
+  tileTrendPoint: '{part} (of {whole})',
+  tileTrendAll: 'the faint line is the same count with no Principles or List filter',
   explainAnswers: 'You see the messages that ended my turn.',
   explainWithLine: 'You see how many of them have the "Principles:" line on top.',
   explainWithLineFiltered: 'You see how many of them have the "Principles:" line on top citing at least one principle {which}.',
@@ -220,7 +222,7 @@ function selectedFolders() {
   return state.multiple ? folders.filter(function (folder) { return !state.unselected[folder]; }) : (state.single === '*' ? folders : [state.single]);
 }
 function isAllSelected() { return selectedFolders().length === Object.keys(ledger.projects).length; }
-function emptyBucket() { return { answers: 0, withLine: 0, cited: 0, counted: 0, closed: 0, asked: 0, questions: 0, recommended: 0, other: 0, skills: {} }; }
+function emptyBucket() { return { answers: 0, withLine: 0, cited: 0, counted: 0, closed: 0, closedAll: 0, asked: 0, questions: 0, recommended: 0, other: 0, skills: {} }; }
 // The key of lineCites for the Principles and List filters; '*/*' is no filter, the whole withLine.
 function citeKey() { return (state.level === 'all' ? '*' : state.level) + '/' + (state.kind === 'all' ? '*' : state.kind); }
 function isFiltered() { return citeKey() !== '*/*'; }
@@ -269,6 +271,7 @@ function aggregate() {
             const found = classify(key, folder);
             const row = passes(found, folder) ? rowOf(total.rows, found.level, found.base) : null;
             if (row) { row[field] += facts[field][key]; }
+            if (field === 'decided') { bucketEntry.closedAll += found.level === NOT_IN_A_FILE ? 0 : facts.decided[key]; }
             if (row && field === 'decided') {
               increase(row.perBucket, bucket, facts.decided[key]);
               increase(row.projects, projectName, facts.decided[key]);
@@ -360,11 +363,18 @@ function sparkline(bucketList, perBucket) {
 function trendTitle(label, bucketList, values) {
   return '<title>' + escapeHtml(label) + ' — ' + bucketList.map(function (bucket, index) { return bucketLabel(bucket) + ': ' + values[index]; }).join(', ') + '</title>';
 }
-function tileTrend(bucketList, total, field, color) {
-  const values = bucketList.map(function (bucket) { return (total.buckets[bucket] || emptyBucket())[field]; });
-  const maximum = Math.max.apply(null, values.concat([1]));
-  const points = values.map(function (value, index) { return (bucketList.length > 1 ? 100 * index / (bucketList.length - 1) : 50).toFixed(1) + ',' + (26 - 24 * value / maximum).toFixed(1); }).join(' ');
-  return '<div class="sub">' + escapeHtml(perUnit(texts.tileTrend)) + '</div><svg class="tile-trend" viewBox="0 0 100 28" preserveAspectRatio="none" width="100%" height="28" role="img" aria-label="' + escapeHtml(perUnit(texts.tileTrend)) + '">' + trendTitle(perUnit(texts.tileTrend), bucketList, values) + '<polyline fill="none" stroke="' + color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + points + '"/></svg>';
+function trendPoints(values, maximum) {
+  return values.map(function (value, index) { return (values.length > 1 ? 100 * index / (values.length - 1) : 50).toFixed(1) + ',' + (26 - 24 * value / maximum).toFixed(1); }).join(' ');
+}
+function tileTrend(bucketList, total, field, color, wholeField) {
+  const seriesOf = function (name) { return bucketList.map(function (bucket) { return (total.buckets[bucket] || emptyBucket())[name]; }); };
+  const values = seriesOf(field);
+  const wholeValues = wholeField && isFiltered() ? seriesOf(wholeField) : null;
+  const maximum = Math.max.apply(null, (wholeValues || values).concat([1]));
+  const titleValues = wholeValues ? values.map(function (value, index) { return fill(texts.tileTrendPoint, { part: value, whole: wholeValues[index] }); }) : values;
+  const faintLine = wholeValues ? '<polyline fill="none" stroke="currentColor" opacity="0.25" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + trendPoints(wholeValues, maximum) + '"/>' : '';
+  const explanation = wholeValues ? '<div class="sub">' + escapeHtml(texts.tileTrendAll) + '</div>' : '';
+  return '<div class="sub">' + escapeHtml(perUnit(texts.tileTrend)) + '</div><svg class="tile-trend" viewBox="0 0 100 28" preserveAspectRatio="none" width="100%" height="28" role="img" aria-label="' + escapeHtml(perUnit(texts.tileTrend)) + '">' + trendTitle(perUnit(texts.tileTrend), bucketList, titleValues) + faintLine + '<polyline fill="none" stroke="' + color + '" stroke-width="1.5" vector-effect="non-scaling-stroke" points="' + trendPoints(values, maximum) + '"/></svg>' + explanation;
 }
 function tile(label, value, sub, explanation, trend) {
   return '<div class="tile"><div class="label">' + escapeHtml(label) + '</div><div class="value">' + value + '</div>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '<div class="sub">' + escapeHtml(explanation) + '</div>' + trend + '</div>';
@@ -378,8 +388,8 @@ function renderTiles(total, bucketList) {
   const countedSince = isFiltered() && total.isMissingCites ? ' · ' + escapeHtml(fill(texts.countedSince, { date: total.firstCounted ? dayLabel(total.firstCounted) : '—' })) : '';
   const withLineExplanation = isFiltered() ? fill(texts.explainWithLineFiltered, { which: citedWhich() }) : texts.explainWithLine;
   element('tiles').innerHTML = tile(texts.tileAnswers, total.answers, '', texts.explainAnswers, independent + tileTrend(bucketList, total, 'answers', COLORS.neutral))
-    + tile(texts.tileWithLine, total.cited, percentage(total.cited, total.counted) + countedSince, withLineExplanation, tileTrend(bucketList, total, 'cited', COLORS.decided));
-  element('tilesGrilling').innerHTML = tile(texts.tileClosed, total.closed, escapeHtml(texts.tileSaved), texts.explainClosed, tileTrend(bucketList, total, 'closed', COLORS.decided))
+    + tile(texts.tileWithLine, total.cited, percentage(total.cited, total.counted) + countedSince, withLineExplanation, tileTrend(bucketList, total, 'cited', COLORS.decided, 'withLine'));
+  element('tilesGrilling').innerHTML = tile(texts.tileClosed, total.closed, escapeHtml(texts.tileSaved), texts.explainClosed, tileTrend(bucketList, total, 'closed', COLORS.decided, 'closedAll'))
     + tile(texts.tileAsked, total.asked, '', texts.explainAsked, independent + tileTrend(bucketList, total, 'asked', COLORS.asked))
     + tile(texts.tileGrilling, grilling.questions, fill(texts.tileGrillingDetail, { recommended: grilling.chosenRecommended, other: grilling.chosenOther, unanswered: grilling.questions - grilling.chosenRecommended - grilling.chosenOther, open: grilling.notDecided, self: grilling.selfAnswered }), texts.explainGrillingTile, independent + tileTrend(bucketList, total, 'questions', COLORS.ties));
 }
