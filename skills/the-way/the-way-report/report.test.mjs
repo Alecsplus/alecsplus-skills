@@ -23,10 +23,10 @@ function setup() {
   return { root, projectsDirectory, cwd, transcript: join(folder, 'a.jsonl') };
 }
 
-function run(fixture) {
+function run(fixture, extraArguments = []) {
   return execFileSync('node', [reportPath, '--way', join(fixture.root, 'way.md'), '--global', join(fixture.root, 'global.md'),
     '--tie', 'the principles do not decide', '--data-dir', join(fixture.root, 'data'), '--projects-dir', fixture.projectsDirectory,
-    '--cwd', fixture.cwd, '--no-open'], { encoding: 'utf8' });
+    '--cwd', fixture.cwd, '--no-open', ...extraArguments], { encoding: 'utf8' });
 }
 
 test('counts per day, keeps old days, writes the dashboard and the summary', () => {
@@ -70,7 +70,7 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.match(output, /Answers: 5/);
   assert.match(output, /Grilling: 2 questions, 1 answered as recommended, 1 other, 1 left open/);
   assert.match(output, /CERTEZZA 1 \(global, #1\)/);
-  assert.match(output, /The way in use: grilling with the principles 1, without 0, self-answer 0, principles written 0/);
+  assert.match(output, /The way in use: grilling with the principles 1, without 0, self-answer 0, the-way-new runs 0/);
   assert.match(output, /Dashboard:/);
 
   write(todayEntries);
@@ -82,6 +82,30 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.ok(page.includes('CERTEZZA'));
   assert.ok(page.includes('SIMPLE'));
   assert.ok(!page.includes('http'));
+});
+
+test('--print-texts prints the texts as JSON with title and version', () => {
+  const texts = JSON.parse(execFileSync('node', [reportPath, '--print-texts'], { encoding: 'utf8' }));
+  assert.equal(texts.title, 'The way: report');
+  assert.ok(texts._version);
+});
+
+test('--texts translates the dashboard when the version matches, stays english when it does not', () => {
+  const fixture = setup();
+  const current = JSON.parse(execFileSync('node', [reportPath, '--print-texts'], { encoding: 'utf8' }));
+  const textsPath = join(fixture.root, 'texts.json');
+  const pagePath = join(fixture.root, 'data', 'dashboard.html');
+  writeFileSync(fixture.transcript, `${JSON.stringify(assistant('Principi: SIMPLE → z', new Date().toISOString()))}\n`);
+  writeFileSync(textsPath, JSON.stringify({ _version: current._version, title: 'Prova' }));
+  const translated = run(fixture, ['--texts', textsPath]);
+  assert.match(translated, new RegExp(`Texts: ${textsPath}`));
+  assert.ok(readFileSync(pagePath, 'utf8').includes('<h1>Prova</h1>'));
+  assert.ok(readFileSync(pagePath, 'utf8').includes('"project":"Project"') || readFileSync(pagePath, 'utf8').includes('<label>Project'));
+  writeFileSync(textsPath, JSON.stringify({ _version: 'old', title: 'Prova' }));
+  const stale = run(fixture, ['--texts', textsPath]);
+  assert.match(stale, /is from old, current .*: translate again/);
+  assert.ok(readFileSync(pagePath, 'utf8').includes('<h1>The way: report</h1>'));
+  assert.match(run(fixture), /Texts: english/);
 });
 
 test('nothing to measure without any principles file', () => {

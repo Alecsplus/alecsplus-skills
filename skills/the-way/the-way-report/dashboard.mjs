@@ -1,6 +1,75 @@
 // Writes the self-contained dashboard.html from the whole ledger: inline CSS and JS, the data inside the page.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+
+function pluginVersion() {
+  let version = '0';
+  try {
+    version = JSON.parse(readFileSync(new URL('../../../.claude-plugin/plugin.json', import.meta.url), 'utf8')).version || '0';
+  } catch {
+    version = '0';
+  }
+  return version;
+}
+
+// Every visible text of the page, written once in English; the skill translates the values, keys and {placeholders} stay.
+export const TEXTS = {
+  _version: pluginVersion(),
+  title: 'The way: report',
+  project: 'Project',
+  allProjects: 'All projects',
+  from: 'From',
+  to: 'to',
+  days7: '7d',
+  days30: '30d',
+  days90: '90d',
+  daysAll: 'all',
+  sectionTiles: 'Tiles',
+  sectionOverTime: 'Over time',
+  sectionPrinciples: 'Principles',
+  sectionPairs: 'Pairs',
+  sectionGrilling: 'Grilling over time',
+  sectionWayInUse: 'The way in use',
+  tileAnswers: 'Answers',
+  tileWithLine: 'With the Principles line',
+  tileClosed: 'Choices closed by the principles',
+  tileSaved: 'questions saved',
+  tileAsked: 'Questions asked to you',
+  tileGrilling: 'Grilling questions',
+  tileGrillingDetail: 'recommended chosen {recommended} · other {other}<br>left open {open} · answered by themselves {self}',
+  shareTitle: 'Answers with the Principles line, per week',
+  shareLabel: 'Share of answers with the Principles line, per week',
+  decidedAskedTitle: 'Choices decided by the principles and questions asked to you, per week',
+  decidedAskedLabel: 'Decided and asked per week',
+  decided: 'decided',
+  asked: 'asked',
+  ties: 'ties',
+  against: 'against',
+  silent: 'silent',
+  notInAFile: 'not in a file',
+  none: 'None.',
+  noData: 'No data in this range.',
+  globalWithProjects: 'Global principles, with the projects that cited them',
+  ownPrinciples: 'This project\'s principles',
+  globalAsUsed: 'Global principles, as used here',
+  decisionsPerWeek: 'decisions per week',
+  tiesTitle: 'Ties: pairs the principles could not separate',
+  togetherTitle: 'Together: names cited on the same line',
+  globalSuffix: ' (global)',
+  recommendedChosen: 'recommended chosen',
+  otherChosen: 'other chosen',
+  leftOpen: 'left open',
+  answeredByThemselves: 'answered by themselves',
+  grillingLabel: 'Grilling questions per week',
+  grillingWith: 'grilling with the principles',
+  grillingWithout: 'grilling without',
+  selfAnswer: 'questions closed with self-answer',
+  wayInUseLabel: 'The way in use per week',
+  principlesWritten: 'the-way-new runs (a principle proposed): {n}',
+  footer: 'Ledger: {path}, updated {updatedAt}, {projects} projects, {days} days'
+};
+
+const escapeText = (text) => String(text).replace(/[&<>"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[character]));
 
 const STYLE = `
 :root { --background:#fafaf7; --surface:#ffffff; --text:#1d2127; --muted:#6a7078; --line:#d9dcd6; --decided:#2a9d8f; --asked:#e9a23b; --ties:#7b6cd9; --against:#d64545; --neutral:#8a8f98; }
@@ -30,6 +99,8 @@ svg.chart { width:100%; height:auto; display:block; } svg .grid { stroke:var(--l
 const CLIENT_SCRIPT = String.raw`
 (function () {
 const ledger = JSON.parse(document.getElementById('ledger').textContent);
+const texts = ledger.texts;
+const fill = function (template, values) { return template.replace(/\{(\w+)\}/g, function (placeholder, key) { return String(values[key]); }); };
 const NOT_IN_A_FILE = 'not in a file';
 const DAY = 86400000;
 const COLORS = { decided: '#2a9d8f', asked: '#e9a23b', ties: '#7b6cd9', against: '#d64545', neutral: '#8a8f98' };
@@ -146,7 +217,7 @@ function barChart(weekList, series, stacked, label) {
       if (value > 0) { html += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + Math.max(barWidth - 1, 1).toFixed(1) + '" height="' + barHeight.toFixed(1) + '" fill="' + entry.color + '"><title>' + week + ' · ' + escapeHtml(entry.label) + ': ' + value + '</title></rect>'; }
     });
   });
-  return maximum > 0 ? html + '</svg>' + legend(series) : '<div class="empty">No data in this range.</div>';
+  return maximum > 0 ? html + '</svg>' + legend(series) : '<div class="empty">' + escapeHtml(texts.noData) + '</div>';
 }
 function lineChart(weekList, values, label) {
   const drawing = frame(weekList, 100, label, '%');
@@ -160,7 +231,7 @@ function sparkline(weekList, weekly) {
   const values = weekList.map(function (week) { return weekly[week] || 0; });
   const maximum = Math.max.apply(null, values.concat([1]));
   const points = values.map(function (value, index) { return (weekList.length > 1 ? 100 * index / (weekList.length - 1) : 50).toFixed(1) + ',' + (22 - 20 * value / maximum).toFixed(1); }).join(' ');
-  return '<svg viewBox="0 0 100 24" preserveAspectRatio="none" width="110" height="24" role="img" aria-label="decisions per week"><polyline fill="none" stroke="' + COLORS.decided + '" stroke-width="1.5" points="' + points + '"/></svg>';
+  return '<svg viewBox="0 0 100 24" preserveAspectRatio="none" width="110" height="24" role="img" aria-label="' + escapeHtml(texts.decisionsPerWeek) + '"><polyline fill="none" stroke="' + COLORS.decided + '" stroke-width="1.5" points="' + points + '"/></svg>';
 }
 function tile(label, value, sub) {
   return '<div class="tile"><div class="label">' + escapeHtml(label) + '</div><div class="value">' + value + '</div>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>';
@@ -170,11 +241,11 @@ function sortedEntries(counts) {
 }
 function renderTiles(total) {
   const grilling = total.grilling;
-  element('tiles').innerHTML = tile('Answers', total.answers, '')
-    + tile('With the Principles line', total.withLine, percentage(total.withLine, total.answers))
-    + tile('Choices closed by the principles', total.closed, 'questions saved')
-    + tile('Questions asked to you', total.asked, '')
-    + tile('Grilling questions', grilling.questions, 'recommended chosen ' + grilling.chosenRecommended + ' · other ' + grilling.chosenOther + '<br>left open ' + grilling.notDecided + ' · answered by themselves ' + grilling.selfAnswered);
+  element('tiles').innerHTML = tile(texts.tileAnswers, total.answers, '')
+    + tile(texts.tileWithLine, total.withLine, percentage(total.withLine, total.answers))
+    + tile(texts.tileClosed, total.closed, escapeHtml(texts.tileSaved))
+    + tile(texts.tileAsked, total.asked, '')
+    + tile(texts.tileGrilling, grilling.questions, fill(texts.tileGrillingDetail, { recommended: grilling.chosenRecommended, other: grilling.chosenOther, open: grilling.notDecided, self: grilling.selfAnswered }));
 }
 function renderOverTime(total, weekList) {
   const shares = {}, decided = {}, asked = {};
@@ -183,16 +254,16 @@ function renderOverTime(total, weekList) {
     shares[week] = entry.answers > 0 ? Math.round(100 * entry.withLine / entry.answers) : 0;
     decided[week] = entry.closed; asked[week] = entry.asked;
   });
-  element('overtime').innerHTML = '<h3>Answers with the Principles line, per week</h3>' + lineChart(weekList, shares, 'Share of answers with the Principles line, per week')
-    + '<h3>Choices decided by the principles and questions asked to you, per week</h3>'
-    + barChart(weekList, [{ label: 'decided', color: COLORS.decided, values: decided }, { label: 'asked', color: COLORS.asked, values: asked }], false, 'Decided and asked per week');
+  element('overtime').innerHTML = '<h3>' + escapeHtml(texts.shareTitle) + '</h3>' + lineChart(weekList, shares, texts.shareLabel)
+    + '<h3>' + escapeHtml(texts.decidedAskedTitle) + '</h3>'
+    + barChart(weekList, [{ label: texts.decided, color: COLORS.decided, values: decided }, { label: texts.asked, color: COLORS.asked, values: asked }], false, texts.decidedAskedLabel);
 }
 function principleRow(row, weekList, maximum, showsProjects) {
   const isSilent = row.level !== NOT_IN_A_FILE && row.decided + row.ties + row.against === 0;
   const bar = function (label, value, color) { return '<div class="bar"><span class="fill" style="width:' + Math.round(100 * value / maximum) * 0.8 + '%;background:' + color + '"></span>' + label + ' ' + value + '</div>'; };
   const projects = showsProjects ? '<div class="projects">' + sortedEntries(row.projects).map(function (pair) { return escapeHtml(pair[0]) + ' ' + pair[1]; }).join(', ') + '</div>' : '';
-  return '<div class="principle"><div class="name">' + escapeHtml(row.name) + (row.position ? ' <span class="position">#' + row.position + '</span>' : '') + (isSilent ? '<span class="silent">silent</span>' : '') + (row.level === NOT_IN_A_FILE ? '<span class="silent">' + NOT_IN_A_FILE + '</span>' : '') + projects + '</div>'
-    + '<div>' + bar('decided', row.decided, COLORS.decided) + bar('ties', row.ties, COLORS.ties) + bar('against', row.against, COLORS.against) + '</div>'
+  return '<div class="principle"><div class="name">' + escapeHtml(row.name) + (row.position ? ' <span class="position">#' + row.position + '</span>' : '') + (isSilent ? '<span class="silent">' + escapeHtml(texts.silent) + '</span>' : '') + (row.level === NOT_IN_A_FILE ? '<span class="silent">' + escapeHtml(texts.notInAFile) + '</span>' : '') + projects + '</div>'
+    + '<div>' + bar(escapeHtml(texts.decided), row.decided, COLORS.decided) + bar(escapeHtml(texts.ties), row.ties, COLORS.ties) + bar(escapeHtml(texts.against), row.against, COLORS.against) + '</div>'
     + '<div>' + sparkline(weekList, row.weekly) + '</div></div>';
 }
 function renderPrinciples(total, weekList) {
@@ -200,14 +271,14 @@ function renderPrinciples(total, weekList) {
   const maximum = Math.max.apply(null, rows.map(function (row) { return Math.max(row.decided, row.ties, row.against); }).concat([1]));
   const byDecisions = function (left, right) { return (right.decided - left.decided) || ((left.position || 999) - (right.position || 999)) || left.name.localeCompare(right.name); };
   const section = function (title, list, showsProjects) {
-    return '<h3>' + title + '</h3>' + (list.length ? list.map(function (row) { return principleRow(row, weekList, maximum, showsProjects); }).join('') : '<div class="empty">None.</div>');
+    return '<h3>' + escapeHtml(title) + '</h3>' + (list.length ? list.map(function (row) { return principleRow(row, weekList, maximum, showsProjects); }).join('') : '<div class="empty">' + escapeHtml(texts.none) + '</div>');
   };
   const globals = rows.filter(function (row) { return row.level === 'global'; }).sort(byDecisions);
   const outside = rows.filter(function (row) { return row.level === NOT_IN_A_FILE; }).sort(byDecisions);
   const own = rows.filter(function (row) { return row.level === 'project'; }).sort(byDecisions);
   element('principles').innerHTML = state.project === '*'
-    ? section('Global principles, with the projects that cited them', globals, true)
-    : section('This project\'s principles', own, false) + section('Global principles, as used here', globals.concat(outside.map(function (row) { return Object.assign({ label: NOT_IN_A_FILE }, row); })), false);
+    ? section(texts.globalWithProjects, globals, true)
+    : section(texts.ownPrinciples, own, false) + section(texts.globalAsUsed, globals.concat(outside.map(function (row) { return Object.assign({ label: NOT_IN_A_FILE }, row); })), false);
 }
 function pairLabels(counts, separator) {
   const isAll = state.project === '*';
@@ -216,7 +287,7 @@ function pairLabels(counts, separator) {
     const keys = pair.split(separator);
     const parsed = keys.map(function (key) { return /^(.*?)_([a-z]+)$/.exec(key); });
     const isEveryGlobal = parsed.every(function (match) { return Boolean(match); });
-    const label = keys.map(function (key, index) { return parsed[index] ? parsed[index][1] + (isAll ? '' : ' (global)') : key; }).join(separator);
+    const label = keys.map(function (key, index) { return parsed[index] ? parsed[index][1] + (isAll ? '' : texts.globalSuffix) : key; }).join(separator);
     if (!isAll || isEveryGlobal) { increase(result, label, counts[pair]); }
   });
   return result;
@@ -224,28 +295,28 @@ function pairLabels(counts, separator) {
 function renderPairs(total) {
   const list = function (counts, separator) {
     const entries = sortedEntries(pairLabels(counts, separator)).slice(0, 8);
-    return entries.length ? '<ul class="plain">' + entries.map(function (pair) { return '<li><span>' + escapeHtml(pair[0]) + '</span><b>' + pair[1] + '</b></li>'; }).join('') + '</ul>' : '<div class="empty">None.</div>';
+    return entries.length ? '<ul class="plain">' + entries.map(function (pair) { return '<li><span>' + escapeHtml(pair[0]) + '</span><b>' + pair[1] + '</b></li>'; }).join('') + '</ul>' : '<div class="empty">' + escapeHtml(texts.none) + '</div>';
   };
-  element('pairs').innerHTML = '<div class="columns"><div><h3>Ties: pairs the principles could not separate</h3>' + list(total.tiePairs, ' × ') + '</div><div><h3>Together: names cited on the same line</h3>' + list(total.together, ' + ') + '</div></div>';
+  element('pairs').innerHTML = '<div class="columns"><div><h3>' + escapeHtml(texts.tiesTitle) + '</h3>' + list(total.tiePairs, ' × ') + '</div><div><h3>' + escapeHtml(texts.togetherTitle) + '</h3>' + list(total.together, ' + ') + '</div></div>';
 }
 function renderGrilling(total, weekList) {
   const pick = function (field) { const values = {}; weekList.forEach(function (week) { values[week] = (total.weeks[week] || emptyWeek())[field]; }); return values; };
   element('grilling').innerHTML = barChart(weekList, [
-    { label: 'recommended chosen', color: COLORS.decided, values: pick('recommended') }, { label: 'other chosen', color: COLORS.asked, values: pick('other') },
-    { label: 'left open', color: COLORS.ties, values: pick('open') }, { label: 'answered by themselves', color: COLORS.neutral, values: pick('self') }], true, 'Grilling questions per week');
+    { label: texts.recommendedChosen, color: COLORS.decided, values: pick('recommended') }, { label: texts.otherChosen, color: COLORS.asked, values: pick('other') },
+    { label: texts.leftOpen, color: COLORS.ties, values: pick('open') }, { label: texts.answeredByThemselves, color: COLORS.neutral, values: pick('self') }], true, texts.grillingLabel);
 }
 function renderWayInUse(total, weekList) {
   const series = [
-    { label: 'grilling with the principles', skill: 'alecsplus-skills:the-way-grilling', color: COLORS.decided },
-    { label: 'grilling without', skill: 'mattpocock-skills:grilling', color: COLORS.asked },
-    { label: 'questions closed with self-answer', skill: 'alecsplus-skills:the-way-self-answer', color: COLORS.neutral }
+    { label: texts.grillingWith, skill: 'alecsplus-skills:the-way-grilling', color: COLORS.decided },
+    { label: texts.grillingWithout, skill: 'mattpocock-skills:grilling', color: COLORS.asked },
+    { label: texts.selfAnswer, skill: 'alecsplus-skills:the-way-self-answer', color: COLORS.neutral }
   ].map(function (entry) {
     const values = {};
     weekList.forEach(function (week) { values[week] = (total.weeks[week] || emptyWeek()).skills[entry.skill] || 0; });
     return { label: entry.label, color: entry.color, values: values };
   });
   const written = (total.skills['alecsplus-skills:the-way-new'] || 0) + (total.skills['alecsplus-skills:the-way-global-new'] || 0);
-  element('wayinuse').innerHTML = barChart(weekList, series, false, 'The way in use per week') + '<div class="sub">Principles written: ' + written + '</div>';
+  element('wayinuse').innerHTML = barChart(weekList, series, false, texts.wayInUseLabel) + '<div class="sub">' + escapeHtml(fill(texts.principlesWritten, { n: written })) + '</div>';
 }
 function render() {
   const total = aggregate();
@@ -268,36 +339,37 @@ function setPreset(preset) {
 const select = element('project');
 const answersOf = function (folder) { return Object.keys(ledger.projects[folder].days).reduce(function (sum, day) { return sum + ledger.projects[folder].days[day].answers; }, 0); };
 const folderOrder = Object.keys(ledger.projects).sort(function (left, right) { return (answersOf(right) - answersOf(left)) || ledger.projects[left].name.localeCompare(ledger.projects[right].name); });
-select.innerHTML = '<option value="*">All projects</option>' + folderOrder.map(function (folder) { return '<option value="' + escapeHtml(folder) + '">' + escapeHtml(ledger.projects[folder].name) + ' (' + answersOf(folder) + ')</option>'; }).join('');
+select.innerHTML = '<option value="*">' + escapeHtml(texts.allProjects) + '</option>' + folderOrder.map(function (folder) { return '<option value="' + escapeHtml(folder) + '">' + escapeHtml(ledger.projects[folder].name) + ' (' + answersOf(folder) + ')</option>'; }).join('');
 select.addEventListener('change', function () { state.project = select.value; render(); });
 ['from', 'to'].forEach(function (id) { element(id).addEventListener('change', function () { state[id] = element(id).value; state.preset = ''; render(); }); });
 Array.prototype.forEach.call(document.querySelectorAll('button[data-days]'), function (button) { button.addEventListener('click', function () { setPreset(button.getAttribute('data-days')); render(); }); });
 const dayCount = Object.keys(ledger.projects).reduce(function (sum, folder) { return sum + Object.keys(ledger.projects[folder].days).length; }, 0);
-element('footer').textContent = 'Ledger: ' + ledger.meta.path + ', updated ' + ledger.meta.updatedAt + ', ' + Object.keys(ledger.projects).length + ' projects, ' + dayCount + ' days';
+element('footer').textContent = fill(texts.footer, { path: ledger.meta.path, updatedAt: ledger.meta.updatedAt, projects: Object.keys(ledger.projects).length, days: dayCount });
 setPreset('30');
 render();
 })();
 `;
 
-export function writeDashboard({ ledger, ledgerPath, filePath }) {
-  const data = { ...ledger, meta: { path: ledgerPath, updatedAt: ledger.updatedAt } };
+export function writeDashboard({ ledger, ledgerPath, filePath, texts = TEXTS }) {
+  const data = { ...ledger, meta: { path: ledgerPath, updatedAt: ledger.updatedAt }, texts };
+  const text = (key) => escapeText(texts[key]);
   const serialized = JSON.stringify(data).replace(/</g, '\\u003c');
   const page = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The way: report</title><style>${STYLE}</style></head>
+<title>${text('title')}</title><style>${STYLE}</style></head>
 <body><main>
-<h1>The way: report</h1>
+<h1>${text('title')}</h1>
 <div class="controls">
-<label>Project <select id="project"></select></label>
-<label>From <input type="date" id="from"></label><label>to <input type="date" id="to"></label>
-<button data-days="7">7d</button><button data-days="30">30d</button><button data-days="90">90d</button><button data-days="all">all</button>
+<label>${text('project')} <select id="project"></select></label>
+<label>${text('from')} <input type="date" id="from"></label><label>${text('to')} <input type="date" id="to"></label>
+<button data-days="7">${text('days7')}</button><button data-days="30">${text('days30')}</button><button data-days="90">${text('days90')}</button><button data-days="all">${text('daysAll')}</button>
 </div>
-<h2>Tiles</h2><div class="tiles" id="tiles"></div>
-<h2>Over time</h2><div class="panel" id="overtime"></div>
-<h2>Principles</h2><div class="panel" id="principles"></div>
-<h2>Pairs</h2><div class="panel" id="pairs"></div>
-<h2>Grilling over time</h2><div class="panel" id="grilling"></div>
-<h2>The way in use</h2><div class="panel" id="wayinuse"></div>
+<h2>${text('sectionTiles')}</h2><div class="tiles" id="tiles"></div>
+<h2>${text('sectionOverTime')}</h2><div class="panel" id="overtime"></div>
+<h2>${text('sectionPrinciples')}</h2><div class="panel" id="principles"></div>
+<h2>${text('sectionPairs')}</h2><div class="panel" id="pairs"></div>
+<h2>${text('sectionGrilling')}</h2><div class="panel" id="grilling"></div>
+<h2>${text('sectionWayInUse')}</h2><div class="panel" id="wayinuse"></div>
 <footer id="footer"></footer>
 </main>
 <script type="application/json" id="ledger">${serialized}</script>

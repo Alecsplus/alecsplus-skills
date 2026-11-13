@@ -15,6 +15,10 @@ Transcripts live about 30 days (Claude Code's `cleanupPeriodDays`); the ledger d
 2. Read the project's `THE-WAY-USAGE.md` (or the global one if the project has none) and take the words it fixes for a question the principles do not close, the ones in quotes after "starting with the words": in English "the principles do not decide", in Italian "i principi non decidono". The counter needs them.
 3. The period of the chat summary is the last 30 days unless the person gave a number of days or "all"; the dashboard always has everything and its own date selector.
 
+## Language
+
+The dashboard speaks the language of `~/.claude/CLAUDE.md` (English if the file is missing or is in English). In English there is nothing to do. Otherwise, if `~/.claude/the-way-reports/texts.json` is missing, or the summary of the last run says it is from another version ("translate again"): run `node <this skill's folder>/report.mjs --print-texts`, translate every value into that language (same meaning, same `{placeholders}`, file and skill names stay), write the JSON to `~/.claude/the-way-reports/texts.json` with the same `_version`, then run the report as usual. One translation per version; no yes is asked, because the file lives outside the repo and belongs to this skill.
+
 ## Count and show
 
 Run, from the root of the project:

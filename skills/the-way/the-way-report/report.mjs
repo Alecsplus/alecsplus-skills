@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { emptyDay, readFacts, sumDays } from './count.mjs';
-import { writeDashboard } from './dashboard.mjs';
+import { TEXTS, writeDashboard } from './dashboard.mjs';
 
 const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
 const PRINCIPLE_DEFINITION = /^\*\*([A-Z][A-Z0-9_]*)\*\*/;
@@ -17,15 +17,16 @@ function parseArguments(argumentList) {
   const options = {
     way: 'none', global: 'none', days: '30', tie: 'the principles do not decide',
     dataDirectory: join(homedir(), '.claude', 'the-way-reports'), projectsDirectory: join(homedir(), '.claude', 'projects'),
-    cwd: process.cwd(), isOpening: true,
+    cwd: process.cwd(), isOpening: true, isPrintingTexts: false, textsPath: '',
   };
   const keyByFlag = {
     '--way': 'way', '--global': 'global', '--tie': 'tie', '--days': 'days',
-    '--data-dir': 'dataDirectory', '--projects-dir': 'projectsDirectory', '--cwd': 'cwd',
+    '--data-dir': 'dataDirectory', '--projects-dir': 'projectsDirectory', '--cwd': 'cwd', '--texts': 'textsPath',
   };
   for (let index = 0; index < argumentList.length; index += 1) {
     const key = keyByFlag[argumentList[index]];
     options.isOpening = options.isOpening && argumentList[index] !== '--no-open';
+    options.isPrintingTexts = options.isPrintingTexts || argumentList[index] === '--print-texts';
     if (key) {
       options[key] = argumentList[index + 1];
       index += 1;
@@ -39,6 +40,16 @@ function readPrincipleNames(filePath) {
   const names = isMissing ? [] : readFileSync(filePath, 'utf8').split('\n')
     .map((line) => PRINCIPLE_DEFINITION.exec(line)).filter((match) => match).map((match) => match[1]);
   return { isMissing, names: [...new Set(names)] };
+}
+
+function loadTexts(filePath) {
+  const isPresent = existsSync(filePath);
+  const translated = isPresent ? JSON.parse(readFileSync(filePath, 'utf8')) : {};
+  const isCurrent = translated._version === TEXTS._version;
+  const texts = isPresent && isCurrent ? { ...TEXTS, ...translated } : TEXTS;
+  const staleLine = `Texts: ${filePath} is from ${translated._version}, current ${TEXTS._version}: translate again`;
+  const line = isPresent && isCurrent ? `Texts: ${filePath}` : (isPresent ? staleLine : 'Texts: english');
+  return { texts, line };
 }
 
 function folderNameOf(directory) {
@@ -165,7 +176,7 @@ function summarize(ledger, currentFolder, options, now) {
   });
   addLine('Position vs use', gaps);
   const skillCount = (name) => totals.skills[`alecsplus-skills:${name}`] || 0;
-  lines.push(`The way in use: grilling with the principles ${skillCount('the-way-grilling')}, without ${totals.skills['mattpocock-skills:grilling'] || 0}, self-answer ${skillCount('the-way-self-answer')}, principles written ${skillCount('the-way-new') + skillCount('the-way-global-new')}`);
+  lines.push(`The way in use: grilling with the principles ${skillCount('the-way-grilling')}, without ${totals.skills['mattpocock-skills:grilling'] || 0}, self-answer ${skillCount('the-way-self-answer')}, the-way-new runs ${skillCount('the-way-new') + skillCount('the-way-global-new')}`);
   lines.push(globalLine(ledger, files, bounds));
   return lines;
 }
@@ -179,6 +190,10 @@ function openInBrowser(filePath) {
 
 async function main() {
   const options = parseArguments(process.argv.slice(2));
+  if (options.isPrintingTexts) {
+    process.stdout.write(`${JSON.stringify(TEXTS, null, 2)}\n`);
+    return;
+  }
   const way = readPrincipleNames(options.way);
   const globalFile = readPrincipleNames(options.global);
   const isNothing = way.isMissing && globalFile.isMissing;
@@ -197,8 +212,9 @@ async function main() {
     updateLedger(ledger, facts, currentFolder, way, globalFile);
     mkdirSync(dirname(ledgerPath), { recursive: true });
     writeFileSync(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`);
-    writeDashboard({ ledger, ledgerPath, filePath: dashboardPath });
-    output = [...summarize(ledger, currentFolder, options, Date.now()), `Dashboard: ${dashboardPath}`].join('\n');
+    const loaded = loadTexts(options.textsPath ? resolve(options.textsPath) : join(dataDirectory, 'texts.json'));
+    writeDashboard({ ledger, ledgerPath, filePath: dashboardPath, texts: loaded.texts });
+    output = [...summarize(ledger, currentFolder, options, Date.now()), loaded.line, `Dashboard: ${dashboardPath}`].join('\n');
     if (options.isOpening) {
       openInBrowser(dashboardPath);
     }
