@@ -160,8 +160,11 @@ function recordAssistant(entry, day, context, state) {
   day.answers += isTurn ? 1 : 0;
   day.withLine += isTurn && hasLine ? 1 : 0;
   (isTurn && hasLine ? citedKeysOf(lineDecisions, context.lists) : []).forEach((key) => increase(day.lineCites, key));
-  (isTurn ? tieCitedKeysOf(answerLines, context) : []).forEach((key) => increase(day.openCites, key));
-  day.questionsAsked += lastBlockLines.length > 0 && QUESTION_ENDING.test(lastBlockLines[lastBlockLines.length - 1]) ? 1 : 0;
+  const openKeys = isTurn ? tieCitedKeysOf(answerLines, context) : [];
+  openKeys.forEach((key) => increase(day.openCites, key));
+  // An answer that says the principles do not decide is a question to the person, whatever its last line.
+  const endsWithQuestion = lastBlockLines.length > 0 && QUESTION_ENDING.test(lastBlockLines[lastBlockLines.length - 1]);
+  day.questionsAsked += isTurn && (endsWithQuestion || openKeys.length > 0) ? 1 : 0;
   const content = Array.isArray(entry.message?.content) ? entry.message.content : [];
   content.filter((block) => block && block.type === 'tool_use' && block.name === 'Skill' && block.input?.skill)
     .forEach((block) => increase(day.skills, block.input.skill));

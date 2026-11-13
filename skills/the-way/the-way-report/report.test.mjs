@@ -63,7 +63,7 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.deepEqual(days[oldTime.slice(0, 10)].lineCites, { 'project/*': 1, 'project/work': 1, '*/work': 1 });
   assert.deepEqual(today.decided, { CERTEZZA_globale: 1, SIMPLE: 1 });
   assert.deepEqual(today.against, { ONE_PLACE: 1 });
-  assert.equal(today.questionsAsked, 1);
+  assert.equal(today.questionsAsked, 3); // the one ending with "?" and the two that say the principles do not decide
   assert.equal(today.grilling.questions, 2);
   assert.equal(today.grilling.chosenRecommended, 1);
   assert.equal(today.grilling.chosenOther, 1);
@@ -88,131 +88,106 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   const second = JSON.parse(readFileSync(ledgerPath, 'utf8'));
   assert.equal(Object.keys(second.projects[folder].days).length, 2);
   const page = readFileSync(join(fixture.root, 'data', 'dashboard.html'), 'utf8');
-  assert.ok(page.includes('id="ledger"'));
-  assert.ok(page.includes('CERTEZZA'));
-  assert.ok(page.includes('SIMPLE'));
+  assert.ok(page.includes('id="ledger"') && page.includes('CERTEZZA') && page.includes('SIMPLE'));
   assert.ok(!page.includes('http'));
-  assert.equal(page.match(/<span class="groupLabel">(Show|Principles|List|Unit|Period)<\/span>/g).length, 5);
-  const explanationKeys = ['explainAnswers', 'explainWithLine', 'explainClosed', 'explainAsked', 'explainGrillingTile', 'explainShare', 'explainDecidedAsked', 'explainGrillingChart', 'explainWayInUse', 'explainRecommended', 'explainOther', 'explainNoAnswer', 'explainGrillingWith', 'explainGrillingWithout', 'explainSelfAnswer', 'explainColumns', 'explainTrend', 'explainPairs'];
   const printed = JSON.parse(execFileSync('node', [reportPath, '--print-texts'], { encoding: 'utf8' }));
-  assert.ok(explanationKeys.every((key) => typeof printed[key] === 'string' && printed[key].length > 0));
-  assert.ok(page.includes(printed.explainAnswers));
-  assert.ok(page.includes('class="tile-trend"') && printed.tileTrend.includes('{unit}'));
-  assert.ok(page.includes('type="checkbox" data-folder=') && page.includes('id="projectHeading"') && page.includes('id="projectsMultiple"'));
-  assert.ok(page.includes('id="projectSearch"') && !page.includes('<select'));
+  const infoKeys = ['infoWhat', 'infoWhen', 'infoTileClosed', 'infoTileTaken', 'infoTileOpen', 'infoHabit', 'infoChart', 'infoTable', 'infoPairs', 'infoUnknown', 'infoWayInUse'];
+  assert.ok(infoKeys.every((key) => typeof printed[key] === 'string' && printed[key].length > 0 && page.includes(`"${key}":`)));
+  assert.equal(page.split('<script')[0].match(/<button type="button" class="info"/g).length, 7, 'one info button for each fixed heading');
   assert.ok(['day', 'week', 'month'].every((unit) => page.includes(`data-unit="${unit}"`)));
   assert.ok(['all', 'result', 'work'].every((kind) => page.includes(`data-kind="${kind}"`)));
-  assert.equal(page.match(/<h2 class="part">/g).length, 2);
-  const placeOf = (text) => page.indexOf(text);
-  assert.ok(placeOf('id="tiles"') < placeOf('id="tilesGrilling"') && placeOf('id="tilesGrilling"') < placeOf('<div id="partChat">'), 'every tile on top, the chat row first');
-  assert.ok(page.includes('<h2 class="part">Chat</h2>') && page.includes('<h2 class="part">Grilling and questions</h2>'));
+  assert.ok(['light', 'dark'].every((scheme) => page.includes(`data-scheme="${scheme}"`)) && ['shares', 'numbers'].every((mode) => page.includes(`data-mode="${mode}"`)));
+  assert.ok(page.includes('id="projectSearch"') && page.includes('id="projectAll"') && !page.includes('<select'));
 });
 
-// Runs the page script on a fake DOM: the buttons, the project column and the dates answer like in a browser.
-function openPage(html) {
+// Runs the page script on a fake DOM: the buttons, the project field, the theme and the info boxes answer like in a browser.
+function openPage(html, { isDark = false } = {}) {
   const ledgerText = /<script type="application\/json" id="ledger">(.*?)<\/script>/s.exec(html)[1];
   const script = [...html.matchAll(/<script>(.*?)<\/script>/gs)].pop()[1];
   const nodes = {};
-  const makeNode = (attributes = {}) => ({ innerHTML: '', value: '', textContent: '', hidden: false, attributes, listeners: {}, className: '',
+  const makeNode = (attributes = {}) => ({ innerHTML: '', value: '', textContent: '', attributes, listeners: {}, className: '',
     addEventListener(name, handler) { this.listeners[name] = handler; }, getAttribute(name) { return this.attributes[name]; }, setAttribute() {},
     classList: { toggle() {}, remove() {} } });
-  const choices = [...html.matchAll(/<button data-(scope|level|kind|unit|days)="([^"]+)"/g)].map((match) => makeNode({ [`data-${match[1]}`]: match[2] }));
+  const choices = [...html.matchAll(/<button data-(mode|level|kind|unit|days|scheme)="([^"]+)"/g)].map((match) => makeNode({ [`data-${match[1]}`]: match[2] }));
+  const documentListeners = {};
+  const root = { attributes: {}, setAttribute(name, value) { this.attributes[name] = value; }, getAttribute(name) { return this.attributes[name]; } };
   const document = {
+    documentElement: root,
     getElementById: (id) => (id === 'ledger' ? { textContent: ledgerText } : (nodes[id] ||= makeNode())),
     querySelectorAll: (selector) => choices.filter((button) => selector.includes(`[${Object.keys(button.attributes)[0]}]`)),
+    addEventListener: (name, handler) => { documentListeners[name] = handler; },
   };
-  vm.runInNewContext(script, { document, Date, Math, JSON, Object, Array, Number, String });
+  const stored = {};
+  const localStorage = { getItem: (key) => stored[key] ?? null, setItem: (key, value) => { stored[key] = value; } };
+  const window = { matchMedia: () => ({ matches: isDark }) };
+  vm.runInNewContext(script, { document, window, localStorage, Date, Math, JSON, Object, Array, Number, String });
+  const clickOn = (name, value) => ({ target: { closest: () => ({ getAttribute: () => value }) } });
   return {
-    nodes,
+    nodes, root, stored,
     press: (name, value) => choices.find((button) => button.attributes[`data-${name}`] === value).listeners.click(),
-    chooseProject: (folder) => nodes.projectList.listeners.click({ target: { closest: () => ({ getAttribute: () => folder }) } }),
-    setMultiple: (isOn) => nodes.projectsMultiple.listeners.change({ target: { checked: isOn } }),
-    tick: (folder, isOn) => nodes.projectList.listeners.change({ target: { checked: isOn, getAttribute: () => folder } }),
+    chooseProject: (folder) => nodes.projectMatches.listeners.click(clickOn('add', folder)),
+    removeProject: (folder) => nodes.projectChips.listeners.click(clickOn('remove', folder)),
+    typeProject: (query, key) => { nodes.projectSearch.value = query; nodes.projectSearch.listeners.input(); nodes.projectSearch.listeners.keydown({ key }); },
+    clickAnywhere: () => documentListeners.click({ target: {} }),
   };
 }
 
-const titlesOf = (svg) => [...svg.matchAll(/<title>([^<]*)<\/title>/g)].map((match) => match[1]);
-const sumOfTitles = (titles) => titles.reduce((sum, title) => sum + Number(/: (\d+)(?: \(.*\))?$/.exec(title)?.[1] || 0), 0);
-const sumOfTrend = (svg) => sumOfTitles((titlesOf(svg)[0] || '').split(' — ')[1]?.split(', ') || []);
+const titlesOf = (html) => [...html.matchAll(/<title>([^<]*)<\/title>/g)].map((match) => /: (\d+)(?: \S+ (\d+))?$/.exec(match[1]));
+const sumOf = (html) => titlesOf(html).reduce((sums, found) => [sums[0] + Number(found[1]), sums[1] + Number(found[2] || 0)], [0, 0]);
+const shareOf = (part, whole) => (whole > 0 ? `${Math.round((100 * part) / whole)}%` : '—');
+const KIND_LISTS = { result: ['SIMPLE', 'CERTEZZA'], work: ['LIGHT', 'UNICO'] };
 
 // Every tile, chart and row of the page must agree with the others: the failures, one line each.
-function incoherences(page, situation) {
+function incoherences(page, situation, { level, kind, mode }) {
   const failures = [];
   const expect = (isTrue, what) => isTrue || failures.push(`${situation}: ${what}`);
   const { nodes } = page;
-  const tiles = [...(nodes.tiles.innerHTML + nodes.tilesGrilling.innerHTML).matchAll(/<div class="tile"><div class="label">([^<]*)<\/div><div class="value">(\d+)<\/div>(.*?)<\/svg>(<div class="sub">[^<]*<\/div>)?<\/div>/gs)]
-    .map((match) => ({ label: match[1], value: Number(match[2]), rest: match[3], scaleLine: match[4] || '', trendSum: sumOfTrend(/<svg class="tile-trend".*$/s.exec(match[3])[0]) }));
-  const tile = (label) => tiles.find((entry) => entry.label === label) || { value: Number.NaN, rest: '' };
-  const [answers, withLine, closed, asked, grilling] = [TEXTS.tileAnswers, TEXTS.tileWithLine, TEXTS.tileClosed, TEXTS.tileAsked, TEXTS.tileGrilling].map(tile);
-  const barSums = (html) => {
-    const sums = {};
-    [...html.matchAll(/<rect [^>]*><title>[^<]* · ([^<]*): (\d+)<\/title><\/rect>/g)].forEach((match) => { sums[match[1]] = (sums[match[1]] || 0) + Number(match[2]); });
-    return sums;
-  };
-  expect(tiles.length === 5, `five tiles, found ${tiles.length}`);
-  expect(withLine.value <= answers.value, `with the line ${withLine.value} > answers ${answers.value}`);
-  const sharePoints = [...nodes.overtime.innerHTML.matchAll(/<circle [^>]*><title>[^<]*: \d+% \((\d+) \S+ (\d+)\)<\/title><\/circle>/g)].map((match) => [Number(match[1]), Number(match[2])]);
-  const [part, whole] = sharePoints.reduce((sums, point) => [sums[0] + point[0], sums[1] + point[1]], [0, 0]);
-  expect(withLine.value === part, `with the line ${withLine.value}, the points of the share count ${part}`);
-  expect(whole <= answers.value, `the share counts ${whole} answers of ${answers.value}`);
-  expect(withLine.rest.startsWith(`<div class="sub">${whole > 0 ? `${Math.round((100 * part) / whole)}%` : '—'}`), 'the share of the tile is not the share of its points');
-  [withLine, closed].forEach((entry) => {
-    const lines = [...entry.rest.matchAll(/<polyline [^>]*points="([^"]*)"/g)].map((match) => match[1].split(' ').map((point) => Number(point.split(',')[1])));
-    const titles = (/<title>[^<]*<\/title>/.exec(entry.rest)?.[0] || '').split(' — ')[1]?.replace('</title>', '').split(', ') || [];
-    const faint = titles.map((title) => Number(/\(\S+ (\d+)\)$/.exec(title)?.[1]));
-    const shown = titles.map((title) => Number(/: (\d+)/.exec(title)?.[1]));
-    const [level, kind] = situation.split(' ');
-    const mustBeFiltered = ['all', 'project', 'global'].includes(level) && ['all', 'result', 'work'].includes(kind) && (level !== 'all' || kind !== 'all');
-    const isFilteredNow = /\(\S+ \d+\)/.test(titles[0] || '');
-    expect(isFilteredNow === mustBeFiltered || !['all', 'project', 'global'].includes(level), `tile ${entry.label}: the title says filtered ${isFilteredNow}, the filters say ${mustBeFiltered}`);
-    expect(lines.length === (isFilteredNow ? 2 : 1), `tile ${entry.label}: ${lines.length} polylines, filtered ${isFilteredNow}`);
-    if (isFilteredNow) {
-      const maximum = Math.max(...faint, 1);
-      const yOf = (value) => Number((26 - (24 * value) / maximum).toFixed(1));
-      expect(faint.every((value, index) => value >= shown[index]), `tile ${entry.label}: the unfiltered values sit under the shown ones`);
-      expect(JSON.stringify(lines[0]) === JSON.stringify(faint.map(yOf)), `tile ${entry.label}: the faint line is not the unfiltered counts`);
-      expect(JSON.stringify(lines[1]) === JSON.stringify(shown.map(yOf)), `tile ${entry.label}: the coloured line is not scaled to the unfiltered maximum`);
-      expect(entry.scaleLine.replaceAll('&quot;', '"').includes(TEXTS.tileTrendScale.replace('{maximum}', maximum)), `tile ${entry.label}: the scale line does not show ${maximum}`);
-    } else {
-      expect(!entry.scaleLine.includes(TEXTS.tileTrendScale.split('{maximum}')[0].slice(0, 12)), `tile ${entry.label}: scale line without a filter`);
-    }
+  const tiles = nodes.tiles.innerHTML.split('<article class="card tile">').slice(1).map((tile) => {
+    const [part, whole] = sumOf(/<svg.*<\/svg>/s.exec(tile)[0]);
+    return { big: /<b>([^<]*)<\/b>/.exec(tile)[1], small: /<\/b><span>([^<]*)<\/span>/.exec(tile)[1], part, whole, html: tile };
   });
-  tiles.forEach((entry) => expect(entry.trendSum === entry.value, `tile ${entry.label} ${entry.value}, its trend sums ${entry.trendSum}`));
-  const decidedAsked = barSums(nodes.decidedAsked.innerHTML);
-  expect((decidedAsked[TEXTS.legendDecided] || 0) === closed.value, `closed ${closed.value}, the chart sums ${decidedAsked[TEXTS.legendDecided]}`);
-  expect((decidedAsked[TEXTS.legendAsked] || 0) === asked.value, `asked ${asked.value}, the chart sums ${decidedAsked[TEXTS.legendAsked]}`);
-  const stacked = Object.values(barSums(nodes.grilling.innerHTML)).reduce((sum, value) => sum + value, 0);
-  expect(stacked === grilling.value, `grilling ${grilling.value}, the stacked bars sum ${stacked}`);
-  const detail = [...grilling.rest.split('<br>')[0].matchAll(/(\d+)/g)].reduce((sum, match) => sum + Number(match[1]), 0);
-  expect(detail <= grilling.value, `the grilling detail sums ${detail} > ${grilling.value}`);
-  const groups = nodes.principles.innerHTML.split('<h3>').slice(1).map((part) => ({
-    title: part.slice(0, part.indexOf('</h3>')),
-    rows: part.split('<div class="principle">').slice(1).map((row) => {
-      const bars = [...row.matchAll(/<\/span>\S+ (\d+)<\/div>/g)].map((match) => Number(match[1]));
-      return { name: /^<div class="name">(?:<span class="globalMark".*?<\/span>)?([^ <]*)/.exec(row)[1], marks: (/^<div class="name">(.*?)<\/div>/s.exec(row)[1].match(/class="globalMark"/g) || []).length, decided: bars[0], ties: bars[1], trendSum: sumOfTrend(/<svg viewBox="0 0 100 24".*?<\/svg>/s.exec(row)[0]) };
-    }),
+  expect(tiles.length === 3, `three tiles, found ${tiles.length}`);
+  tiles.forEach((tile, index) => {
+    const isShare = mode === 'shares';
+    expect(tile.big === (isShare ? shareOf(tile.part, tile.whole) : String(tile.part)), `tile ${index}: big number ${tile.big}, its points say ${tile.part} of ${tile.whole}`);
+    if (isShare) {
+      const [, smallPart, smallWhole] = /^(\d+) .* (\d+)$/.exec(tile.small) || [];
+      expect(Number(smallPart) === tile.part && Number(smallWhole) === tile.whole, `tile ${index}: the small text "${tile.small}" is not ${tile.part} of ${tile.whole}`);
+    }
+    expect(/class="info"/.test(tile.html), `tile ${index}: no info button`);
+  });
+  const chart = nodes.chart.innerHTML;
+  const chartSum = (selector) => sumOf([...chart.matchAll(selector)].map((match) => match[0]).join(''));
+  ['c0', 'c1', 'c2'].forEach((cls, index) => {
+    const found = chartSum(mode === 'shares' ? new RegExp(`<circle class="dot ${cls}".*?</circle>`, 'g') : new RegExp(`<rect class="bar ${cls}".*?</rect>`, 'g'));
+    expect(found[0] === tiles[index].part, `chart ${cls}: sums ${found[0]}, the tile ${tiles[index].part}`);
+    expect(mode === 'numbers' || found[1] <= tiles[index].whole, `chart ${cls}: the points count ${found[1]} of ${tiles[index].whole}`);
+  });
+  if (mode === 'numbers') {
+    expect(chartSum(/<rect class="outline".*?<\/rect>/g)[0] === tiles[0].whole - tiles[0].part, 'the grey outline is not the questions asked to you');
+  }
+  const habit = /<b>([^<]*)<\/b>, (\d+) \S+ (\d+);/.exec(nodes.habit.innerHTML);
+  expect(habit && habit[1] === shareOf(Number(habit[2]), Number(habit[3])), `habit line ${habit && habit[0]}`);
+  const rows = nodes.principles.innerHTML.split('<tr').slice(2).map((row) => ({
+    names: [...row.matchAll(/<b class="name" data-level="([^"]*)">([^<]*)<\/b>/g)].map((match) => ({ level: match[1], name: match[2] })),
+    cells: [...row.matchAll(/<td class="n[^"]*">(\d+)<\/td>/g)].map((match) => Number(match[1])),
+    line: sumOf(row)[0],
+    marks: (row.match(/class="globeMark"/g) || []).length,
   }));
-  const rows = groups.flatMap((group) => group.rows);
-  const globalGroupTitle = (group) => group.title.includes('class="globalMark"');
-  groups.forEach((group) => group.rows.forEach((row) => {
-    const expected = globalGroupTitle(group) ? 1 : 0;
-    expect(row.marks === expected, `row ${row.name} in "${group.title.replace(/<span.*?<\/span>/, '')}" carries ${row.marks} global marks, expected ${expected}`);
-  }));
-  expect(groups.every((group) => globalGroupTitle(group) === (group.title.replace(/<span.*?<\/span>/, '') === TEXTS.globalWithProjects || group.title.replace(/<span.*?<\/span>/, '') === TEXTS.globalAsUsed)), 'only the global group heading carries the mark');
-  const pairItems = [...nodes.pairs.innerHTML.matchAll(/<li><span>(.*?)<\/span>/g)].map((match) => match[1]);
-  pairItems.forEach((item) => item.split(' × ').forEach((name) => {
-    const isGlobalName = /^(?:<span class="globalMark".*?<\/span>)?[A-Z_]+_globale$|^<span class="globalMark"/.test(name) || name.endsWith('_globale');
-    expect(isGlobalName === name.startsWith('<span class="globalMark"'), `pair name ${name}: the global mark is ${isGlobalName ? 'missing' : 'on a non-global name'}`);
-  }));
-  expect(!nodes.pairs.innerHTML.includes('(global)') && (!/\*/.test(nodes.pairs.innerHTML.replace(/<svg.*?<\/svg>/gs, '')) ), 'pairs show a text suffix or a raw prefix');
-  const inFile = groups.filter((group) => group.title !== TEXTS.notInAFileGroup).flatMap((group) => group.rows);
-  expect(inFile.reduce((sum, row) => sum + row.decided, 0) === closed.value, `closed ${closed.value}, the rows decide ${inFile.reduce((sum, row) => sum + row.decided, 0)}`);
-  rows.forEach((row) => expect(row.trendSum === row.decided, `row ${row.name} decided ${row.decided}, its line sums ${row.trendSum}`));
-  expect(new Set(groups.map((group) => group.title)).size === groups.length, 'two groups of principles with the same title');
-  const pairs = [...nodes.pairs.innerHTML.matchAll(/<b>(\d+)<\/b>/g)].reduce((sum, match) => sum + Number(match[1]), 0);
-  expect(2 * pairs <= rows.reduce((sum, row) => sum + row.ties, 0), `pairs ${pairs} without as many ties`);
-  const counts = [...nodes.projectList.innerHTML.matchAll(/<span class="count">(\d+)/g)].map((match) => Number(match[1]));
-  expect(counts[0] === counts.slice(1).reduce((sum, value) => sum + value, 0), 'all projects is not the sum of the column');
+  rows.forEach((row) => {
+    expect(row.marks === row.names.filter((name) => name.level === 'global').length, `row ${row.names[0]?.name}: the globe is not on exactly the global names`);
+    expect(row.names.length !== 1 || row.line === row.cells[0], `row ${row.names[0]?.name}: decided ${row.cells[0]}, its line sums ${row.line}`);
+  });
+  const decidedSum = rows.reduce((sum, row) => sum + row.cells[0], 0);
+  expect(decidedSum === tiles[0].part, `the rows decide ${decidedSum}, the tile ${tiles[0].part}`);
+  const pairItems = nodes.pairs.innerHTML.split('<li>').slice(1);
+  pairItems.forEach((item) => {
+    const names = [...item.matchAll(/<b class="name" data-level="([^"]*)">([^<]*)<\/b>/g)].map((match) => ({ level: match[1], name: match[2] }));
+    expect(names.length === 2, `a pair with ${names.length} names`);
+    expect(names.every((entry) => level === 'all' || entry.level === level), `a pair shows ${JSON.stringify(names)} under level ${level}`);
+    expect(names.every((entry) => kind === 'all' || (entry.level !== 'none' && KIND_LISTS[kind].includes(entry.name))), `a pair shows ${JSON.stringify(names)} under list ${kind}`);
+    expect((item.match(/class="globeMark"/g) || []).length === names.filter((entry) => entry.level === 'global').length, 'a pair without the globe on its global names');
+  });
   return failures;
 }
 
@@ -220,67 +195,83 @@ test('the dashboard agrees with itself under every filter', () => {
   const root = mkdtempSync(join(tmpdir(), 'dashboard-'));
   const daysAgo = (count) => new Date(Date.now() - count * DAY).toISOString().slice(0, 10);
   const grilling = { questions: 3, withRecommendation: 2, notDecided: 2, selfAnswered: 1, chosenRecommended: 1, chosenOther: 1 };
+  const advice = { questions: 3, chosenRecommended: 1, chosenOther: 1 };
   const alphaDay = { answers: 10, withLine: 6, questionsAsked: 2,
-    lineCites: { 'project/*': 4, 'project/result': 3, 'project/work': 2, 'global/*': 1, 'global/result': 1, '*/result': 3, '*/work': 2 }, decided: { SIMPLE: 2, LIGHT: 1, CERTEZZA_globale: 1, FOO: 1 }, against: { LIGHT: 1 },
-    ties: { SIMPLE: 1, LIGHT: 1 }, tiePairs: { 'LIGHT × SIMPLE': 1 }, grilling, skills: { 'alecsplus-skills:the-way-grilling': 1, grilling: 1 } };
-  const savedBeforeLineCites = { ...alphaDay, lineCites: undefined };
-  const betaDay = { answers: 4, withLine: 1, questionsAsked: 1, lineCites: { 'global/*': 1, 'global/work': 1, '*/work': 1 }, decided: { OWN: 3, UNICO_globale: 2 }, against: {},
+    lineCites: { 'project/*': 4, 'project/result': 3, 'project/work': 2, 'global/*': 1, 'global/result': 1, '*/result': 3, '*/work': 2 },
+    openCites: { '*/*': 1, 'project/*': 1, 'project/result': 1, '*/result': 1 }, grillingCites: { '*/*': advice, 'project/*': advice, 'project/result': advice, '*/result': advice },
+    decided: { SIMPLE: 2, LIGHT: 1, CERTEZZA_globale: 1, FOO: 1 }, against: { LIGHT: 1 },
+    ties: { SIMPLE: 1, LIGHT: 1 }, tiePairs: { 'LIGHT × SIMPLE': 1, 'FOO × SIMPLE': 1 }, grilling, skills: { 'alecsplus-skills:the-way-grilling': 1, grilling: 1 } };
+  const savedBeforeCites = { ...alphaDay, lineCites: undefined, openCites: undefined, grillingCites: undefined };
+  const betaDay = { answers: 4, withLine: 1, questionsAsked: 1, lineCites: { 'global/*': 1, 'global/work': 1, '*/work': 1 }, openCites: { '*/*': 1, 'global/*': 1, 'global/work': 1, '*/work': 1 },
+    grillingCites: { '*/*': advice, 'global/*': advice, 'global/work': advice, '*/work': advice }, decided: { OWN: 3, UNICO_globale: 2 }, against: {},
     ties: { OWN: 1, UNICO_globale: 1 }, tiePairs: { 'OWN × UNICO_globale': 1 }, grilling: { ...grilling, questions: 2 }, skills: {} };
   const globalFile = { global: ['CERTEZZA', 'UNICO'], globalLists: { result: ['CERTEZZA'], work: ['UNICO'] } };
   const ledger = {
     projects: {
-      '-work-alpha': { name: 'alpha', days: { [daysAgo(0)]: alphaDay, [daysAgo(3)]: alphaDay, [daysAgo(12)]: alphaDay, [daysAgo(45)]: savedBeforeLineCites } },
+      '-work-alpha': { name: 'alpha', days: { [daysAgo(0)]: alphaDay, [daysAgo(3)]: alphaDay, [daysAgo(12)]: alphaDay, [daysAgo(45)]: savedBeforeCites } },
       '-work-beta': { name: 'beta', days: { [daysAgo(1)]: betaDay, [daysAgo(20)]: betaDay } },
     },
     files: { '-work-alpha': { project: ['SIMPLE', 'LIGHT'], projectLists: { result: ['SIMPLE'], work: ['LIGHT'] }, ...globalFile }, '*': { project: [], ...globalFile } },
-    updatedAt: 'now',
+    updatedAt: '2026-11-13T10:00:00.000Z',
   };
   const filePath = join(root, 'dashboard.html');
   writeDashboard({ ledger, ledgerPath: join(root, 'days.json'), filePath });
   const html = readFileSync(filePath, 'utf8');
-  const situations = [['default', () => {}]];
-  ['day', 'week', 'month'].forEach((unit) => ['7', '30', 'all'].forEach((days) => situations.push([`${unit} ${days}`, (page) => { page.press('unit', unit); page.press('days', days); }])));
-  ['all', 'project', 'global'].forEach((level) => ['all', 'result', 'work'].forEach((kind) => ['30', 'all'].forEach((days) => situations.push([`${level} ${kind} ${days}`, (page) => { page.press('level', level); page.press('kind', kind); page.press('days', days); }]))));
-  ['-work-alpha', '-work-beta'].forEach((folder) => situations.push([`only ${folder}`, (page) => page.chooseProject(folder)]));
-  situations.push(['grilling, of the project, day, alpha', (page) => { page.press('scope', 'grilling'); page.press('level', 'project'); page.press('unit', 'day'); page.chooseProject('-work-alpha'); }]);
-  situations.push(['more projects, beta only, work', (page) => { page.setMultiple(true); page.tick('-work-alpha', false); page.press('kind', 'work'); page.press('days', 'all'); }]);
-  assert.deepEqual(situations.flatMap(([situation, steps]) => { const page = openPage(html); steps(page); return incoherences(page, situation); }), []);
+  const situations = [];
+  ['shares', 'numbers'].forEach((mode) => ['all', 'project', 'global'].forEach((level) => ['all', 'result', 'work'].forEach((kind) => ['7', '30', 'all'].forEach((days) => {
+    situations.push([`${mode} ${level} ${kind} ${days}`, { level, kind, mode }, (page) => { page.press('mode', mode); page.press('level', level); page.press('kind', kind); page.press('days', days); }]);
+  }))));
+  ['day', 'week', 'month'].forEach((unit) => situations.push([`unit ${unit}`, { level: 'all', kind: 'all', mode: 'shares' }, (page) => { page.press('unit', unit); page.press('days', 'all'); }]));
+  ['-work-alpha', '-work-beta'].forEach((folder) => situations.push([`only ${folder}`, { level: 'all', kind: 'all', mode: 'shares' }, (page) => { page.chooseProject(folder); page.press('days', 'all'); }]));
+  assert.deepEqual(situations.flatMap(([situation, filters, steps]) => { const page = openPage(html); steps(page); return incoherences(page, situation, filters); }), []);
   const page = openPage(html);
-  const everything = () => ['tiles', 'tilesGrilling', 'overtime', 'decidedAsked', 'principles', 'pairs', 'grilling', 'wayinuse'].map((id) => page.nodes[id].innerHTML);
-  const allProjects = everything();
-  const column = page.nodes.projectList.innerHTML;
-  page.chooseProject('-work-beta');
-  const changed = everything().map((html, index) => html !== allProjects[index]);
-  assert.deepEqual(changed, changed.map(() => true), 'one project changes every part');
-  page.press('days', '7');
-  assert.notEqual(page.nodes.projectList.innerHTML, column, 'the column follows the period');
-  page.press('unit', 'day');
-  const words = everything().join(' ');
-  assert.ok(words.includes('per day') && !words.includes('per week') && !words.includes('per month'), 'every "per unit" says day');
-  page.press('scope', 'chat');
-  assert.ok(page.nodes.partGrilling.hidden && !page.nodes.partChat.hidden, 'chat hides the grilling part');
-  assert.ok(page.nodes.tilesGrillingRow.hidden && !page.nodes.tilesChatRow.hidden, 'chat hides the grilling tiles');
-  page.press('scope', 'grilling');
-  assert.ok(page.nodes.tilesChatRow.hidden && page.nodes.partChat.hidden && !page.nodes.tilesGrillingRow.hidden, 'grilling hides the chat tiles');
-  const filtered = openPage(html);
-  const lineTile = () => /<div class="label">With the Principles line<\/div><div class="value">(\d+)<\/div><div class="sub">([^<]*)<\/div><div class="sub">([^<]*)</.exec(filtered.nodes.tiles.innerHTML).slice(1);
-  const before = { tile: lineTile(), share: filtered.nodes.overtime.innerHTML };
-  assert.ok(!filtered.nodes.tiles.innerHTML.includes(TEXTS.notFiltered), 'no note without a filter');
-  filtered.press('level', 'project');
-  const [cited, share, explanation] = lineTile();
-  assert.ok(Number(cited) < Number(before.tile[0]) && filtered.nodes.overtime.innerHTML !== before.share, 'Principles moves the tile and the share');
-  assert.equal(explanation, TEXTS.explainWithLineFiltered.replace('{which}', TEXTS.citesProject).replace(/"/g, '&quot;'));
-  assert.ok(filtered.nodes.tiles.innerHTML.includes(TEXTS.notFiltered) && filtered.nodes.grilling.innerHTML.includes(TEXTS.notFiltered), 'the tiles and charts that do not depend say so');
-  assert.ok(!share.includes(TEXTS.countedSince.replace(' {date}', '')), 'in 30 days every day has the count');
-  filtered.press('kind', 'result');
-  assert.ok(Number(lineTile()[0]) < Number(cited), 'List moves the tile');
-  filtered.press('days', 'all');
-  assert.ok(lineTile()[1].includes(TEXTS.countedSince.replace(' {date}', '')), 'a day saved before the count says from when');
+  page.press('days', 'all');
+  const tileSums = () => page.nodes.tiles.innerHTML.split('<article class="card tile">').slice(1).map((tile) => sumOf(/<svg.*<\/svg>/s.exec(tile)[0]));
+  assert.deepEqual(tileSums()[0], [20, 30], 'closed 20 (16 of alpha, 4 of beta), asked 10');
+  assert.ok(page.nodes.tiles.innerHTML.includes(TEXTS.countedSince.replace(' {date}', '')), 'the old day without the counts says from when, in the open question tile');
+  const habitOf = () => /<b>([^<]*)<\/b>, (\d+) \S+ (\d+);/.exec(page.nodes.habit.innerHTML).slice(1).join(' ');
+  assert.equal(habitOf(), `${shareOf(26, 48)} 26 48`, 'the habit counts every answer of every day');
+  const wayBefore = page.nodes.wayTiles.innerHTML;
+  const habitBefore = habitOf();
+  page.press('level', 'global');
+  page.press('kind', 'work');
+  assert.equal(page.nodes.wayTiles.innerHTML, wayBefore, 'the plugin tiles do not follow Principles and List');
+  assert.equal(habitOf(), habitBefore, 'the habit line does not follow Principles and List');
+  assert.ok(page.nodes.tiles.innerHTML.includes(TEXTS.countedSince.replace(' {date}', '')), 'under a filter the old day is not counted and the tile says since when');
+  page.press('level', 'all');
+  page.press('kind', 'all');
+  const before = ['habit', 'principles', 'pairs', 'unknown', 'wayTiles'].map((id) => page.nodes[id].innerHTML);
+  const quantities = [page.nodes.tiles.innerHTML, page.nodes.chart.innerHTML];
+  page.press('mode', 'numbers');
+  assert.deepEqual(['habit', 'principles', 'pairs', 'unknown', 'wayTiles'].map((id) => page.nodes[id].innerHTML), before, 'Shares and Numbers re-render the tiles and the chart only');
+  assert.ok(page.nodes.tiles.innerHTML !== quantities[0] && page.nodes.chart.innerHTML !== quantities[1], 'the tiles and the chart change with the mode');
+  assert.ok(page.nodes.chart.innerHTML.includes('class="outline"') && !page.nodes.chart.innerHTML.includes('class="line '), 'Numbers draw bars inside the grey outline, no lines');
+  assert.ok(page.nodes.chartTitle.textContent === TEXTS.chartNumbersTitle.replace('{unit}', 'week'));
+  const everythingBelow = () => ['habit', 'principles', 'pairs', 'unknown', 'wayTiles', 'tiles', 'chart'].map((id) => page.nodes[id].innerHTML);
+  const allProjects = everythingBelow();
+  assert.ok(page.nodes.projectChips.innerHTML.includes(TEXTS.allProjectsChip.replace('{n}', '2')) && page.nodes.projectAll.textContent === TEXTS.allProjectsButton.replace('{n}', '2'));
+  page.typeProject('bet', 'Enter');
+  assert.ok(page.nodes.projectChips.innerHTML.includes('data-remove="-work-beta"') && !page.nodes.projectChips.innerHTML.includes('alpha'), 'Enter adds the first match, and with all selected it replaces them');
+  assert.deepEqual(everythingBelow().map((part, index) => part !== allProjects[index]), everythingBelow().map(() => true), 'one project changes everything under the filters');
+  page.chooseProject('-work-alpha');
+  assert.ok(page.nodes.principles.innerHTML.includes('class="faint">alpha') || page.nodes.principles.innerHTML.includes('>alpha<'), 'with two projects the rows say the project');
+  page.removeProject('-work-alpha');
+  page.removeProject('-work-beta');
+  assert.deepEqual(everythingBelow(), allProjects, 'with no project left the page goes back to all');
+  const unitWords = (unit) => { page.press('unit', unit); return page.nodes.chartTitle.textContent; };
+  assert.ok(unitWords('day').includes('per day,') && unitWords('month').includes('per month,'));
+  page.press('scheme', 'dark');
+  assert.equal(page.root.getAttribute('data-theme'), 'dark');
+  assert.equal(page.stored['the-way-theme'], 'dark', 'the choice is remembered');
+  page.press('scheme', 'light');
+  assert.equal(page.root.getAttribute('data-theme'), 'light');
+  assert.equal(openPage(html, { isDark: true }).root.getAttribute('data-theme'), 'dark', 'without a choice the theme follows the system');
+  page.clickAnywhere();
 });
 
 test('--print-texts prints the texts as JSON with title and version', () => {
   const texts = JSON.parse(execFileSync('node', [reportPath, '--print-texts'], { encoding: 'utf8' }));
-  assert.equal(texts.title, 'The way: report');
+  assert.equal(texts.title, 'How much the principles weigh');
   assert.ok(texts._version);
 });
 
@@ -294,11 +285,11 @@ test('--texts translates the dashboard when the version matches, stays english w
   const translated = run(fixture, ['--texts', textsPath]);
   assert.match(translated, new RegExp(`Texts: ${textsPath}`));
   assert.ok(readFileSync(pagePath, 'utf8').includes('<h1>Prova</h1>'));
-  assert.ok(readFileSync(pagePath, 'utf8').includes('"searchProjects":"Search projects"'));
+  assert.ok(readFileSync(pagePath, 'utf8').includes('"searchProjects":"add a project…"'));
   writeFileSync(textsPath, JSON.stringify({ _version: 'old', title: 'Prova' }));
   const stale = run(fixture, ['--texts', textsPath]);
   assert.match(stale, /is from old, current .*: translate again/);
-  assert.ok(readFileSync(pagePath, 'utf8').includes('<h1>The way: report</h1>'));
+  assert.ok(readFileSync(pagePath, 'utf8').includes('<h1>How much the principles weigh</h1>'));
   assert.match(run(fixture), /Texts: english/);
 });
 
