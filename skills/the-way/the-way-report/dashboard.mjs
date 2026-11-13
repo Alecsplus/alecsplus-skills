@@ -82,6 +82,7 @@ export const TEXTS = {
   numbersTaken: 'advice taken · {other} other choice · {share}',
   numbersOpen: 'questions left open · out of {whole} · {share}',
   partOfWhole: '{part} of {whole}',
+  noDataPoint: '{label}: nothing to count',
   tileScaleShares: 'per {unit}, 0–100%',
   tileScaleNumbers: 'per {unit}, {maximum} at the top',
   tileTrendAria: 'Trend per {unit}: {values}',
@@ -99,7 +100,7 @@ export const TEXTS = {
   legendOpen: 'not enough',
   legendAsked: 'questions that reached you',
   chartHintShares: 'Hover a point to see the share and the numbers it comes from. With «Numbers» at the top the same chart shows the counts.',
-  chartHintNumbers: 'The grey outline is all the questions that reached you in that step: the coloured bars are read against it. With «Shares %» at the top the chart goes back to lines from 0 to 100.',
+  chartHintNumbers: 'The grey outline, on the left of each step, is all the questions that reached you in that step: the coloured bars beside it are read against it. With «Shares %» at the top the chart goes back to lines from 0 to 100.',
   tipWeek: 'Week of {label}',
   whereTitle: 'Where to act',
   legendGlobal: '{mark} = global principle; the others belong to the project written next to them',
@@ -211,7 +212,7 @@ i.c0{background:var(--blue)}i.c1{background:var(--green)}i.c2{background:var(--o
 .chartCard{padding:20px 22px;gap:12px}.chartCard h2{font-size:16px}.hint{font-size:12px;color:var(--faint)}
 .gridLine{stroke:var(--grid)}.axisLine{stroke:var(--axis)}.axisText{font-size:11px;fill:var(--faint)}.xText{font-size:12px;fill:var(--muted)}
 .line{fill:none;stroke-width:2.5}.outline{fill:none;stroke:var(--axis)}.valueLabel{font-size:12px;font-weight:600}.c0.valueLabel{fill:var(--blue)}.c1.valueLabel{fill:var(--green)}.c2.valueLabel{fill:var(--orange)}.outlineLabel{font-size:11px;fill:var(--faint)}
-.band{fill:transparent}.hit .dot,.hit .tip{opacity:0;pointer-events:none}.hit:hover .dot,.hit:hover .tip{opacity:1}
+.band{fill:transparent}.dotEmpty{fill:transparent}.hit .tip{opacity:0;pointer-events:none}.hit:hover .tip{opacity:1}
 .tip rect{fill:var(--tipBg)}.tip text{font-size:12px;fill:var(--tipText)}.tip .tipHead{font-weight:600}
 .whereGrid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:20px}.stack{display:flex;flex-direction:column;gap:20px}
 .panel{padding:18px 22px;gap:8px}
@@ -390,17 +391,10 @@ function pointsOf(total, list, index) {
 }
 function titleOf(label, found) { return '<title>' + escapeHtml(label + ': ' + fill(texts.partOfWhole, found)) + '</title>'; }
 function xPercent(index, count) { return count > 1 ? 100 * index / (count - 1) : 50; }
-function runsOf(points, count, yOf) {
-  const runs = [];
-  let currentRun = null;
-  points.forEach(function (point, index) {
-    currentRun = point.share === null ? null : currentRun;
-    if (point.share !== null) {
-      if (!currentRun) { currentRun = []; runs.push(currentRun); }
-      currentRun.push(round(xPercent(index, count)) + ',' + round(yOf(point)));
-    }
-  });
-  return runs.map(function (run) { return run.length === 1 ? [run[0], run[0]] : run; });
+// The polyline joins the buckets that have something to count, in order, skipping the empty ones.
+function joinedPoints(points, count, yOf) {
+  const joined = points.filter(function (point) { return point.share !== null; }).map(function (point) { return round(xPercent(points.indexOf(point), count)) + ',' + round(yOf(point)); });
+  return joined.length === 1 ? [joined[0], joined[0]] : joined;
 }
 function trendSvg(points, cls) {
   const count = Math.max(points.length, 1);
@@ -408,7 +402,7 @@ function trendSvg(points, cls) {
   const bands = points.map(function (point, index) { return '<rect class="band" x="' + round(slot * index) + '" y="0" width="' + round(slot) + '" height="30">' + titleOf(point.label, point) + '</rect>'; }).join('');
   const maximum = Math.max.apply(null, points.map(function (point) { return point.part; }).concat([1]));
   const body = state.mode === 'shares'
-    ? runsOf(points, count, function (point) { return 28 - 26 * Math.min(point.share, 100) / 100; }).map(function (run) { return '<polyline class="trend ' + cls + '" points="' + run.join(' ') + '"/>'; }).join('')
+    ? '<polyline class="trend ' + cls + '" points="' + joinedPoints(points, count, function (point) { return 28 - 26 * Math.min(point.share, 100) / 100; }).join(' ') + '"/>'
     : points.map(function (point, index) { const height = 26 * point.part / maximum; return '<rect class="bar ' + cls + '" x="' + round(slot * index + slot * 0.1) + '" y="' + round(28 - height) + '" width="' + round(slot * 0.8) + '" height="' + round(height) + '"/>'; }).join('');
   const values = points.map(function (point) { return state.mode === 'shares' ? (point.share === null ? '—' : point.share + '%') : point.part; }).join(', ');
   return { maximum: maximum, html: '<svg viewBox="0 0 100 30" preserveAspectRatio="none" width="100%" height="36" role="img" aria-label="' + escapeHtml(fill(texts.tileTrendAria, { unit: unitWord(), values: values })) + '"><line class="base" x1="0" y1="28" x2="100" y2="28"/>' + body + bands + '</svg>' };
@@ -456,10 +450,10 @@ function sharesChart(total, list) {
   const series = TILES.map(function (tile, index) { return pointsOf(total, list, index); });
   const xOf = function (index) { return count > 1 ? LEFT + (RIGHT - LEFT) * index / (count - 1) : (LEFT + RIGHT) / 2; };
   const yOf = function (share) { return BASE - 180 * Math.min(share, 100) / 100; };
-  const lines = TILES.map(function (tile, index) { return runsOf(series[index], count, function (point) { return yOf(point.share); }).map(function (run) { return '<polyline class="line ' + tile.cls + '" points="' + run.map(function (pair) { const parts = pair.split(','); return round(LEFT + (RIGHT - LEFT) * Number(parts[0]) / 100) + ',' + round(Number(parts[1]) * 1); }).join(' ') + '"/>'; }).join(''); }).join('');
+  const lines = TILES.map(function (tile, index) { return '<polyline class="line ' + tile.cls + '" points="' + joinedPoints(series[index], count, function (point) { return yOf(point.share); }).map(function (pair) { const parts = pair.split(','); return round(LEFT + (RIGHT - LEFT) * Number(parts[0]) / 100) + ',' + parts[1]; }).join(' ') + '"/>'; }).join('');
   const hits = list.map(function (bucket, index) {
     const slot = count > 1 ? (RIGHT - LEFT) / (count - 1) : 200;
-    const dots = TILES.map(function (tile, tileIndex) { const point = series[tileIndex][index]; return point.share === null ? '' : '<circle class="dot ' + tile.cls + '" cx="' + round(xOf(index)) + '" cy="' + round(yOf(point.share)) + '" r="4">' + titleOf(texts[tile.legend], point) + '</circle>'; }).join('');
+    const dots = TILES.map(function (tile, tileIndex) { const point = series[tileIndex][index]; return point.share === null ? '<circle class="dotEmpty" cx="' + round(xOf(index)) + '" cy="' + BASE + '" r="4"><title>' + escapeHtml(fill(texts.noDataPoint, { label: point.label })) + '</title></circle>' : '<circle class="dot ' + tile.cls + '" cx="' + round(xOf(index)) + '" cy="' + round(yOf(point.share)) + '" r="3">' + titleOf(texts[tile.legend], point) + '</circle>'; }).join('');
     const lineTexts = TILES.map(function (tile, tileIndex) { const point = series[tileIndex][index]; return texts[tile.legend] + ' ' + (point.share === null ? '—' : point.share + '% · ' + fill(texts.partOfWhole, point)); });
     const tipX = xOf(index) > (LEFT + RIGHT) / 2 ? xOf(index) - 282 : xOf(index) + 14;
     const tip = '<g class="tip"><rect x="' + round(tipX) + '" y="30" width="270" height="72" rx="8"/><text class="tipHead" x="' + round(tipX + 12) + '" y="48">' + escapeHtml(tipHeading(bucketLabel(bucket))) + '</text>'
@@ -476,15 +470,18 @@ function numbersChart(total, list) {
   const slot = (RIGHT - LEFT) / count;
   const centerOf = function (index) { return LEFT + slot * (index + 0.5); };
   const groupWidth = Math.min(slot * 0.72, 120);
-  const barWidth = groupWidth / 3.6;
+  const gap = groupWidth * 0.03;
+  const outlineWidth = groupWidth * 0.4;
+  const barWidth = (groupWidth - outlineWidth - 3 * gap) / 3;
+  const groupStartOf = function (index) { return centerOf(index) - groupWidth / 2; };
   const yOf = function (value) { return BASE - 180 * value / maximum; };
-  const startOf = function (index, tileIndex) { return centerOf(index) - (3 * barWidth + 2 * barWidth * 0.2) / 2 + tileIndex * barWidth * 1.2; };
-  const outlines = list.map(function (bucket, index) { return '<rect class="outline" x="' + round(centerOf(index) - groupWidth / 2) + '" y="' + round(yOf(asked[index])) + '" width="' + round(groupWidth) + '" height="' + round(BASE - yOf(asked[index])) + '"><title>' + escapeHtml(texts.legendAsked + ': ' + asked[index]) + '</title></rect>'; }).join('');
+  const startOf = function (index, tileIndex) { return groupStartOf(index) + outlineWidth + gap + tileIndex * (barWidth + gap); };
+  const outlines = list.map(function (bucket, index) { return '<rect class="outline" x="' + round(groupStartOf(index)) + '" y="' + round(yOf(asked[index])) + '" width="' + round(outlineWidth) + '" height="' + round(BASE - yOf(asked[index])) + '"><title>' + escapeHtml(texts.legendAsked + ': ' + asked[index]) + '</title></rect>'; }).join('');
   const bars = TILES.map(function (tile, tileIndex) {
     return series[tileIndex].map(function (point, index) { return '<rect class="bar ' + tile.cls + '" x="' + round(startOf(index, tileIndex)) + '" y="' + round(yOf(point.part)) + '" width="' + round(barWidth) + '" height="' + round(BASE - yOf(point.part)) + '">' + titleOf(texts[tile.legend], point) + '</rect>'; }).join('');
   }).join('');
   const labelOf = function (values, x, y, cls) { const top = Math.max.apply(null, values); return top > 0 ? '<text class="' + cls + '" x="' + round(x(values.indexOf(top))) + '" y="' + round(y(top) - 6) + '" text-anchor="middle">' + top + '</text>' : ''; };
-  const labels = labelOf(asked, centerOf, yOf, 'outlineLabel')
+  const labels = labelOf(asked, function (index) { return groupStartOf(index) + outlineWidth / 2; }, yOf, 'outlineLabel')
     + TILES.map(function (tile, tileIndex) { return labelOf(series[tileIndex].map(function (point) { return point.part; }), function (index) { return startOf(index, tileIndex) + barWidth / 2; }, yOf, 'valueLabel ' + tile.cls); }).join('');
   return '<svg viewBox="0 0 1240 240" width="100%" height="240" role="img" aria-label="' + escapeHtml(perUnit(texts.chartAriaNumbers)) + '">' + gridLines([maximum, maximum / 2, 0]) + xLabels(list, centerOf) + outlines + bars + labels + '</svg>';
 }

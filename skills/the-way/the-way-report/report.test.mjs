@@ -134,7 +134,7 @@ function openPage(html, { isDark = false } = {}) {
   };
 }
 
-const titlesOf = (html) => [...html.matchAll(/<title>([^<]*)<\/title>/g)].map((match) => /: (\d+)(?: \S+ (\d+))?$/.exec(match[1]));
+const titlesOf = (html) => [...html.matchAll(/<title>([^<]*)<\/title>/g)].map((match) => /: (\d+)(?: \S+ (\d+))?$/.exec(match[1]) || [match[1], '0', '0']);
 const sumOf = (html) => titlesOf(html).reduce((sums, found) => [sums[0] + Number(found[1]), sums[1] + Number(found[2] || 0)], [0, 0]);
 const shareOf = (part, whole) => (whole > 0 ? `${Math.round((100 * part) / whole)}%` : '—');
 const KIND_LISTS = { result: ['SIMPLE', 'CERTEZZA'], work: ['LIGHT', 'UNICO'] };
@@ -157,9 +157,12 @@ function incoherences(page, situation, { level, kind, mode }) {
       expect(Number(smallPart) === tile.part && Number(smallWhole) === tile.whole, `tile ${index}: the small text "${tile.small}" is not ${tile.part} of ${tile.whole}`);
     }
     expect(/class="info"/.test(tile.html), `tile ${index}: no info button`);
+    expect(!isShare || (tile.html.match(/<polyline/g) || []).length === 1, `tile ${index}: the trend line is broken in pieces`);
+    expect(titlesOf(tile.html).length === (tile.html.match(/class="band"/g) || []).length, `tile ${index}: a bucket without its title`);
   });
   const chart = nodes.chart.innerHTML;
   const chartSum = (selector) => sumOf([...chart.matchAll(selector)].map((match) => match[0]).join(''));
+  expect(mode !== 'shares' || (chart.match(/<polyline/g) || []).length === 3, 'the chart has a line broken in pieces');
   ['c0', 'c1', 'c2'].forEach((cls, index) => {
     const found = chartSum(mode === 'shares' ? new RegExp(`<circle class="dot ${cls}".*?</circle>`, 'g') : new RegExp(`<rect class="bar ${cls}".*?</rect>`, 'g'));
     expect(found[0] === tiles[index].part, `chart ${cls}: sums ${found[0]}, the tile ${tiles[index].part}`);
