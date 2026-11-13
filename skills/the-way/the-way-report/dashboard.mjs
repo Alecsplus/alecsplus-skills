@@ -69,6 +69,15 @@ export const TEXTS = {
   tileTrend: 'trend per {unit}',
   explainAnswers: 'You see the messages that ended my turn.',
   explainWithLine: 'You see how many of them have the "Principles:" line on top.',
+  explainWithLineFiltered: 'You see how many of them have the "Principles:" line on top citing at least one principle {which}.',
+  shareFiltered: 'Only the lines citing at least one principle {which} count.',
+  sharePoint: '{share}% ({part} of {whole})',
+  citesProject: 'from the project\'s file',
+  citesGlobal: 'from the global file',
+  citesResult: 'in the Result list',
+  citesWork: 'in the Work list',
+  countedSince: 'counted from {date}',
+  notFiltered: 'Does not depend on the Principles and List filters.',
   explainClosed: 'You see the choices a principle written in a file decided on its own, without asking you; it follows the Principles and List filters.',
   explainAsked: 'You see the answers that ended with a question to you.',
   explainGrillingTile: 'You see the ❓ grilling questions and how you answered them. The second line counts some of the same questions again, by what they said.',
@@ -210,14 +219,23 @@ function selectedFolders() {
   return state.multiple ? folders.filter(function (folder) { return !state.unselected[folder]; }) : (state.single === '*' ? folders : [state.single]);
 }
 function isAllSelected() { return selectedFolders().length === Object.keys(ledger.projects).length; }
-function emptyBucket() { return { answers: 0, withLine: 0, closed: 0, asked: 0, questions: 0, recommended: 0, other: 0, skills: {} }; }
+function emptyBucket() { return { answers: 0, withLine: 0, cited: 0, counted: 0, closed: 0, asked: 0, questions: 0, recommended: 0, other: 0, skills: {} }; }
+// The key of lineCites for the Principles and List filters; '*/*' is no filter, the whole withLine.
+function citeKey() { return (state.level === 'all' ? '*' : state.level) + '/' + (state.kind === 'all' ? '*' : state.kind); }
+function isFiltered() { return citeKey() !== '*/*'; }
+function citedWhich() {
+  const level = { all: '', project: texts.citesProject, global: texts.citesGlobal }[state.level];
+  const kind = { all: '', result: texts.citesResult, work: texts.citesWork }[state.kind];
+  return [level, kind].filter(Boolean).join(' ');
+}
+function dayLabel(day) { return Number(day.slice(8, 10)) + ' ' + texts.monthNames.split(' ')[Number(day.slice(5, 7)) - 1] + ' ' + day.slice(0, 4); }
 function rowOf(rows, level, base) {
   const id = level + ':' + base;
   rows[id] = rows[id] || { name: base, level: level, decided: 0, ties: 0, against: 0, perBucket: {}, projects: {} };
   return rows[id];
 }
 function aggregate() {
-  const total = { answers: 0, withLine: 0, asked: 0, closed: 0, grilling: { questions: 0, withRecommendation: 0, notDecided: 0, selfAnswered: 0, chosenRecommended: 0, chosenOther: 0 }, skills: {}, rows: {}, tiePairs: {}, buckets: {} };
+  const total = { answers: 0, withLine: 0, cited: 0, counted: 0, firstCounted: '', isMissingCites: false, asked: 0, closed: 0, grilling: { questions: 0, withRecommendation: 0, notDecided: 0, selfAnswered: 0, chosenRecommended: 0, chosenOther: 0 }, skills: {}, rows: {}, tiePairs: {}, buckets: {} };
   selectedFolders().forEach(function (folder) {
     const projectName = ledger.projects[folder].name;
     Object.keys(ledger.projects[folder].days).forEach(function (day) {
@@ -228,6 +246,13 @@ function aggregate() {
         const bucketEntry = total.buckets[bucket];
         total.answers += facts.answers; total.withLine += facts.withLine; total.asked += facts.questionsAsked;
         bucketEntry.answers += facts.answers; bucketEntry.withLine += facts.withLine; bucketEntry.asked += facts.questionsAsked;
+        // A day saved before lineCites existed is known only when it had no line at all; otherwise it stays out of the count, no estimate.
+        const hasCites = !isFiltered() || Boolean(facts.lineCites) || facts.withLine === 0;
+        const cited = isFiltered() ? (facts.lineCites || {})[citeKey()] || 0 : facts.withLine;
+        const counted = hasCites ? facts.answers : 0;
+        total.cited += cited; total.counted += counted; bucketEntry.cited += cited; bucketEntry.counted += counted;
+        total.isMissingCites = total.isMissingCites || !hasCites;
+        total.firstCounted = facts.lineCites && (!total.firstCounted || day < total.firstCounted) ? day : total.firstCounted;
         Object.keys(total.grilling).forEach(function (field) { total.grilling[field] += facts.grilling[field]; });
         bucketEntry.recommended += facts.grilling.chosenRecommended; bucketEntry.other += facts.grilling.chosenOther;
         bucketEntry.questions += facts.grilling.questions;
@@ -319,10 +344,10 @@ function barChart(bucketList, series, stacked, label) {
 function lineChart(bucketList, values, label, series) {
   const drawing = frame(bucketList, 100, label, '%');
   const slot = drawing.innerWidth / (bucketList.length || 1);
-  const points = bucketList.map(function (bucket, index) { return { x: LEFT + (index + 0.5) * slot, y: TOP + drawing.innerHeight * (1 - (values[bucket] || 0) / 100), bucket: bucket, value: values[bucket] }; })
+  const points = bucketList.map(function (bucket, index) { return { x: LEFT + (index + 0.5) * slot, y: TOP + drawing.innerHeight * (1 - (values[bucket] ? values[bucket].share : 0) / 100), bucket: bucket, value: values[bucket] }; })
     .filter(function (point) { return point.value !== undefined; });
   let html = drawing.html + '<polyline fill="none" stroke="' + COLORS.decided + '" stroke-width="2" points="' + points.map(function (point) { return point.x.toFixed(1) + ',' + point.y.toFixed(1); }).join(' ') + '"/>';
-  points.forEach(function (point) { html += '<circle cx="' + point.x.toFixed(1) + '" cy="' + point.y.toFixed(1) + '" r="3" fill="' + COLORS.decided + '"><title>' + bucketLabel(point.bucket) + ': ' + point.value + '%</title></circle>'; });
+  points.forEach(function (point) { html += '<circle cx="' + point.x.toFixed(1) + '" cy="' + point.y.toFixed(1) + '" r="3" fill="' + COLORS.decided + '"><title>' + bucketLabel(point.bucket) + ': ' + escapeHtml(fill(texts.sharePoint, point.value)) + '</title></circle>'; });
   return html + '</svg>' + legend(series);
 }
 function sparkline(bucketList, perBucket) {
@@ -348,20 +373,25 @@ function sortedEntries(counts) {
 }
 function renderTiles(total, bucketList) {
   const grilling = total.grilling;
-  element('tiles').innerHTML = tile(texts.tileAnswers, total.answers, '', texts.explainAnswers, tileTrend(bucketList, total, 'answers', COLORS.neutral))
-    + tile(texts.tileWithLine, total.withLine, percentage(total.withLine, total.answers), texts.explainWithLine, tileTrend(bucketList, total, 'withLine', COLORS.decided));
+  const independent = isFiltered() ? '<div class="sub">' + escapeHtml(texts.notFiltered) + '</div>' : '';
+  const countedSince = isFiltered() && total.isMissingCites ? ' · ' + escapeHtml(fill(texts.countedSince, { date: total.firstCounted ? dayLabel(total.firstCounted) : '—' })) : '';
+  const withLineExplanation = isFiltered() ? fill(texts.explainWithLineFiltered, { which: citedWhich() }) : texts.explainWithLine;
+  element('tiles').innerHTML = tile(texts.tileAnswers, total.answers, '', texts.explainAnswers, independent + tileTrend(bucketList, total, 'answers', COLORS.neutral))
+    + tile(texts.tileWithLine, total.cited, percentage(total.cited, total.counted) + countedSince, withLineExplanation, tileTrend(bucketList, total, 'cited', COLORS.decided));
   element('tilesGrilling').innerHTML = tile(texts.tileClosed, total.closed, escapeHtml(texts.tileSaved), texts.explainClosed, tileTrend(bucketList, total, 'closed', COLORS.decided))
-    + tile(texts.tileAsked, total.asked, '', texts.explainAsked, tileTrend(bucketList, total, 'asked', COLORS.asked))
-    + tile(texts.tileGrilling, grilling.questions, fill(texts.tileGrillingDetail, { recommended: grilling.chosenRecommended, other: grilling.chosenOther, unanswered: grilling.questions - grilling.chosenRecommended - grilling.chosenOther, open: grilling.notDecided, self: grilling.selfAnswered }), texts.explainGrillingTile, tileTrend(bucketList, total, 'questions', COLORS.ties));
+    + tile(texts.tileAsked, total.asked, '', texts.explainAsked, independent + tileTrend(bucketList, total, 'asked', COLORS.asked))
+    + tile(texts.tileGrilling, grilling.questions, fill(texts.tileGrillingDetail, { recommended: grilling.chosenRecommended, other: grilling.chosenOther, unanswered: grilling.questions - grilling.chosenRecommended - grilling.chosenOther, open: grilling.notDecided, self: grilling.selfAnswered }), texts.explainGrillingTile, independent + tileTrend(bucketList, total, 'questions', COLORS.ties));
 }
+function independentOfFilters(explanation) { return explanation + (isFiltered() ? ' ' + texts.notFiltered : ''); }
 function renderOverTime(total, bucketList) {
   const shares = {}, decided = {}, asked = {};
   bucketList.forEach(function (bucket) {
     const entry = total.buckets[bucket] || emptyBucket();
-    if (entry.answers > 0) { shares[bucket] = Math.round(100 * entry.withLine / entry.answers); }
+    if (entry.counted > 0) { shares[bucket] = { share: Math.round(100 * entry.cited / entry.counted), part: entry.cited, whole: entry.counted }; }
     decided[bucket] = entry.closed; asked[bucket] = entry.asked;
   });
-  element('overtime').innerHTML = chartBlock(perUnit(texts.shareTitle), perUnit(texts.explainShare), texts.axisShare,
+  const shareExplanation = perUnit(texts.explainShare) + (isFiltered() ? ' ' + fill(texts.shareFiltered, { which: citedWhich() }) : '');
+  element('overtime').innerHTML = chartBlock(perUnit(texts.shareTitle), shareExplanation, texts.axisShare,
       lineChart(bucketList, shares, perUnit(texts.shareLabel), [{ label: texts.legendShare, color: COLORS.decided }]));
   element('decidedAsked').innerHTML = chartBlock(perUnit(texts.decidedAskedTitle), perUnit(texts.explainDecidedAsked), texts.axisChoices,
       barChart(bucketList, [{ label: texts.legendDecided, color: COLORS.decided, values: decided }, { label: texts.legendAsked, color: COLORS.asked, values: asked }], false, perUnit(texts.decidedAskedLabel)));
@@ -398,7 +428,7 @@ function renderGrilling(total, bucketList) {
   const pick = function (field) { const values = {}; bucketList.forEach(function (bucket) { values[bucket] = (total.buckets[bucket] || emptyBucket())[field]; }); return values; };
   const unanswered = {};
   bucketList.forEach(function (bucket) { const entry = total.buckets[bucket] || emptyBucket(); unanswered[bucket] = entry.questions - entry.recommended - entry.other; });
-  element('grilling').innerHTML = chartBlock(perUnit(texts.grillingTitle), perUnit(texts.explainGrillingChart), texts.axisQuestions, barChart(bucketList, [
+  element('grilling').innerHTML = chartBlock(perUnit(texts.grillingTitle), independentOfFilters(perUnit(texts.explainGrillingChart)), texts.axisQuestions, barChart(bucketList, [
     { label: texts.recommendedChosen, explain: texts.explainRecommended, color: COLORS.decided, values: pick('recommended') }, { label: texts.otherChosen, explain: texts.explainOther, color: COLORS.asked, values: pick('other') },
     { label: texts.noAnswer, explain: texts.explainNoAnswer, color: COLORS.neutral, values: unanswered }], true, perUnit(texts.grillingLabel)));
 }
@@ -416,7 +446,7 @@ function renderWayInUse(total, bucketList) {
     return { label: entry.label, explain: entry.explain, color: entry.color, values: values };
   });
   const written = (total.skills['alecsplus-skills:the-way-new'] || 0) + (total.skills['alecsplus-skills:the-way-global-new'] || 0);
-  element('wayinuse').innerHTML = chartBlock(perUnit(texts.wayInUseTitle), perUnit(texts.explainWayInUse), texts.axisRuns, barChart(bucketList, series, false, perUnit(texts.wayInUseLabel))) + '<div class="sub">' + escapeHtml(fill(texts.principlesWritten, { n: written })) + '</div>';
+  element('wayinuse').innerHTML = chartBlock(perUnit(texts.wayInUseTitle), independentOfFilters(perUnit(texts.explainWayInUse)), texts.axisRuns, barChart(bucketList, series, false, perUnit(texts.wayInUseLabel))) + '<div class="sub">' + escapeHtml(fill(texts.principlesWritten, { n: written })) + '</div>';
 }
 function render() {
   const total = aggregate();

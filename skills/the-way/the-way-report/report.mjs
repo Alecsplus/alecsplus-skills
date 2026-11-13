@@ -75,12 +75,25 @@ function loadLedger(ledgerPath) {
   return existsSync(ledgerPath) ? { ...empty, ...JSON.parse(readFileSync(ledgerPath, 'utf8')) } : empty;
 }
 
-function updateLedger(ledger, facts, currentFolder, way, globalFile) {
+function updateDays(ledger, facts) {
   Object.entries(facts).forEach(([folder, project]) => {
     ledger.projects[folder] = ledger.projects[folder] || { name: project.name, days: {} };
     ledger.projects[folder].name = project.name;
     Object.assign(ledger.projects[folder].days, project.days);
   });
+  ledger.updatedAt = new Date().toISOString();
+}
+
+// The same files the dashboard reads: the project's file of each folder that ran the report, and the global file for every folder.
+function listsOf(ledger, folder) {
+  const noLists = { result: [], work: [] };
+  const asSets = (names, lists) => ({ names: new Set(names || []), result: new Set((lists || noLists).result), work: new Set((lists || noLists).work) });
+  const files = ledger.files[folder] || {};
+  const globalFiles = ledger.files['*'] || {};
+  return { project: asSets(files.project, files.projectLists), global: asSets(globalFiles.global, globalFiles.globalLists) };
+}
+
+function updateFiles(ledger, currentFolder, way, globalFile) {
   const noLists = { result: [], work: [] };
   const current = ledger.files[currentFolder] || { project: [], global: [] };
   const previousGlobal = ledger.files['*'] || {};
@@ -95,7 +108,6 @@ function updateLedger(ledger, facts, currentFolder, way, globalFile) {
     global: globalFile.isMissing ? (previousGlobal.global || []) : globalFile.names,
     globalLists: globalFile.isMissing ? (previousGlobal.globalLists || noLists) : globalFile.lists,
   };
-  ledger.updatedAt = new Date().toISOString();
 }
 
 function classify(key, files) {
@@ -221,13 +233,15 @@ async function main() {
   let output = 'Nothing to measure: there is no THE-WAY.md, neither of the project nor global.';
   if (!isNothing) {
     const currentFolder = folderNameOf(options.cwd);
+    const ledger = loadLedger(ledgerPath);
+    updateFiles(ledger, currentFolder, way, globalFile);
     const facts = await readFacts({
       projectsDirectory: options.projectsDirectory,
       tieWords: options.tie.toLowerCase().split(/\s*\|\s*/).filter(Boolean),
       knownNames: new Set([...way.names, ...globalFile.names]),
+      listsOf: (folder) => listsOf(ledger, folder),
     });
-    const ledger = loadLedger(ledgerPath);
-    updateLedger(ledger, facts, currentFolder, way, globalFile);
+    updateDays(ledger, facts);
     mkdirSync(dirname(ledgerPath), { recursive: true });
     writeFileSync(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`);
     const loaded = loadTexts(options.textsPath ? resolve(options.textsPath) : join(dataDirectory, 'texts.json'));

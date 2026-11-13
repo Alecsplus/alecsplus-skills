@@ -59,6 +59,8 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.equal(Object.keys(days).length, 2);
   assert.equal(today.answers, 5);
   assert.equal(today.withLine, 1);
+  assert.deepEqual(today.lineCites, { 'global/*': 1, 'global/result': 1, '*/result': 1, 'project/*': 1, 'project/result': 1, 'project/work': 1, '*/work': 1 });
+  assert.deepEqual(days[oldTime.slice(0, 10)].lineCites, { 'project/*': 1, 'project/work': 1, '*/work': 1 });
   assert.deepEqual(today.decided, { CERTEZZA_globale: 1, SIMPLE: 1 });
   assert.deepEqual(today.against, { ONE_PLACE: 1 });
   assert.equal(today.questionsAsked, 1);
@@ -147,7 +149,11 @@ function incoherences(page, situation) {
   };
   expect(tiles.length === 5, `five tiles, found ${tiles.length}`);
   expect(withLine.value <= answers.value, `with the line ${withLine.value} > answers ${answers.value}`);
-  expect(withLine.rest.startsWith(`<div class="sub">${answers.value > 0 ? `${Math.round((100 * withLine.value) / answers.value)}%` : '—'}</div>`), 'the share of the tile is not with the line / answers');
+  const sharePoints = [...nodes.overtime.innerHTML.matchAll(/<circle [^>]*><title>[^<]*: \d+% \((\d+) \S+ (\d+)\)<\/title><\/circle>/g)].map((match) => [Number(match[1]), Number(match[2])]);
+  const [part, whole] = sharePoints.reduce((sums, point) => [sums[0] + point[0], sums[1] + point[1]], [0, 0]);
+  expect(withLine.value === part, `with the line ${withLine.value}, the points of the share count ${part}`);
+  expect(whole <= answers.value, `the share counts ${whole} answers of ${answers.value}`);
+  expect(withLine.rest.startsWith(`<div class="sub">${whole > 0 ? `${Math.round((100 * part) / whole)}%` : '—'}`), 'the share of the tile is not the share of its points');
   tiles.forEach((entry) => expect(entry.trendSum === entry.value, `tile ${entry.label} ${entry.value}, its trend sums ${entry.trendSum}`));
   const decidedAsked = barSums(nodes.decidedAsked.innerHTML);
   expect((decidedAsked[TEXTS.legendDecided] || 0) === closed.value, `closed ${closed.value}, the chart sums ${decidedAsked[TEXTS.legendDecided]}`);
@@ -179,14 +185,16 @@ test('the dashboard agrees with itself under every filter', () => {
   const root = mkdtempSync(join(tmpdir(), 'dashboard-'));
   const daysAgo = (count) => new Date(Date.now() - count * DAY).toISOString().slice(0, 10);
   const grilling = { questions: 3, withRecommendation: 2, notDecided: 2, selfAnswered: 1, chosenRecommended: 1, chosenOther: 1 };
-  const alphaDay = { answers: 10, withLine: 6, questionsAsked: 2, decided: { SIMPLE: 2, LIGHT: 1, CERTEZZA_globale: 1, FOO: 1 }, against: { LIGHT: 1 },
+  const alphaDay = { answers: 10, withLine: 6, questionsAsked: 2,
+    lineCites: { 'project/*': 4, 'project/result': 3, 'project/work': 2, 'global/*': 1, 'global/result': 1, '*/result': 3, '*/work': 2 }, decided: { SIMPLE: 2, LIGHT: 1, CERTEZZA_globale: 1, FOO: 1 }, against: { LIGHT: 1 },
     ties: { SIMPLE: 1, LIGHT: 1 }, tiePairs: { 'LIGHT × SIMPLE': 1 }, grilling, skills: { 'alecsplus-skills:the-way-grilling': 1, grilling: 1 } };
-  const betaDay = { answers: 4, withLine: 1, questionsAsked: 1, decided: { OWN: 3, UNICO_globale: 2 }, against: {},
+  const savedBeforeLineCites = { ...alphaDay, lineCites: undefined };
+  const betaDay = { answers: 4, withLine: 1, questionsAsked: 1, lineCites: { 'global/*': 1, 'global/work': 1, '*/work': 1 }, decided: { OWN: 3, UNICO_globale: 2 }, against: {},
     ties: { OWN: 1, UNICO_globale: 1 }, tiePairs: { 'OWN × UNICO_globale': 1 }, grilling: { ...grilling, questions: 2 }, skills: {} };
   const globalFile = { global: ['CERTEZZA', 'UNICO'], globalLists: { result: ['CERTEZZA'], work: ['UNICO'] } };
   const ledger = {
     projects: {
-      '-work-alpha': { name: 'alpha', days: { [daysAgo(0)]: alphaDay, [daysAgo(3)]: alphaDay, [daysAgo(12)]: alphaDay, [daysAgo(45)]: alphaDay } },
+      '-work-alpha': { name: 'alpha', days: { [daysAgo(0)]: alphaDay, [daysAgo(3)]: alphaDay, [daysAgo(12)]: alphaDay, [daysAgo(45)]: savedBeforeLineCites } },
       '-work-beta': { name: 'beta', days: { [daysAgo(1)]: betaDay, [daysAgo(20)]: betaDay } },
     },
     files: { '-work-alpha': { project: ['SIMPLE', 'LIGHT'], projectLists: { result: ['SIMPLE'], work: ['LIGHT'] }, ...globalFile }, '*': { project: [], ...globalFile } },
@@ -197,7 +205,7 @@ test('the dashboard agrees with itself under every filter', () => {
   const html = readFileSync(filePath, 'utf8');
   const situations = [['default', () => {}]];
   ['day', 'week', 'month'].forEach((unit) => ['7', '30', 'all'].forEach((days) => situations.push([`${unit} ${days}`, (page) => { page.press('unit', unit); page.press('days', days); }])));
-  ['all', 'project', 'global'].forEach((level) => ['all', 'result', 'work'].forEach((kind) => situations.push([`${level} ${kind}`, (page) => { page.press('level', level); page.press('kind', kind); }])));
+  ['all', 'project', 'global'].forEach((level) => ['all', 'result', 'work'].forEach((kind) => ['30', 'all'].forEach((days) => situations.push([`${level} ${kind} ${days}`, (page) => { page.press('level', level); page.press('kind', kind); page.press('days', days); }]))));
   ['-work-alpha', '-work-beta'].forEach((folder) => situations.push([`only ${folder}`, (page) => page.chooseProject(folder)]));
   situations.push(['grilling, of the project, day, alpha', (page) => { page.press('scope', 'grilling'); page.press('level', 'project'); page.press('unit', 'day'); page.chooseProject('-work-alpha'); }]);
   situations.push(['more projects, beta only, work', (page) => { page.setMultiple(true); page.tick('-work-alpha', false); page.press('kind', 'work'); page.press('days', 'all'); }]);
@@ -216,6 +224,20 @@ test('the dashboard agrees with itself under every filter', () => {
   assert.ok(words.includes('per day') && !words.includes('per week') && !words.includes('per month'), 'every "per unit" says day');
   page.press('scope', 'chat');
   assert.ok(page.nodes.partGrilling.hidden && !page.nodes.partChat.hidden, 'chat hides the grilling part');
+  const filtered = openPage(html);
+  const lineTile = () => /<div class="label">With the Principles line<\/div><div class="value">(\d+)<\/div><div class="sub">([^<]*)<\/div><div class="sub">([^<]*)</.exec(filtered.nodes.tiles.innerHTML).slice(1);
+  const before = { tile: lineTile(), share: filtered.nodes.overtime.innerHTML };
+  assert.ok(!filtered.nodes.tiles.innerHTML.includes(TEXTS.notFiltered), 'no note without a filter');
+  filtered.press('level', 'project');
+  const [cited, share, explanation] = lineTile();
+  assert.ok(Number(cited) < Number(before.tile[0]) && filtered.nodes.overtime.innerHTML !== before.share, 'Principles moves the tile and the share');
+  assert.equal(explanation, TEXTS.explainWithLineFiltered.replace('{which}', TEXTS.citesProject).replace(/"/g, '&quot;'));
+  assert.ok(filtered.nodes.tiles.innerHTML.includes(TEXTS.notFiltered) && filtered.nodes.grilling.innerHTML.includes(TEXTS.notFiltered), 'the tiles and charts that do not depend say so');
+  assert.ok(!share.includes(TEXTS.countedSince.replace(' {date}', '')), 'in 30 days every day has the count');
+  filtered.press('kind', 'result');
+  assert.ok(Number(lineTile()[0]) < Number(cited), 'List moves the tile');
+  filtered.press('days', 'all');
+  assert.ok(lineTile()[1].includes(TEXTS.countedSince.replace(' {date}', '')), 'a day saved before the count says from when');
 });
 
 test('--print-texts prints the texts as JSON with title and version', () => {

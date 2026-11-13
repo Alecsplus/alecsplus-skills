@@ -15,7 +15,7 @@ const IGNORED_PERSON_TEXTS = ['<', 'Another Claude session', 'Base directory for
 
 export function emptyDay() {
   return {
-    answers: 0, withLine: 0, decided: {}, against: {}, ties: {}, tiePairs: {},
+    answers: 0, withLine: 0, lineCites: {}, decided: {}, against: {}, ties: {}, tiePairs: {},
     questionsAsked: 0,
     grilling: { questions: 0, withRecommendation: 0, notDecided: 0, selfAnswered: 0, chosenRecommended: 0, chosenOther: 0 },
     skills: {},
@@ -48,7 +48,20 @@ function decisionsOf(lineRest) {
   const pattern = new RegExp(`(🔻\\s*)?${NAME_PATTERN}\\s*→`, 'gu');
   return [...lineRest.matchAll(pattern)]
     .filter((match) => !PLACEHOLDER_NAMES.has(match[2]))
-    .map((match) => ({ key: keyOf(match[2], match[3]), isAgainst: Boolean(match[1]) }));
+    .map((match) => ({ key: keyOf(match[2], match[3]), name: match[2], level: match[3] ? 'global' : 'project', isAgainst: Boolean(match[1]) }));
+}
+
+// The level/list keys an answer counts in: a bare name in the project's file is project, a suffixed name in the global file is global; a name no file has counts in none.
+function citedKeysOf(decisions, lists) {
+  const keys = new Set();
+  decisions.filter((decision) => lists[decision.level].names.has(decision.name)).forEach((decision) => {
+    keys.add(`${decision.level}/*`);
+    ['result', 'work'].filter((list) => lists[decision.level][list].has(decision.name)).forEach((list) => {
+      keys.add(`${decision.level}/${list}`);
+      keys.add(`*/${list}`);
+    });
+  });
+  return [...keys];
 }
 
 function tieNamesOf(line, knownNames) {
@@ -95,6 +108,7 @@ function recordAssistant(entry, day, context, state) {
   const texts = textBlocksOf(entry);
   const isTurn = entry.message?.stop_reason === 'end_turn' && texts.length > 0;
   let hasLine = false;
+  const lineDecisions = [];
   texts.forEach((block) => {
     const lines = block.text.split('\n');
     const firstLine = lines.find((line) => line.trim());
@@ -103,6 +117,7 @@ function recordAssistant(entry, day, context, state) {
       hasLine = true;
       const decisions = decisionsOf(match[1]);
       decisions.forEach((decision) => increase(decision.isAgainst ? day.against : day.decided, decision.key));
+      lineDecisions.push(...decisions);
     }
     lines.filter((line) => context.tieWords.some((word) => line.toLowerCase().includes(word))).forEach((line) => {
       const names = tieNamesOf(line, context.knownNames);
@@ -122,6 +137,7 @@ function recordAssistant(entry, day, context, state) {
   const lastBlockLines = isTurn ? texts[texts.length - 1].text.split('\n').filter((line) => line.trim()) : [];
   day.answers += isTurn ? 1 : 0;
   day.withLine += isTurn && hasLine ? 1 : 0;
+  (isTurn && hasLine ? citedKeysOf(lineDecisions, context.lists) : []).forEach((key) => increase(day.lineCites, key));
   day.questionsAsked += lastBlockLines.length > 0 && QUESTION_ENDING.test(lastBlockLines[lastBlockLines.length - 1]) ? 1 : 0;
   const content = Array.isArray(entry.message?.content) ? entry.message.content : [];
   content.filter((block) => block && block.type === 'tool_use' && block.name === 'Skill' && block.input?.skill)
@@ -171,13 +187,14 @@ async function scanFile(filePath, project, folderName, context) {
   }
 }
 
-export async function readFacts({ projectsDirectory, tieWords, knownNames }) {
+// listsOf(folder) gives, for the project's file and the global one, the names and the Result and Work lists as sets.
+export async function readFacts({ projectsDirectory, tieWords, knownNames, listsOf }) {
   const facts = {};
   const folders = existsSync(projectsDirectory)
     ? readdirSync(projectsDirectory, { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name)
     : [];
-  const context = { tieWords, knownNames };
   for (const folderName of folders) {
+    const context = { tieWords, knownNames, lists: listsOf(folderName) };
     const project = { name: folderName, days: {} };
     const transcripts = readdirSync(join(projectsDirectory, folderName)).filter((name) => name.endsWith('.jsonl'));
     for (const transcript of transcripts) {
