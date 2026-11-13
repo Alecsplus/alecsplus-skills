@@ -164,7 +164,8 @@ function summarize(ledger, currentFolder, options, now) {
       .map((item) => `${item.row.name} #${item.position} in the file, ${ordinal(item.rank)} in use (${level})`);
   });
   addLine('Position vs use', gaps);
-  addLine('Skills', Object.entries(totals.skills).sort((left, right) => (right[1] - left[1]) || left[0].localeCompare(right[0])).map(([skill, amount]) => `${skill} ${amount}`));
+  const skillCount = (name) => totals.skills[`alecsplus-skills:${name}`] || 0;
+  lines.push(`The way in use: grilling with the principles ${skillCount('the-way-grilling')}, without ${totals.skills['mattpocock-skills:grilling'] || 0}, self-answer ${skillCount('the-way-self-answer')}, principles written ${skillCount('the-way-new') + skillCount('the-way-global-new')}`);
   lines.push(globalLine(ledger, files, bounds));
   return lines;
 }

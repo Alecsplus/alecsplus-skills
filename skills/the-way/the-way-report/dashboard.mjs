@@ -170,16 +170,11 @@ function sortedEntries(counts) {
 }
 function renderTiles(total) {
   const grilling = total.grilling;
-  const skillTotal = Object.keys(total.skills).reduce(function (sum, skill) { return sum + total.skills[skill]; }, 0);
-  const skillEntries = sortedEntries(total.skills);
-  const skillList = skillEntries.slice(0, 6).map(function (pair) { return escapeHtml(pair[0]) + ' ' + pair[1]; }).join('<br>')
-    + (skillEntries.length > 6 ? '<br>… and ' + (skillEntries.length - 6) + ' more' : '');
   element('tiles').innerHTML = tile('Answers', total.answers, '')
     + tile('With the Principles line', total.withLine, percentage(total.withLine, total.answers))
     + tile('Choices closed by the principles', total.closed, 'questions saved')
     + tile('Questions asked to you', total.asked, '')
-    + tile('Grilling questions', grilling.questions, 'recommended chosen ' + grilling.chosenRecommended + ' · other ' + grilling.chosenOther + '<br>left open ' + grilling.notDecided + ' · answered by themselves ' + grilling.selfAnswered)
-    + tile('Skill runs', skillTotal, skillList);
+    + tile('Grilling questions', grilling.questions, 'recommended chosen ' + grilling.chosenRecommended + ' · other ' + grilling.chosenOther + '<br>left open ' + grilling.notDecided + ' · answered by themselves ' + grilling.selfAnswered);
 }
 function renderOverTime(total, weekList) {
   const shares = {}, decided = {}, asked = {};
@@ -239,22 +234,23 @@ function renderGrilling(total, weekList) {
     { label: 'recommended chosen', color: COLORS.decided, values: pick('recommended') }, { label: 'other chosen', color: COLORS.asked, values: pick('other') },
     { label: 'left open', color: COLORS.ties, values: pick('open') }, { label: 'answered by themselves', color: COLORS.neutral, values: pick('self') }], true, 'Grilling questions per week');
 }
-function renderSkills(total, weekList) {
-  const groupOf = function (skill) { return skill.indexOf('alecsplus-skills:') === 0 || skill === 'mattpocock-skills:grilling' ? skill : 'other'; };
-  const groupTotals = {};
-  Object.keys(total.skills).forEach(function (skill) { increase(groupTotals, groupOf(skill), total.skills[skill]); });
-  const names = sortedEntries(groupTotals).map(function (pair) { return pair[0]; }).filter(function (name) { return name !== 'other'; }).concat(groupTotals.other ? ['other'] : []);
-  const series = names.map(function (name, index) {
+function renderWayInUse(total, weekList) {
+  const series = [
+    { label: 'grilling with the principles', skill: 'alecsplus-skills:the-way-grilling', color: COLORS.decided },
+    { label: 'grilling without', skill: 'mattpocock-skills:grilling', color: COLORS.asked },
+    { label: 'questions closed with self-answer', skill: 'alecsplus-skills:the-way-self-answer', color: COLORS.neutral }
+  ].map(function (entry) {
     const values = {};
-    weekList.forEach(function (week) { Object.keys((total.weeks[week] || emptyWeek()).skills).forEach(function (skill) { if (groupOf(skill) === name) { increase(values, week, total.weeks[week].skills[skill]); } }); });
-    return { label: name, color: name === 'other' ? COLORS.neutral : PALETTE[index % PALETTE.length], values: values };
+    weekList.forEach(function (week) { values[week] = (total.weeks[week] || emptyWeek()).skills[entry.skill] || 0; });
+    return { label: entry.label, color: entry.color, values: values };
   });
-  element('skills').innerHTML = barChart(weekList, series, false, 'Skill runs per week');
+  const written = (total.skills['alecsplus-skills:the-way-new'] || 0) + (total.skills['alecsplus-skills:the-way-global-new'] || 0);
+  element('wayinuse').innerHTML = barChart(weekList, series, false, 'The way in use per week') + '<div class="sub">Principles written: ' + written + '</div>';
 }
 function render() {
   const total = aggregate();
   const weekList = weeksBetween();
-  renderTiles(total); renderOverTime(total, weekList); renderPrinciples(total, weekList); renderPairs(total); renderGrilling(total, weekList); renderSkills(total, weekList);
+  renderTiles(total); renderOverTime(total, weekList); renderPrinciples(total, weekList); renderPairs(total); renderGrilling(total, weekList); renderWayInUse(total, weekList);
   Array.prototype.forEach.call(document.querySelectorAll('button[data-days]'), function (button) { button.className = button.getAttribute('data-days') === state.preset ? 'active' : ''; });
 }
 function allDays() {
@@ -301,7 +297,7 @@ export function writeDashboard({ ledger, ledgerPath, filePath }) {
 <h2>Principles</h2><div class="panel" id="principles"></div>
 <h2>Pairs</h2><div class="panel" id="pairs"></div>
 <h2>Grilling over time</h2><div class="panel" id="grilling"></div>
-<h2>Skills over time</h2><div class="panel" id="skills"></div>
+<h2>The way in use</h2><div class="panel" id="wayinuse"></div>
 <footer id="footer"></footer>
 </main>
 <script type="application/json" id="ledger">${serialized}</script>

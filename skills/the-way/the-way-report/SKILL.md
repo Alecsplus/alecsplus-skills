@@ -31,14 +31,14 @@ It reads `~/.claude/projects/*/*.jsonl` (the folder of a project is its director
 - **grilling**: every `❓` question; whether it has a recommended answer (a bold option), whether it says the principles do not decide, whether the answer was already in it; and, from the person's next message, whether they chose the recommended option or another one;
 - **skills run**: every `Skill` call, by name.
 
-It writes them into `~/.claude/the-way-reports/days.json` (one entry per project and day; days already there are kept, days seen again are rewritten), renders `~/.claude/the-way-reports/dashboard.html` from the whole ledger, opens it in the browser, and prints a short summary of the period for you, ending with the page's path. The dashboard is self-contained, works offline, and has: a project selector (all projects, or one), a date range with presets; tiles with the answers, the share with the line, the choices closed by the principles (the questions saved), the questions asked, the grilling questions and how they were answered, the skill runs; a chart over the weeks of the share with the line and of decided against asked; every principle with its decided, ties and against, its position in the file and its own trend; the grilling and the skills over the weeks. Nothing of this is estimated by you.
+It writes them into `~/.claude/the-way-reports/days.json` (one entry per project and day; days already there are kept, days seen again are rewritten), renders `~/.claude/the-way-reports/dashboard.html` from the whole ledger, opens it in the browser, and prints a short summary of the period for you, ending with the page's path. The dashboard is self-contained, works offline, and has: a project selector (all projects, or one), a date range with presets; tiles with the answers, the share with the line, the choices closed by the principles (the questions saved), the questions asked, the grilling questions and how they were answered; a chart over the weeks of the share with the line and of decided against asked; every principle with its decided, ties and against, its position in the file and its own trend; the grilling over the weeks; "the way in use" over the weeks, with three series (grilling with the principles, grilling without, questions closed with self-answer) and the count of principles written. Nothing of this is estimated by you.
 
 ## Tell
 
 Say in chat, in the language of the project, at most five lines, for someone who reads fast and never saw the counter (no column names):
 
 1. One line with the period's facts: answers, how many with the principles at the top (and the share before), choices the principles closed by themselves, questions that came to the person.
-2. One line on grilling, only if there were grilling questions: how many, how many the person answered with the recommended option, how many the principles left open.
+2. One line on grilling, only if there were grilling questions: how many, how many the person answered with the recommended option, how many the principles left open, and how many grillings went through the principles against how many did not.
 3. "What to do", at most three lines (next section).
 4. The dashboard: "open in the browser, or at <path>".
 

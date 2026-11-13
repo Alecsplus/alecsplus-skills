@@ -70,6 +70,7 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.match(output, /Answers: 5/);
   assert.match(output, /Grilling: 2 questions, 1 answered as recommended, 1 other, 1 left open/);
   assert.match(output, /CERTEZZA 1 \(global, #1\)/);
+  assert.match(output, /The way in use: grilling with the principles 1, without 0, self-answer 0, principles written 0/);
   assert.match(output, /Dashboard:/);
 
   write(todayEntries);
