@@ -15,7 +15,7 @@ const IGNORED_PERSON_TEXTS = ['<', 'Another Claude session', 'Base directory for
 
 export function emptyDay() {
   return {
-    answers: 0, withLine: 0, lineCites: {}, decided: {}, against: {}, ties: {}, tiePairs: {},
+    answers: 0, withLine: 0, lineCites: {}, openCites: {}, grillingCites: {}, decided: {}, against: {}, ties: {}, tiePairs: {},
     questionsAsked: 0,
     grilling: { questions: 0, withRecommendation: 0, notDecided: 0, selfAnswered: 0, chosenRecommended: 0, chosenOther: 0 },
     skills: {},
@@ -64,16 +64,31 @@ function citedKeysOf(decisions, lists) {
   return [...keys];
 }
 
-function tieNamesOf(line, knownNames) {
+function tieDecisionsOf(line, knownNames) {
   const pattern = new RegExp(NAME_PATTERN, 'gu');
-  const keys = [...line.matchAll(pattern)]
+  return [...line.matchAll(pattern)]
     .filter((match) => match[1].length >= 3 && !PLACEHOLDER_NAMES.has(match[1]))
     .filter((match) => match[2] || knownNames.has(match[1]))
-    .map((match) => keyOf(match[1], match[2]));
-  return [...new Set(keys)];
+    .map((match) => ({ key: keyOf(match[1], match[2]), name: match[1], level: match[2] ? 'global' : 'project' }));
 }
 
-function grillingQuestionsOf(lines, tieWords) {
+function tieNamesOf(line, knownNames) {
+  return [...new Set(tieDecisionsOf(line, knownNames).map((decision) => decision.key))];
+}
+
+function isTieLine(line, tieWords) {
+  return tieWords.some((word) => line.toLowerCase().includes(word));
+}
+
+// Every answer or question with the tie line counts in '*/*'; the level/list keys come from the principles its tie lines name.
+function tieCitedKeysOf(lines, context) {
+  const tieLines = lines.filter((line) => isTieLine(line, context.tieWords));
+  const decisions = tieLines.flatMap((line) => tieDecisionsOf(line, context.knownNames));
+  return tieLines.length > 0 ? ['*/*', ...citedKeysOf(decisions, context.lists)] : [];
+}
+
+function grillingQuestionsOf(lines, context) {
+  const { tieWords } = context;
   const starts = lines.map((line, index) => (GRILLING_START.test(line) ? index : -1)).filter((index) => index >= 0);
   return starts.map((start, position) => {
     const end = position + 1 < starts.length ? starts[position + 1] : lines.length;
@@ -87,6 +102,7 @@ function grillingQuestionsOf(lines, tieWords) {
       hasRecommendation: Boolean(recommendedLine),
       isNotDecided: tieWords.some((word) => blockText.toLowerCase().includes(word)),
       isSelfAnswered: SELF_ANSWERED.test(blockText),
+      openKeys: tieCitedKeysOf(block, context),
     };
   });
 }
@@ -109,8 +125,10 @@ function recordAssistant(entry, day, context, state) {
   const isTurn = entry.message?.stop_reason === 'end_turn' && texts.length > 0;
   let hasLine = false;
   const lineDecisions = [];
+  const answerLines = [];
   texts.forEach((block) => {
     const lines = block.text.split('\n');
+    answerLines.push(...lines);
     const firstLine = lines.find((line) => line.trim());
     const match = firstLine === undefined ? null : PRINCIPLES_LINE.exec(firstLine);
     if (match) {
@@ -119,25 +137,30 @@ function recordAssistant(entry, day, context, state) {
       decisions.forEach((decision) => increase(decision.isAgainst ? day.against : day.decided, decision.key));
       lineDecisions.push(...decisions);
     }
-    lines.filter((line) => context.tieWords.some((word) => line.toLowerCase().includes(word))).forEach((line) => {
+    lines.filter((line) => isTieLine(line, context.tieWords)).forEach((line) => {
       const names = tieNamesOf(line, context.knownNames);
       names.forEach((name) => increase(day.ties, name));
       if (names.length >= 2) {
         increase(day.tiePairs, names.slice(0, 2).sort().join(' × '));
       }
     });
-    grillingQuestionsOf(lines, context.tieWords).forEach((question) => {
+    grillingQuestionsOf(lines, context).forEach((question) => {
       day.grilling.questions += 1;
+      ['*/*', ...question.openKeys.filter((key) => key !== '*/*')].forEach((key) => {
+        day.grillingCites[key] = day.grillingCites[key] || { questions: 0, chosenRecommended: 0, chosenOther: 0 };
+        day.grillingCites[key].questions += 1;
+      });
       day.grilling.withRecommendation += question.hasRecommendation ? 1 : 0;
       day.grilling.notDecided += question.isNotDecided ? 1 : 0;
       day.grilling.selfAnswered += question.isSelfAnswered ? 1 : 0;
-      state.pending.push({ ...question, grilling: day.grilling });
+      state.pending.push({ ...question, grilling: day.grilling, grillingCites: day.grillingCites });
     });
   });
   const lastBlockLines = isTurn ? texts[texts.length - 1].text.split('\n').filter((line) => line.trim()) : [];
   day.answers += isTurn ? 1 : 0;
   day.withLine += isTurn && hasLine ? 1 : 0;
   (isTurn && hasLine ? citedKeysOf(lineDecisions, context.lists) : []).forEach((key) => increase(day.lineCites, key));
+  (isTurn ? tieCitedKeysOf(answerLines, context) : []).forEach((key) => increase(day.openCites, key));
   day.questionsAsked += lastBlockLines.length > 0 && QUESTION_ENDING.test(lastBlockLines[lastBlockLines.length - 1]) ? 1 : 0;
   const content = Array.isArray(entry.message?.content) ? entry.message.content : [];
   content.filter((block) => block && block.type === 'tool_use' && block.name === 'Skill' && block.input?.skill)
@@ -154,6 +177,10 @@ function resolveChoices(text, state) {
     const letter = numberedLetter || (isBareAllowed ? bareMatch[1].toLowerCase() : undefined);
     question.grilling.chosenRecommended += letter && letter === question.recommended ? 1 : 0;
     question.grilling.chosenOther += letter && letter !== question.recommended ? 1 : 0;
+    ['*/*', ...question.openKeys.filter((key) => key !== '*/*')].forEach((key) => {
+      question.grillingCites[key].chosenRecommended += letter && letter === question.recommended ? 1 : 0;
+      question.grillingCites[key].chosenOther += letter && letter !== question.recommended ? 1 : 0;
+    });
   });
   state.pending = [];
 }

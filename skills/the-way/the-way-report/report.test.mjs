@@ -306,3 +306,24 @@ test('nothing to measure without any principles file', () => {
   const fixture = setup();
   assert.throws(() => execFileSync('node', [reportPath, '--way', 'none', '--global', 'none', '--no-open', '--data-dir', join(fixture.root, 'data'), '--projects-dir', fixture.projectsDirectory], { encoding: 'utf8', stdio: 'pipe' }), /status 1|Command failed/);
 });
+
+test('counts the open answers and the grilling questions by the principles their tie line names', () => {
+  const fixture = setup();
+  const now = Date.now();
+  const at = (seconds) => new Date(now - 60000 + seconds * 1000).toISOString();
+  const entries = [
+    assistant('SIMPLE and CERTEZZA_globale: the principles do not decide between them.', at(1)),
+    assistant('Nothing named: the principles do not decide.', at(2)),
+    assistant('❓ *Q1 – Which one?*\n**A) one**\nB) two\nCERTEZZA_globale: the principles do not decide between A and B', at(3)),
+    person('q1 a', at(4)),
+    assistant('❓ *Q2 – Another?*\n**A) one**\nB) two', at(5)),
+    person('q2 b', at(6)),
+  ];
+  writeFileSync(fixture.transcript, `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`);
+  run(fixture);
+  const ledger = JSON.parse(readFileSync(join(fixture.root, 'data', 'days.json'), 'utf8'));
+  const [folder] = Object.keys(ledger.projects);
+  const [today] = Object.values(ledger.projects[folder].days);
+  assert.deepEqual(today.openCites, { '*/*': 3, 'project/*': 1, 'project/result': 1, 'project/work': 1, '*/result': 2, '*/work': 1, 'global/*': 2, 'global/result': 2 });
+  assert.deepEqual(today.grillingCites, { '*/*': { questions: 2, chosenRecommended: 1, chosenOther: 1 }, 'global/*': { questions: 1, chosenRecommended: 1, chosenOther: 0 }, 'global/result': { questions: 1, chosenRecommended: 1, chosenOther: 0 }, '*/result': { questions: 1, chosenRecommended: 1, chosenOther: 0 } });
+});
