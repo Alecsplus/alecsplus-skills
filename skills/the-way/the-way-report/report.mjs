@@ -84,8 +84,30 @@ function updateDays(ledger, facts) {
   ledger.updatedAt = new Date().toISOString();
 }
 
-// The same files the dashboard reads: the project's file of each folder that ran the report, and the global file for every folder.
-function listsOf(ledger, folder) {
+// The project's file of a working directory: THE-WAY.md in its root, or the file its CLAUDE.md imports with an @…/THE-WAY.md line; null when there is none.
+function projectFileOf(directory) {
+  const ownFile = join(directory, 'THE-WAY.md');
+  const claudeFile = join(directory, 'CLAUDE.md');
+  const importLine = existsSync(claudeFile)
+    ? readFileSync(claudeFile, 'utf8').split('\n').map((line) => /^@(\S*THE-WAY\.md)\s*$/.exec(line.trim())).find((match) => match)
+    : undefined;
+  const importedFile = importLine ? resolve(directory, importLine[1].replace(/^~/, homedir())) : null;
+  return existsSync(ownFile) ? ownFile : (importedFile && existsSync(importedFile) ? importedFile : null);
+}
+
+// Reads the project's file of a folder from its working directory into the ledger; a directory that is gone or has no file keeps what the ledger has.
+function readProjectFile(ledger, folder, directory) {
+  const filePath = existsSync(directory) ? projectFileOf(directory) : null;
+  const found = filePath ? readPrincipleNames(filePath) : null;
+  const current = ledger.files[folder] || { project: [], global: [] };
+  ledger.files[folder] = found
+    ? { ...current, project: found.names, projectLists: found.lists, global: current.global || [], globalLists: current.globalLists || { result: [], work: [] } }
+    : current;
+}
+
+// The same files the dashboard reads: the project's file of each folder (found from the working directory the transcripts name), and the global file for every folder.
+function listsOf(ledger, folder, directory, overriddenFolder) {
+  directory && folder !== overriddenFolder && readProjectFile(ledger, folder, directory);
   const noLists = { result: [], work: [] };
   const asSets = (names, lists) => ({ names: new Set(names || []), result: new Set((lists || noLists).result), work: new Set((lists || noLists).work) });
   const files = ledger.files[folder] || {};
@@ -251,8 +273,7 @@ async function main() {
     const facts = await readFacts({
       projectsDirectory: options.projectsDirectory,
       tieWords: options.tie.toLowerCase().split(/\s*\|\s*/).filter(Boolean),
-      knownNames: new Set([...way.names, ...globalFile.names]),
-      listsOf: (folder) => listsOf(ledger, folder),
+      listsOf: (folder, directory) => listsOf(ledger, folder, directory, way.isMissing ? null : currentFolder),
     });
     updateDays(ledger, facts);
     mkdirSync(dirname(ledgerPath), { recursive: true });

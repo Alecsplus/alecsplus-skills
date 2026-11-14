@@ -309,7 +309,7 @@ function citeKey() { return (state.level === 'all' ? '*' : state.level) + '/' + 
 function adviceOf(facts, key) {
   const cites = facts.grillingCites;
   const own = cites ? (cites[key] || { chosenRecommended: 0, chosenOther: 0 }) : null;
-  return key === '*/*' ? ((cites && cites[key]) || facts.grilling) : own;
+  return key === '*/*' ? (cites ? (cites[key] || { questions: 0, chosenRecommended: 0, chosenOther: 0 }) : facts.grilling) : own;
 }
 function emptyBucket() { return { answers: 0, withLine: 0, asked: 0, closed: 0, taken: 0, other: 0, open: 0, openWhole: 0, skills: {} }; }
 function rowOf(rows, found, folder) {

@@ -61,7 +61,7 @@ function citedKeysOf(decisions, lists) {
       keys.add(`*/${list}`);
     });
   });
-  return [...keys];
+  return keys.size > 0 ? ['*/*', ...keys] : [];
 }
 
 function tieDecisionsOf(line, knownNames) {
@@ -76,19 +76,24 @@ function tieNamesOf(line, knownNames) {
   return [...new Set(tieDecisionsOf(line, knownNames).map((decision) => decision.key))];
 }
 
+// A tie line begins with the tie words, after any markdown or punctuation; a line that only quotes them is not a tie.
 function isTieLine(line, tieWords) {
-  return tieWords.some((word) => line.toLowerCase().includes(word));
+  const escapedWords = tieWords.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return escapedWords.length > 0 && new RegExp(`^[^\\p{L}\\p{N}]*(${escapedWords.join('|')})`, 'iu').test(line);
 }
 
-// Every answer or question with the tie line counts in '*/*'; the level/list keys come from the principles its tie lines name.
+// The keys of the principles the tie lines name, only those in a file; '*/*' is their union.
 function tieCitedKeysOf(lines, context) {
   const tieLines = lines.filter((line) => isTieLine(line, context.tieWords));
-  const decisions = tieLines.flatMap((line) => tieDecisionsOf(line, context.knownNames));
-  return tieLines.length > 0 ? ['*/*', ...citedKeysOf(decisions, context.lists)] : [];
+  return citedKeysOf(tieLines.flatMap((line) => tieDecisionsOf(line, context.knownNames)), context.lists);
+}
+
+// The keys of every principle a grilling question names anywhere in its block.
+function blockCitedKeysOf(block, context) {
+  return citedKeysOf(block.flatMap((line) => tieDecisionsOf(line, context.knownNames)), context.lists);
 }
 
 function grillingQuestionsOf(lines, context) {
-  const { tieWords } = context;
   const starts = lines.map((line, index) => (GRILLING_START.test(line) ? index : -1)).filter((index) => index >= 0);
   return starts.map((start, position) => {
     const end = position + 1 < starts.length ? starts[position + 1] : lines.length;
@@ -100,9 +105,9 @@ function grillingQuestionsOf(lines, context) {
       number: numberMatch ? Number(numberMatch[1]) : null,
       recommended: recommendedLine ? recommendedLine[1].toLowerCase() : null,
       hasRecommendation: Boolean(recommendedLine),
-      isNotDecided: tieWords.some((word) => blockText.toLowerCase().includes(word)),
+      isNotDecided: block.some((line) => isTieLine(line, context.tieWords)),
       isSelfAnswered: SELF_ANSWERED.test(blockText),
-      openKeys: tieCitedKeysOf(block, context),
+      openKeys: blockCitedKeysOf(block, context),
     };
   });
 }
@@ -146,7 +151,7 @@ function recordAssistant(entry, day, context, state) {
     });
     grillingQuestionsOf(lines, context).forEach((question) => {
       day.grilling.questions += 1;
-      ['*/*', ...question.openKeys.filter((key) => key !== '*/*')].forEach((key) => {
+      question.openKeys.forEach((key) => {
         day.grillingCites[key] = day.grillingCites[key] || { questions: 0, chosenRecommended: 0, chosenOther: 0 };
         day.grillingCites[key].questions += 1;
       });
@@ -164,7 +169,8 @@ function recordAssistant(entry, day, context, state) {
   openKeys.forEach((key) => increase(day.openCites, key));
   // An answer that says the principles do not decide is a question to the person, whatever its last line.
   const endsWithQuestion = lastBlockLines.length > 0 && QUESTION_ENDING.test(lastBlockLines[lastBlockLines.length - 1]);
-  day.questionsAsked += isTurn && (endsWithQuestion || openKeys.length > 0) ? 1 : 0;
+  const hasTieLine = answerLines.some((line) => isTieLine(line, context.tieWords));
+  day.questionsAsked += isTurn && (endsWithQuestion || hasTieLine) ? 1 : 0;
   const content = Array.isArray(entry.message?.content) ? entry.message.content : [];
   content.filter((block) => block && block.type === 'tool_use' && block.name === 'Skill' && block.input?.skill)
     .forEach((block) => increase(day.skills, block.input.skill));
@@ -180,12 +186,17 @@ function resolveChoices(text, state) {
     const letter = numberedLetter || (isBareAllowed ? bareMatch[1].toLowerCase() : undefined);
     question.grilling.chosenRecommended += letter && letter === question.recommended ? 1 : 0;
     question.grilling.chosenOther += letter && letter !== question.recommended ? 1 : 0;
-    ['*/*', ...question.openKeys.filter((key) => key !== '*/*')].forEach((key) => {
+    question.openKeys.forEach((key) => {
       question.grillingCites[key].chosenRecommended += letter && letter === question.recommended ? 1 : 0;
       question.grillingCites[key].chosenOther += letter && letter !== question.recommended ? 1 : 0;
     });
   });
   state.pending = [];
+}
+
+function useLists(context, lists) {
+  context.lists = lists;
+  context.knownNames = new Set([...lists.project.names, ...lists.global.names]);
 }
 
 async function scanFile(filePath, project, folderName, context) {
@@ -202,6 +213,10 @@ async function scanFile(filePath, project, folderName, context) {
     const time = isMainConversation ? Date.parse(entry.timestamp) : NaN;
     if (isMainConversation && !Number.isNaN(time)) {
       project.name = entry.cwd ? basename(entry.cwd) : (project.name || folderName);
+      if (entry.cwd && !context.isResolved) {
+        context.isResolved = true;
+        useLists(context, context.listsOf(folderName, entry.cwd));
+      }
       const dayName = new Date(time).toISOString().slice(0, 10);
       project.days[dayName] = project.days[dayName] || emptyDay();
       if (entry.type === 'assistant') {
@@ -217,14 +232,16 @@ async function scanFile(filePath, project, folderName, context) {
   }
 }
 
-// listsOf(folder) gives, for the project's file and the global one, the names and the Result and Work lists as sets.
-export async function readFacts({ projectsDirectory, tieWords, knownNames, listsOf }) {
+// listsOf(folder, cwd) gives, for the project's file and the global one, the names and the Result and Work lists as sets;
+// it is asked again with the folder's working directory on the first entry that has one, so each project is read with its own file.
+export async function readFacts({ projectsDirectory, tieWords, listsOf }) {
   const facts = {};
   const folders = existsSync(projectsDirectory)
     ? readdirSync(projectsDirectory, { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name)
     : [];
   for (const folderName of folders) {
-    const context = { tieWords, knownNames, lists: listsOf(folderName) };
+    const context = { tieWords, knownNames: new Set(), lists: null, listsOf, isResolved: false };
+    useLists(context, listsOf(folderName));
     const project = { name: folderName, days: {} };
     const transcripts = readdirSync(join(projectsDirectory, folderName)).filter((name) => name.endsWith('.jsonl'));
     for (const transcript of transcripts) {

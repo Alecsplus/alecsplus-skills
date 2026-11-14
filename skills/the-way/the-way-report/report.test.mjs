@@ -46,7 +46,7 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
     assistant('❓ *Q2 – Another?*\nA) one\nB) two\nthe principles do not decide between A and B', at(6)),
     person('a', at(7)),
     { type: 'assistant', timestamp: at(8), cwd: '/work/demo', message: { stop_reason: 'tool_use', content: [{ type: 'tool_use', name: 'Skill', input: { skill: 'alecsplus-skills:the-way-grilling' } }] } },
-    assistant('SIMPLE and LIGHT: the principles do not decide between them.', at(9)),
+    assistant('The principles do not decide between SIMPLE and LIGHT.', at(9)),
   ];
   const write = (entries) => writeFileSync(fixture.transcript, `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`);
   write([oldEntry, ...todayEntries]);
@@ -59,8 +59,8 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.equal(Object.keys(days).length, 2);
   assert.equal(today.answers, 5);
   assert.equal(today.withLine, 1);
-  assert.deepEqual(today.lineCites, { 'global/*': 1, 'global/result': 1, '*/result': 1, 'project/*': 1, 'project/result': 1, 'project/work': 1, '*/work': 1 });
-  assert.deepEqual(days[oldTime.slice(0, 10)].lineCites, { 'project/*': 1, 'project/work': 1, '*/work': 1 });
+  assert.deepEqual(today.lineCites, { '*/*': 1, 'global/*': 1, 'global/result': 1, '*/result': 1, 'project/*': 1, 'project/result': 1, 'project/work': 1, '*/work': 1 });
+  assert.deepEqual(days[oldTime.slice(0, 10)].lineCites, { '*/*': 1, 'project/*': 1, 'project/work': 1, '*/work': 1 });
   assert.deepEqual(today.decided, { CERTEZZA_globale: 1, SIMPLE: 1 });
   assert.deepEqual(today.against, { ONE_PLACE: 1 });
   assert.equal(today.questionsAsked, 3); // the one ending with "?" and the two that say the principles do not decide
@@ -80,7 +80,7 @@ test('counts per day, keeps old days, writes the dashboard and the summary', () 
   assert.match(output, /Answers: 5/);
   assert.match(output, /Decided alone: 2 of 5 choices \(40%\)/);
   assert.match(output, /Advice taken: 1 of 2 grilling advices \(50%\)/);
-  assert.match(output, /Left open: 2 of 3 questions to you \(67%\)/);
+  assert.match(output, /Left open: 1 of 3 questions to you \(33%\)/);
   assert.match(output, /CERTEZZA 1 \(global, #1\)/);
   assert.match(output, /The way in use: grilling with the principles 1, without 0, self-answer 0, the-way-new runs 0/);
   assert.match(output, /Dashboard:/);
@@ -303,23 +303,65 @@ test('nothing to measure without any principles file', () => {
   assert.throws(() => execFileSync('node', [reportPath, '--way', 'none', '--global', 'none', '--no-open', '--data-dir', join(fixture.root, 'data'), '--projects-dir', fixture.projectsDirectory], { encoding: 'utf8', stdio: 'pipe' }), /status 1|Command failed/);
 });
 
-test('counts the open answers and the grilling questions by the principles their tie line names', () => {
+test('counts the open answers and the grilling questions by the principles they name; Everything is the union of the levels', () => {
   const fixture = setup();
   const now = Date.now();
   const at = (seconds) => new Date(now - 60000 + seconds * 1000).toISOString();
   const entries = [
-    assistant('SIMPLE and CERTEZZA_globale: the principles do not decide between them.', at(1)),
-    assistant('Nothing named: the principles do not decide.', at(2)),
-    assistant('❓ *Q1 – Which one?*\n**A) one**\nB) two\nCERTEZZA_globale: the principles do not decide between A and B', at(3)),
-    person('q1 a', at(4)),
-    assistant('❓ *Q2 – Another?*\n**A) one**\nB) two', at(5)),
-    person('q2 b', at(6)),
+    assistant('The principles do not decide: SIMPLE toward A, CERTEZZA_globale toward B.', at(1)),
+    assistant('Nothing named.\nThe principles do not decide.', at(2)),
+    assistant('Ask it so: start with the words "the principles do not decide:" and name the two principles.', at(3)),
+    assistant('❓ *Q1 – Which one?*\n**A) one**\nB) two\n*SIMPLE ●●●  CERTEZZA_globale ●●○*', at(4)),
+    person('q1 a', at(5)),
+    assistant('❓ *Q2 – Another?*\n**A) one**\nB) two\n*NOTINANYFILE_globale ●●●*', at(6)),
+    person('q2 b', at(7)),
+    assistant('❓ *Q3 – Third?*\n**A) one**\nB) two\n*SIMPLE ●●●*', at(8)),
+    person('q3 a', at(9)),
   ];
   writeFileSync(fixture.transcript, `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`);
   run(fixture);
   const ledger = JSON.parse(readFileSync(join(fixture.root, 'data', 'days.json'), 'utf8'));
   const [folder] = Object.keys(ledger.projects);
   const [today] = Object.values(ledger.projects[folder].days);
-  assert.deepEqual(today.openCites, { '*/*': 3, 'project/*': 1, 'project/result': 1, 'project/work': 1, '*/result': 2, '*/work': 1, 'global/*': 2, 'global/result': 2 });
-  assert.deepEqual(today.grillingCites, { '*/*': { questions: 2, chosenRecommended: 1, chosenOther: 1 }, 'global/*': { questions: 1, chosenRecommended: 1, chosenOther: 0 }, 'global/result': { questions: 1, chosenRecommended: 1, chosenOther: 0 }, '*/result': { questions: 1, chosenRecommended: 1, chosenOther: 0 } });
+  assert.deepEqual(today.openCites, { '*/*': 1, 'project/*': 1, 'project/result': 1, '*/result': 1, 'project/work': 1, '*/work': 1, 'global/*': 1, 'global/result': 1 });
+  assert.equal(today.questionsAsked, 2); // the quoted instruction is no tie; the unnamed tie still counts as a question
+  assert.equal(today.grilling.questions, 3);
+  const cited = { questions: 2, chosenRecommended: 2, chosenOther: 0 };
+  assert.deepEqual(today.grillingCites['*/*'], cited);
+  assert.deepEqual(today.grillingCites['project/*'], cited);
+  assert.deepEqual(today.grillingCites['global/*'], { questions: 1, chosenRecommended: 1, chosenOther: 0 });
+  ['openCites', 'grillingCites'].forEach((field) => {
+    const amountOf = (key) => (typeof today[field][key] === 'number' ? today[field][key] : (today[field][key]?.questions || 0));
+    assert.ok(amountOf('*/*') <= amountOf('project/*') + amountOf('global/*'), `${field}: union above the sum`);
+    assert.ok(amountOf('*/*') >= Math.max(amountOf('project/*'), amountOf('global/*')), `${field}: union below a level`);
+  });
+});
+
+test('each folder is classified with the principles file found from its own working directory', () => {
+  const fixture = setup();
+  const otherDirectory = join(fixture.root, 'other');
+  const importingDirectory = join(fixture.root, 'importing');
+  mkdirSync(join(importingDirectory, 'docs'), { recursive: true });
+  mkdirSync(otherDirectory, { recursive: true });
+  writeFileSync(join(otherDirectory, 'THE-WAY.md'), '## Result\n\n**OTHERNAME** — a\n\n## Work\n');
+  writeFileSync(join(importingDirectory, 'CLAUDE.md'), '# Project\n\n@docs/THE-WAY.md\n');
+  writeFileSync(join(importingDirectory, 'docs', 'THE-WAY.md'), '## Result\n\n**IMPORTEDNAME** — a\n\n## Work\n');
+  const now = Date.now();
+  const tie = (directory, names) => ({ ...assistant(`The principles do not decide: ${names}.`, new Date(now - 1000).toISOString()), cwd: directory });
+  const write = (directory, entry) => {
+    const folder = join(fixture.projectsDirectory, directory.replace(/[^A-Za-z0-9_]/g, '-'));
+    mkdirSync(folder, { recursive: true });
+    writeFileSync(join(folder, 'a.jsonl'), `${JSON.stringify(entry)}\n`);
+  };
+  write(fixture.cwd, tie(fixture.cwd, 'SIMPLE toward A, OTHERNAME toward B'));
+  write(otherDirectory, tie(otherDirectory, 'SIMPLE toward A, UNICO_globale toward B'));
+  write(importingDirectory, tie(importingDirectory, 'IMPORTEDNAME toward A, OTHERNAME toward B'));
+  run(fixture);
+  const ledger = JSON.parse(readFileSync(join(fixture.root, 'data', 'days.json'), 'utf8'));
+  const openOf = (directory) => Object.values(ledger.projects[directory.replace(/[^A-Za-z0-9_]/g, '-')].days)[0].openCites;
+  assert.deepEqual(openOf(fixture.cwd), { '*/*': 1, 'project/*': 1, 'project/result': 1, '*/result': 1, 'project/work': 1, '*/work': 1 }); // SIMPLE is in this folder's file
+  assert.deepEqual(openOf(otherDirectory), {}); // SIMPLE is no principle of this folder and UNICO is in no file
+  assert.deepEqual(openOf(importingDirectory), { '*/*': 1, 'project/*': 1, 'project/result': 1, '*/result': 1 });
+  assert.deepEqual(ledger.files[otherDirectory.replace(/[^A-Za-z0-9_]/g, '-')].project, ['OTHERNAME']);
+  assert.deepEqual(ledger.files[importingDirectory.replace(/[^A-Za-z0-9_]/g, '-')].project, ['IMPORTEDNAME']);
 });
