@@ -28,7 +28,7 @@ The principles of this repository are in [`THE-WAY.md`](./THE-WAY.md), and only 
 
 ## 2. Nothing runs by itself
 
-There are no hooks and no stop check, neither in the plugin nor in the project (SIMPLE). The plugin is only skills.
+There are no hooks and no stop check, neither in the plugin nor in the project (SIMPLE). The plugin is only skills. The one script, `report.mjs` of `the-way-report`, reads the transcripts and writes only in `~/.claude/the-way-reports/`.
 
 The project carries everything (NO_PLUGIN_NEEDED):
 
@@ -37,11 +37,11 @@ The project carries everything (NO_PLUGIN_NEEDED):
 - `Explore`, `Plan` and agents with `omitClaudeMd` do not read `CLAUDE.md`. This is accepted; Claude compares with the principles the choices that come back from them.
 - When the instructions change, rerunning `the-way-setup` updates the project; the other skills run it first (the three global ones run `the-way-global-setup` instead, for `~/.claude/`; `the-way-self-answer` and `the-way-grilling` skip the project's setup when it has no `THE-WAY.md` and the global one exists), so the update is offered the next time any of them starts. After an update, the principles already written are read again against the criterion, one at a time, and only the ones that fail a point get a proposed change, each with its yes.
 
-## 3. The eight skills
+## 3. The nine skills
 
-Commands: `/alecsplus-skills:the-way-setup`, `/alecsplus-skills:the-way-self-answer`, `/alecsplus-skills:the-way-discover`, `/alecsplus-skills:the-way-new`, `/alecsplus-skills:the-way-grilling`, `/alecsplus-skills:the-way-global-setup`, `/alecsplus-skills:the-way-global-new`, `/alecsplus-skills:the-way-global-discover`.
+Commands: `/alecsplus-skills:the-way-setup`, `/alecsplus-skills:the-way-self-answer`, `/alecsplus-skills:the-way-discover`, `/alecsplus-skills:the-way-new`, `/alecsplus-skills:the-way-grilling`, `/alecsplus-skills:the-way-global-setup`, `/alecsplus-skills:the-way-global-new`, `/alecsplus-skills:the-way-global-discover`, `/alecsplus-skills:the-way-report`.
 
-They are eight separate skills, not one skill with arguments, because a skill with arguments does not offer its gestures when you type its name.
+They are nine separate skills, not one skill with arguments, because a skill with arguments does not offer its gestures when you type its name.
 
 Every skill asks permission before it writes a file, always, even `setup` on a new project. You can begin with any `the-way-` skill (ANY_DOOR). `the-way-self-answer`, `the-way-discover`, `the-way-new` and `the-way-grilling` first run `the-way-setup` (except `the-way-self-answer` and `the-way-grilling` when the project has no `THE-WAY.md` and the global one exists: they skip it and read the global file), which checks that `THE-WAY.md`, `THE-WAY-USAGE.md` and the two import lines in `CLAUDE.md` are in place and written by the current plugin version. If all is in order, setup says nothing; if something is missing or out of date, it says which, asks for one yes and fixes it, then the skill does what was asked; without the yes the skill stops and says why (VISIBLE). The three global skills run `the-way-global-setup` the same way, for the files in `~/.claude/`. The check and the version number live only in the two setup skills (ONE_PLACE).
 
@@ -78,7 +78,7 @@ What the person says is usually a rule (what not to do, or what to do in one cas
 Run when you want a plan, decision or idea stress-tested, or when a skill, a ticket or a map says "grilling". It runs Pocock's `mattpocock-skills:grilling` as it is (decision tree, rounds, facts found by Claude, decisions by the leader) and changes only two things: the form of the questions and how the principles enter (SIMPLE). Without Pocock's plugin it says so, gives the two commands to install it and stops; it never grills on its own, because "grilling" is his word (VISIBLE).
 
 - A really obvious case is written as a question with its answer and principle already in it, and the work goes on; what the leader sees or does is always a real question (OBVIOUS).
-- Every other question has answers A/B/C, each with the principles that pull toward it and their weight on three steps; the recommendation comes from the weights, and with equal weights there is none (CITED).
+- Every other question has answers A/B/C, each with the principles that pull toward it and their weight on three steps, written as dots (`●●●`, `●●○`, `●○○`), and a principle that goes against it with red triangles in place of the dots (`🔻🔻🔻`, `🔻🔻`, `🔻`); the recommendation comes from the weights, and with equal weights there is none (CITED).
 - An answer enters only if someone could really choose it; a principle is written under an answer only if it pulls toward it.
 - The form and the rules of the question are fixed in the skill, written for a human who reads fast.
 - The usage line written by `setup` sends every "grilling" called by a skill, a ticket or a map to this skill, so Pocock's own skills stay untouched (NO_PLUGIN_NEEDED).
@@ -95,6 +95,10 @@ Like `the-way-new`, but writes in `~/.claude/THE-WAY.md` and only there. It star
 
 Like `the-way-discover`, but for principles that hold in every project: it searches `~/.claude/CLAUDE.md`, `~/.claude/rules/`, the memory and the `THE-WAY.md` of the projects, and counts a principle found in one project only as not global. It hands each one to `the-way-global-new`. It asks by itself only about copies: a sentence of `~/.claude/CLAUDE.md` or `~/.claude/rules/` that says a global principle is removed with a yes; for a global principle found word for word in the `THE-WAY.md` of a project, it asks whether to remove that copy or leave it for whoever opens the repo without your global file.
 
+### the-way-report
+
+Run when you want to know whether the principles are used, and how much they save. It reads the transcripts Claude Code keeps in `~/.claude/projects/` and counts the line "Principles: NAME → …" that `THE-WAY-USAGE.md` asks for at the top of every message: that line is the measure, and nothing more is asked of whoever works (CITED, SIMPLE). It counts, it does not judge: nothing in a transcript says whether a choice turned out well, and a choice taken against a principle, said out loud, is the plugin doing its job. Next to the line it counts the questions Claude asked the person, the grilling questions (with a recommended answer, left open, answered by themselves, and whether the person chose the recommended one) and the runs of every skill. Transcripts live about 30 days (`cleanupPeriodDays`), so the counts are kept day by day in `~/.claude/the-way-reports/days.json`, outside the repo because they span all projects: every run rewrites the days it still sees and keeps the rest. The same run renders `dashboard.html` next to it, one self-contained page with no network, a project and a date-range selector, and charts over the weeks: answers with the line, choices closed by the principles against questions asked, every principle's use and position in the file, grilling, skills (VISIBLE). In chat it says at most five lines in the language of the project, no column names (PAROLE_PIANE of the global file), with "What to do": every proposal (a principle beaten by real cases, a pair that keeps tying, an order in the file far from the use, grilling questions the principles already decide) is a call to `the-way-new`, `the-way-global-new` or `the-way-self-answer`, with their criterion and their yes; a silent principle is only named. The counting and the page are a script, `report.mjs`, next to the skill, so the numbers are counted, not estimated.
+
 ## 4. The global level
 
 - `~/.claude/THE-WAY.md` and `~/.claude/THE-WAY-USAGE.md` are written by `the-way-global-setup`, with the same form as in a project. `~/.claude/CLAUDE.md` imports both, so every session reads them, and subagents too (NO_PLUGIN_NEEDED).
@@ -107,11 +111,11 @@ Like `the-way-discover`, but for principles that hold in every project: it searc
 
 The file `THE-WAY-USAGE.md` in the root of the project, next to `THE-WAY.md`, always rewritten whole. Its first line says which plugin version wrote it (`*Written by `/alecsplus-skills:the-way-setup` 1.3.0: rerun it to update.*`, in the language of the project). In `CLAUDE.md`, setup puts only two lines at the top, `@THE-WAY.md` and `@THE-WAY-USAGE.md`, with no markers (SIMPLE). The file holds these instructions:
 
-- Compare before asking. Before asking a choice of the user, or leaving it to a subagent, compare it with the principles.
-- If a principle decides, do not ask. Write "I do A (NAME)".
+- Compare before anything. Before doing, proposing, answering or asking anything, compare the road with all the principles, and write at the top of the message which ones decided it and how ("Principles: NAME → …").
+- If a principle decides, do not ask: do. A message without that comparison is not written; if no principle can be named, read the list again.
 - Try first. If you already know what the user would answer, a principle has decided. The answer that looks too obvious is the answer.
 - Ask only when no principle decides, or when two pull in opposite directions. Under the question, write the comparison, starting with "the principles do not decide", naming the two principles.
-- Never go against a principle in silence. If a choice goes against one, say which one and why, before doing it.
+- Never go against a principle in silence. If a choice goes against one, say which one and why, before doing it, in the top line, as "🔻 NAME → why".
 - The same holds for a "to decide" that comes back in a subagent report: if a principle decides, answer it and cite it.
 - Every task given to a subagent ends with the line "In the report, next to each choice, write the principle that decided it". The task does not copy any principle, and nothing checks the report automatically. Claude reads it in the session.
 - Grilling in the project goes through `/alecsplus-skills:the-way-grilling`: when a skill, a ticket or a map says "grilling", call that one.

@@ -25,7 +25,7 @@ In the repo root of the project you are in:
 - Is there a file that holds principles in another form or under another name (`PRINCIPI.md`, `PRINCIPLES.md`, a constitution file imported by `CLAUDE.md`)? If unsure which file it is, ask.
 - Does `CLAUDE.md` exist? Does it have the lines `@THE-WAY.md` and `@THE-WAY-USAGE.md`? Does it have an old block between `<!-- the-way:start` and `<!-- the-way:end -->` (written by setup 0.1.1)?
 - Which language does the project use? Read the existing `CLAUDE.md`, README and docs. The fixed texts are in English: translate them faithfully into the project's language, English included as is.
-- The version of this plugin is **1.3.0**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
+- The version of this plugin is **1.4.0**. It is written here because reading the plugin's own files can be refused; it must always equal `version` in `.claude-plugin/plugin.json`, so both change together at every release.
 
 ## 2. Pick the case
 
@@ -92,10 +92,10 @@ The whole file, always rewritten whole. The first line carries the plugin versio
 The project's principles are in THE-WAY.md, imported in CLAUDE.md. They apply to everything done in this project, including how we work.
 
 How to use them:
-- Before asking the person leading the project to choose, compare the choice with the principles. If one decides, do not ask: write "I do A (NAME)" and go on. Never ask what the principles already answer.
+- Before doing, proposing, answering or asking anything, compare the road with the principles, all of them, and write at the top of the message which ones decided it and how ("Principles: NAME → …"). If one decides, do not ask: do. A message without that comparison is not written: if you cannot name any principle, read the list again.
 - Try first: if you already know what the person would answer, a principle has decided. The answer that looks too obvious is the answer.
 - Ask only when no principle decides or two pull in opposite directions. Then the question carries its comparison right under it, starting with the words "the principles do not decide:" and saying which two principles pull in opposite directions (X toward B, Y toward A).
-- Never go against a principle in silence: if a choice goes against one, say which one and why before doing it.
+- Never go against a principle in silence: if a choice goes against one, say which one and why before doing it, in the same top line, with a red triangle before its name ("🔻 NAME → why").
 - The same holds for a "to decide" coming back from a subagent's report: compare first, then ask only if needed.
 - End every task you give to a subagent with this line: "In the report, next to each choice, write the principle that decided it." Do not copy any principle into the task.
 - A rule said for the whole project is a principle waiting to be named: find what the project wants behind it and propose that, not the rule. A new or changed principle goes through the criterion of the `the-way-new` skill and the yes of whoever leads the project.
