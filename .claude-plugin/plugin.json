@@ -19,7 +19,6 @@
     "./skills/the-way/the-way-global-setup",
     "./skills/the-way/the-way-global-discover",
     "./skills/the-way/the-way-global-new",
-    "./skills/the-way/the-way-report",
-    "./skills/holo"
+    "./skills/the-way/the-way-report"
   ]
 }
